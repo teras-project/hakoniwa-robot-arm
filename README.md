@@ -26,38 +26,31 @@
 flowchart LR
 
   subgraph SIM["シミュレータ側<br/>Host / Docker"]
-    Launcher["箱庭 Launcher"]
+    SimApp["アームロボット<br/>シミュレータ<br/>(DOBOT Nova5)"]
+    RobotRuntime["箱庭ロボットランタイム<br/>共通基盤"]
+    Core["箱庭コア機能<br/>(SHM)"]
+    PduBridge["箱庭PDU<br/>Bridge"]
 
-    subgraph HAKO["箱庭"]
-      Sim["アームロボット<br/>シミュレータ<br/>(DOBOT Nova5)"]
-      Mujoco["箱庭ロボットランタイム<br/>共通基盤"]
-      Core["箱庭コア機能<br/>(SHM)"]
-      PduBridge["箱庭PDU<br/>Bridge"]
-    end
-
-    Launcher --> Sim
-    Sim --> Mujoco
-    Mujoco --> Core
+    SimApp --> RobotRuntime
+    RobotRuntime --> Core
     Core <--> PduBridge
   end
 
-  subgraph ROS["ROS 2側<br/>Ubuntu / Docker"]
+  subgraph ROS["ROS 2側(Humble / Jazzy)<br/>Ubuntu / Docker"]
     RosBridge["箱庭ROS<br/>Bridge"]
     RosNode["ROSノード<br/>サンプル制御<br/>プログラム"]
     Ros2["ROS 2<br/>Humble / Jazzy"]
 
     RosBridge <--> RosNode
-    RosBridge --- Ros2
-    RosNode --- Ros2
   end
 
   PduBridge <-->|"TCP : 54001"| RosBridge
 
-  Sim -->|"JointState<br/>/pdu/joint_states"| PduBridge
+  RobotRuntime -->|"JointState<br/>/pdu/joint_states"| PduBridge
   RosBridge -->|"JointState"| RosNode
 
   RosNode -->|"JointTrajectory<br/>/joint_trajectory"| RosBridge
-  PduBridge -->|"JointTrajectory"| Sim
+  PduBridge -->|"JointTrajectory"| RobotRuntime
 ````
 
 ## 動作確認環境
