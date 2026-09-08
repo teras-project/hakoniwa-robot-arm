@@ -1,0 +1,21 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/hakoniwa-asset-manifest.schema.json",
+  "schema_version": 1,
+  "name": "Nova5",
+  "description": "Nova5 collision-workspace variant generated from Recipe environment configuration.",
+  "model": "nova5.environment.xml",
+  "pdu_def": "config/pdu/nova5-pdudef.json",
+  "endpoint": "config/endpoint/nova5_endpoint.json",
+  "runtime_config": "config/runtime.json",
+  "components": [
+    { "id": "joint1", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/joint1.json", "pdu_robot": "Nova5" },
+    { "id": "joint2", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/joint2.json", "pdu_robot": "Nova5" },
+    { "id": "joint3", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/joint3.json", "pdu_robot": "Nova5" },
+    { "id": "joint4", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/joint4.json", "pdu_robot": "Nova5" },
+    { "id": "joint5", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/joint5.json", "pdu_robot": "Nova5" },
+    { "id": "joint6", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/joint6.json", "pdu_robot": "Nova5" },
+    { "id": "manual_controller", "kind": "controller", "type": "joy_manual_controller", "config": "config/controller/manual.json", "pdu_robot": "Nova5" },
+    { "id": "trajectory_controller", "kind": "controller", "type": "joint_trajectory_controller", "config": "config/controller/trajectory.json", "pdu_robot": "Nova5" },
+    { "id": "joint_states", "kind": "state_output", "type": "joint_state", "config": "config/sensors/joint_state/nova5-joint-states.json", "pdu_robot": "Nova5" }
+  ]
+}

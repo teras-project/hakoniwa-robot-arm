@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+.DS_Store
 
 # Compiled Object files
 *.slo
@@ -43,6 +44,8 @@
 build/
 Build/
 build-*/
+work/
+.hako/
 
 # CMake generated files
 CMakeFiles/
@@ -67,3 +70,11 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Guard against accidentally materializing Forge data in the source tree.
+sources/models/*/source/
+sources/models/*/build/
+sources/models/*/install/

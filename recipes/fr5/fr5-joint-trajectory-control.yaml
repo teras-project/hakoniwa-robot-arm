@@ -1,0 +1,296 @@
+id: fr5-joint-trajectory-control
+title: FAIRINO FR5 Foundation-managed JointTrajectory Runtime
+recipe_version: 1.0
+
+goal:
+  user_request: FR5をFoundationとLauncherで起動し、JointTrajectory指令とJointState取得を確認したい
+  description: >
+    Build the FR5 Robot Arm composition composition against the common
+    hakoniwa-robot-runtime and managed Foundation components, then run the FR5
+    plant plus trajectory sender under one persistent Launcher lifecycle, with
+    viewer and headless modes.
+
+feasibility:
+  status: feasible
+  confidence: high
+  rationale:
+    - The FR5 plant and PDU path were previously verified.
+    - Foundation receipts provide Core, Endpoint, Python, and Launcher capabilities.
+    - The common robot Runtime and reusable MuJoCo implementation are consumed from configurable sibling checkouts.
+
+validation:
+  status: partially_verified
+  verified_at: 2026-08-25
+  summary: Existing FR5 motion is verified; the Foundation and Launcher lifecycle requires final native-platform smoke validation after the common Runtime extraction.
+  steps:
+    - id: historical-fr5-motion
+      status: verified
+      evidence:
+        - repository: hakoniwa-robot-arm
+          path: apps/robot-arm/robot-arm-hakoniwa-asset.cpp
+          revision: main
+    - id: foundation-launcher-lifecycle
+      status: verified
+      evidence:
+        - platform: macOS arm64
+          date: 2026-08-25
+          result: Arm-local Foundation was SATISFIED; the headless composition built against sibling MuJoCo support; Launcher reached RUNNING, the plant accepted the nine-point JointTrajectory, and terminate reached TERMINATED.
+
+constraints:
+  - private-recipe-and-model
+  - single-host-shared-memory
+  - no-system-install-fallback
+  - ros2-bridge-is-a-separate-recipe
+
+target_environment:
+  required_for: executable-demo
+  status: specified
+  os: macOS | Linux | Windows
+  architecture: arm64 | x86_64
+  execution_mode: native
+  runtimes:
+    - name: Python
+      required: true
+      version: "3.12"
+      path: work/foundation/install/python
+    - name: Hakoniwa Robot Runtime
+      required: true
+      version: repository-defined
+      path: ../hakoniwa-robot-runtime
+    - name: MuJoCo
+      required: true
+      version: repository-defined
+      path: ../hakoniwa-mujoco-robots
+  hakoniwa:
+    install_prefix: work/foundation/install
+    components_built: [hakoniwa-core-pro, hakoniwa-pdu-endpoint, hakoniwa-pdu-bridge-core, hakoniwa-pdu-python]
+
+execution_environment:
+  required_for: executable-demo
+  status: specified
+  workspace:
+    mode: managed
+  os: macOS | Linux | Windows
+  architecture: arm64 | x86_64
+  execution_mode: native
+  gui:
+    required: conditional
+    status: viewer-or-headless
+  shared_memory:
+    required: true
+    access: local-host
+  python:
+    environment: foundation-venv
+    path: work/foundation/install/python
+    version: "3.12"
+    hakopy_available: required
+  hakoniwa:
+    install_prefix: work/foundation/install
+    hako_cmd_access: required
+
+foundation_contract:
+  mode: required
+  reason: Runtime execution requires Core SHM, hako-cmd, hakopy, Endpoint callback transport, and Launcher lifecycle management.
+
+foundation_requirements:
+  hakoniwa-core-pro:
+    capabilities:
+      shared_memory: true
+      hako_cmd: true
+      python_binding: true
+  hakoniwa-pdu-endpoint:
+    capabilities:
+      hakoniwa_core: true
+      core_callback: true
+      python_binding: true
+  hakoniwa-pdu-bridge-core:
+    capabilities:
+      hakoniwa_app: true
+      web_bridge: true
+  hakoniwa-pdu-python:
+    version:
+      min: 1.6.5
+    capabilities:
+      hako_launcher: true
+      launcher_background_lifecycle: true
+      shm_backend: true
+
+recipe_local_requirements_schema_version: 1
+recipe_local_requirements:
+  hakoniwa-business-pack:
+    root:
+      default_path: ../hakoniwa-business-pack
+      override_env: HAKONIWA_COMPOSER
+      relative_to: recipe_repository
+    source:
+      type: git
+      url: https://github.com/hakoniwalab/hakoniwa-business-pack.git
+      revision: main
+    required_artifacts:
+      - path: tools/foundation.py
+        kind: file
+      - path: catalog/foundation-components.json
+        kind: file
+  hakoniwa-mujoco-robots:
+    root:
+      default_path: ../hakoniwa-mujoco-robots
+      override_env: HAKONIWA_MUJOCO_ROBOTS_ROOT
+      relative_to: recipe_repository
+    source:
+      type: git
+      url: https://github.com/hakoniwalab/hakoniwa-mujoco-robots.git
+      revision: 326ff7c7ccfa79bf735671c4ba7009cb629a3271
+    required_artifacts:
+      - path: src/CMakeLists.txt
+        kind: file
+      - path: tools/hako.py
+        kind: file
+  hakoniwa-robot-runtime:
+    root:
+      default_path: ../hakoniwa-robot-runtime
+      override_env: HAKONIWA_ROBOT_RUNTIME_ROOT
+      relative_to: recipe_repository
+    source:
+      type: git
+      url: https://github.com/hakoniwalab/hakoniwa-robot-runtime.git
+      revision: main
+    required_artifacts:
+      - path: include/hakoniwa/robot_runtime/factory/manifest_factory.hpp
+        kind: file
+      - path: src/runtime/actuator_runtime.cpp
+        kind: file
+
+components:
+  - id: hakoniwa-robot-arm
+    roles: [private_recipe, robot_specific_integration, product_tuning]
+    purpose: Own the FR5 model, Manifest, settings, demos, and operator-facing Recipe.
+  - id: hakoniwa-robot-runtime
+    roles: [simulation_core, actuator_runtime, integration_boundary]
+    purpose: Provide the common Source-Controller-Arbiter-Plant-Publisher Runtime, adapters, ManifestFactory, and Hakoniwa Runner.
+  - id: hakoniwa-mujoco-robots
+    roles: [physics_runtime, reusable_robot_parts]
+    purpose: Provide reusable MuJoCo physics, sensors, actuators, and viewer support.
+  - id: hakoniwa-core-pro
+    roles: [simulation_core, time_sync, control_plane]
+    purpose: Provide lifecycle, shared memory, hako-cmd, and Python binding.
+  - id: hakoniwa-pdu-endpoint
+    roles: [communication_infrastructure]
+    purpose: Carry trajectory command and joint-state feedback through SHM.
+  - id: hakoniwa-pdu-python
+    roles: [language_binding, launcher]
+    purpose: Provide generated PDU types and the persistent Launcher lifecycle.
+
+connections:
+  - from: hakoniwa-pdu-python
+    to: hakoniwa-robot-runtime
+    interface: trajectory_msgs/JointTrajectory over SHM
+    data: [FR5/joint_trajectory]
+    contract:
+      status: verified
+      requires: [matching PDU definitions and Foundation Python]
+  - from: hakoniwa-robot-runtime
+    to: hakoniwa-pdu-endpoint
+    interface: sensor_msgs/JointState over SHM
+    data: [FR5/joint_states]
+    contract:
+      status: verified
+      requires: [Endpoint core callback capability]
+
+data_flow:
+  summary: Launcher starts the FR5 plant, starts Core time, then sends a bounded trajectory while the common Runtime executes control and state publication under one lifecycle.
+  steps:
+    - from: fr5-trajectory-sender
+      to: fr5-plant
+      data: [JointTrajectory]
+      description: Send one multi-point command after hako-cmd start.
+    - from: fr5-plant
+      to: external-consumers
+      data: [JointState]
+      description: Publish periodic simulated joint feedback.
+
+time_model:
+  owner: hakoniwa-robot-runtime
+  source: physical Plant synchronized by hakoniwa-core-pro
+  delta_usec: model-defined
+  notes:
+    - The Runtime uses Plant time and timestep as its Asset-local source of truth.
+    - The Hakoniwa Runner owns conductor startup.
+    - Launcher issues hako-cmd start after the plant registers.
+
+artifact_sets:
+  physics_artifacts:
+    status: verified
+    artifacts: [$HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.contact.xml]
+  visualization_artifacts:
+    status: verified
+    artifacts: [MuJoCo viewer, headless mode]
+  pdu_artifacts:
+    status: verified
+    artifacts: [JointTrajectory input, JointState output]
+  runtime_artifacts:
+    status: verified
+    artifacts: [hakoniwa-robot-runtime, robot-arm-hakoniwa-asset, generated Launcher configuration]
+
+artifacts:
+  - name: FR5 Asset Manifest
+    owner: hakoniwa-robot-arm
+    path: recipes/fr5/asset-manifest.json
+    purpose: Select model, PDU, Endpoint, actuator, and sensor configuration.
+  - name: Common Robot Runtime
+    owner: hakoniwa-robot-runtime
+    path: src/runtime/actuator_runtime.cpp
+    purpose: Provide reusable actuator-oriented execution semantics independent of the FR5 model.
+
+missing_pieces:
+  - Complete native Linux and Windows validation for the extracted Runtime composition.
+  - Build and run the common Humble and Jazzy images on a host with Docker Engine available.
+
+demo:
+  objective: Run the FR5 viewer or headless plant and verify a Launcher-managed trajectory.
+  steps:
+    - order: 1
+      component: hakoniwa-robot-arm
+      action: Build the arm-local Foundation.
+      command: python3.12 "${HAKONIWA_COMPOSER:-${HAKONIWA_BUSINESS_PACK_ROOT:-../hakoniwa-business-pack}}/tools/foundation.py" build --recipe recipes/fr5/fr5-joint-trajectory-control.yaml
+    - order: 2
+      component: hakoniwa-robot-arm
+      action: Generate the Launcher configuration.
+      command: python3.12 tools/recipe/fr5.py configure
+    - order: 3
+      component: hakoniwa-robot-arm
+      action: Build against Foundation, sibling hakoniwa-robot-runtime, and sibling MuJoCo support.
+      command: python3.12 tools/recipe/fr5.py build
+    - order: 4
+      component: hakoniwa-robot-arm
+      action: Start the persistent background demo.
+      command: python3.12 tools/recipe/fr5.py start
+  readiness:
+    lifecycle_state:
+      source: Launcher session and per-asset logs
+      required: RUNNING
+      sufficient: false
+    checks:
+      - id: trajectory-accepted
+        kind: log
+        target: fr5-plant.out
+        expected: Accepted JointTrajectory
+  success_signals:
+    - Launcher remains RUNNING with plant and sender managed.
+    - The plant accepts the multi-point trajectory and publishes JointState.
+  failure_signals:
+    - Unsatisfied Foundation, missing sibling checkout, registration failure, or rejected trajectory.
+  cleanup:
+    owner: Recipe Launcher session
+    provider: hakoniwa-pdu-python
+    mode: session-file
+    target: work/recipes/fr5-joint-trajectory-control/runtime/launcher-session.json
+
+expected_result:
+  summary: FR5 runs from a robot-specific Recipe while the common hakoniwa-robot-runtime and Foundation components remain independently reusable.
+
+source_catalogs:
+  - ../hakoniwa-business-pack/catalog/components/hakoniwa-robot-runtime.yaml
+source_artifacts:
+  - recipes/fr5/asset-manifest.json
+  - tools/control/send_joint_trajectory.py
+  - recipes/fr5/demo-trajectory.json

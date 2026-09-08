@@ -1,0 +1,51 @@
+schema_version: 1
+robot:
+  id: fr5
+  name: FAIRINO FR5
+reviewed_at: 2026-08-25
+
+source:
+  repository: https://github.com/FAIR-INNOVATION/frcobot_ros2
+  revision: 60755d44d521a5ad6bee8494cc19522f8801aa20
+  manifest: sources/models/fr5/source.yaml
+  upstream_paths:
+    - fairino_description/
+
+observed_license_declarations:
+  - scope: pinned upstream repository
+    declared: none found
+    spdx_expression: NOASSERTION
+    evidence: No LICENSE, COPYING, or NOTICE file exists in the pinned repository tree.
+  - scope: fairino_description ROS 2 package
+    declared: "TODO: License declaration"
+    spdx_expression: NOASSERTION
+    evidence: fairino_description/package.xml
+
+covered_local_artifacts:
+  upstream_material:
+    - $HAKONIWA_WORK_DIR/model-forge/fr5/install/fairino_description/
+  derived_material:
+    - $HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.xml
+    - $HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.actuated.xml
+    - $HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.contact.xml
+
+local_changes:
+  - Patched the upstream FR5WM URDF for conversion.
+  - Converted DAE meshes to OBJ and URDF to MJCF.
+  - Added MuJoCo position actuators and contact exclusions.
+  - Added Hakoniwa runtime manifests, PDU bindings, and demo configuration outside this directory.
+
+redistribution:
+  status: not_approved
+  rationale: >-
+    The pinned upstream source does not provide a usable license declaration.
+    Copyright permission for the description and mesh assets therefore has not
+    been established.
+  permitted_use_in_this_repository: private_evaluation_only
+  required_actions:
+    - Obtain an explicit license or redistribution permission from the rights holder.
+    - Alternatively replace the model and meshes with assets having documented redistribution terms.
+    - Do not include these upstream-derived artifacts in a public or customer delivery until resolved.
+
+notes:
+  - This inventory records repository evidence and is not legal advice.

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-state-output.schema.json",
+  "spec": {
+    "type": "joint_state",
+    "name": "joint_states",
+    "joints": [
+      {"name": "shoulder_pan"},
+      {"name": "shoulder_lift"},
+      {"name": "elbow_flex"},
+      {"name": "wrist_flex"},
+      {"name": "wrist_roll"},
+      {"name": "gripper"}
+    ]
+  },
+  "mjcf_binding": {
+    "joints": [
+      {"name": "shoulder_pan", "mjcf_joint": "shoulder_pan"},
+      {"name": "shoulder_lift", "mjcf_joint": "shoulder_lift"},
+      {"name": "elbow_flex", "mjcf_joint": "elbow_flex"},
+      {"name": "wrist_flex", "mjcf_joint": "wrist_flex"},
+      {"name": "wrist_roll", "mjcf_joint": "wrist_roll"},
+      {"name": "gripper", "mjcf_joint": "gripper"}
+    ]
+  },
+  "pdu_config": {
+    "pdu_name": "joint_states",
+    "update_rate_hz": 50.0,
+    "message_type": "sensor_msgs/JointState"
+  }
+}

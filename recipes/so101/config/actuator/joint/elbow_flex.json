@@ -1,0 +1,6 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": { "joint_name": "elbow_flex", "type": "position", "limit": { "lower": -1.69, "upper": 1.69 } },
+  "mjcf_binding": { "actuator_name": "elbow_flex" },
+  "pdu_config": { "pdu_name": "actuator/elbow_flex/command", "update_rate_hz": 50, "message_type": "std_msgs/Float64" }
+}

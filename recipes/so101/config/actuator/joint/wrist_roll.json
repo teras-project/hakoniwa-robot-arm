@@ -1,0 +1,19 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": {
+    "joint_name": "wrist_roll",
+    "type": "position",
+    "limit": {
+      "lower": -2.74385,
+      "upper": 2.84121
+    }
+  },
+  "mjcf_binding": {
+    "actuator_name": "wrist_roll"
+  },
+  "pdu_config": {
+    "pdu_name": "actuator/wrist_roll/command",
+    "update_rate_hz": 50,
+    "message_type": "std_msgs/Float64"
+  }
+}

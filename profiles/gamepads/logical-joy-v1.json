@@ -1,0 +1,7 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/logical-joy-layout.schema.json",
+  "schema_version": 1,
+  "id": "hakoniwa-arm-logical-joy-v1",
+  "axes": ["left_x", "left_y", "right_x", "right_y"],
+  "buttons": ["cross", "circle", "triangle", "options", "l1", "r1"]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": {
+    "joint_name": "shoulder_pan",
+    "type": "position",
+    "limit": {
+      "lower": -1.91986,
+      "upper": 1.91986
+    }
+  },
+  "mjcf_binding": {
+    "actuator_name": "shoulder_pan"
+  },
+  "pdu_config": {
+    "pdu_name": "actuator/shoulder_pan/command",
+    "update_rate_hz": 50,
+    "message_type": "std_msgs/Float64"
+  }
+}

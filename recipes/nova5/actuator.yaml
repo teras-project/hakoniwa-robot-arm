@@ -1,0 +1,55 @@
+actuators:
+- type: position
+  name: joint1_motor
+  joint: joint1
+  ctrllimited: true
+  ctrlrange:
+  - -6.28
+  - 6.28
+  kp: 100.0
+  dampratio: 1.0
+- type: position
+  name: joint2_motor
+  joint: joint2
+  ctrllimited: true
+  ctrlrange:
+  - -3.14
+  - 3.14
+  kp: 100.0
+  dampratio: 1.0
+- type: position
+  name: joint3_motor
+  joint: joint3
+  ctrllimited: true
+  ctrlrange:
+  - -2.79
+  - 2.79
+  kp: 100.0
+  dampratio: 1.0
+- type: position
+  name: joint4_motor
+  joint: joint4
+  ctrllimited: true
+  ctrlrange:
+  - -6.28
+  - 6.28
+  kp: 20.0
+  dampratio: 1.0
+- type: position
+  name: joint5_motor
+  joint: joint5
+  ctrllimited: true
+  ctrlrange:
+  - -6.28
+  - 6.28
+  kp: 20.0
+  dampratio: 1.0
+- type: position
+  name: joint6_motor
+  joint: joint6
+  ctrllimited: true
+  ctrlrange:
+  - -6.28
+  - 6.28
+  kp: 20.0
+  dampratio: 1.0

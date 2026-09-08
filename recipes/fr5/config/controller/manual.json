@@ -1,0 +1,44 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/robot-arm-joy-manual-controller.schema.json",
+  "schema_version": 1,
+  "id": "fr5-manual-jog-v1",
+  "joy_layout": "../../../../profiles/gamepads/logical-joy-v1.json",
+  "input": {
+    "pdu_name": "joy",
+    "message_type": "sensor_msgs/Joy",
+    "update_rate_hz": 20.0,
+    "timeout_sec": 0.25
+  },
+  "spec": {
+    "manual_enable_button": "l1",
+    "quit_button": "options",
+    "deadzone": 0.10,
+    "expo": 0.35,
+    "banks": [
+      {
+        "id": "base-shoulder",
+        "select_button": null,
+        "bindings": [
+          { "axis": "right_x", "joint": "j1_joint", "velocity_rad_s": 0.50 },
+          { "axis": "right_y", "joint": "j2_joint", "velocity_rad_s": 0.35 }
+        ]
+      },
+      {
+        "id": "elbow-wrist1",
+        "select_button": "r1",
+        "bindings": [
+          { "axis": "right_y", "joint": "j3_joint", "velocity_rad_s": 0.35 },
+          { "axis": "right_x", "joint": "j4_joint", "velocity_rad_s": 0.60 }
+        ]
+      },
+      {
+        "id": "wrist2-wrist3",
+        "select_button": "triangle",
+        "bindings": [
+          { "axis": "left_y", "joint": "j5_joint", "velocity_rad_s": 0.50 },
+          { "axis": "left_x", "joint": "j6_joint", "velocity_rad_s": 0.60 }
+        ]
+      }
+    ]
+  }
+}

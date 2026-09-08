@@ -1,0 +1,12 @@
+name: fr5
+
+repo: https://github.com/FAIR-INNOVATION/frcobot_ros2
+branch: main
+revision: 60755d44d521a5ad6bee8494cc19522f8801aa20
+
+files:
+  - fairino_description/
+
+forge:
+  entry_urdf: fairino_description/urdf/FR5WM.urdf
+    

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": { "joint_name": "joint2", "type": "position", "limit": { "lower": -3.14, "upper": 3.14 } },
+  "mjcf_binding": { "actuator_name": "joint2_motor" },
+  "pdu_config": { "pdu_name": "actuator/joint2/command", "update_rate_hz": 50, "message_type": "std_msgs/Float64" }
+}

@@ -1,0 +1,61 @@
+schema_version: 1
+robot:
+  id: nova5
+  name: DOBOT Nova5
+reviewed_at: 2026-08-25
+
+source:
+  repository: https://github.com/Dobot-Arm/DOBOT_6Axis_ROS2_V4
+  revision: 0f21e9839888f188ac06b0a9fea622d13a29a74f
+  manifest: sources/models/nova5/source.yaml
+  upstream_paths:
+    - LICENSE
+    - cra_description/package.xml
+    - cra_description/urdf/nova5_robot.xacro
+    - cra_description/meshes/nova5/
+    - nova5_moveit/config/joint_limits.yaml
+
+observed_license_declarations:
+  - scope: pinned upstream repository
+    declared: MIT License
+    spdx_expression: MIT
+    copyright: Copyright (c) 2026 Dobot
+    evidence: $HAKONIWA_WORK_DIR/model-forge/nova5/install/LICENSE
+  - scope: cra_description ROS 2 package
+    declared: BSD
+    spdx_expression: NOASSERTION
+    evidence: $HAKONIWA_WORK_DIR/model-forge/nova5/install/cra_description/package.xml
+    note: The package metadata does not identify a BSD variant or provide matching BSD license text.
+
+covered_local_artifacts:
+  upstream_material:
+    - $HAKONIWA_WORK_DIR/model-forge/nova5/install/LICENSE
+    - $HAKONIWA_WORK_DIR/model-forge/nova5/install/cra_description/
+    - $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5_moveit/config/joint_limits.yaml
+  derived_material:
+    - $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.xml
+    - $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.actuated.xml
+    - $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.stabilized.xml
+    - $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml
+
+local_changes:
+  - Normalized the Nova5 Xacro into standalone URDF.
+  - Converted the URDF and STL references into MJCF.
+  - Added MuJoCo position actuators, simulation options, and contact exclusions.
+  - Added Hakoniwa runtime manifests, PDU bindings, and demo configuration outside this directory.
+
+redistribution:
+  status: review_required
+  rationale: >-
+    The repository-level MIT license and the cra_description package's generic
+    BSD declaration are inconsistent. The intended terms for the Nova5 URDF and
+    mesh assets must be confirmed before external redistribution.
+  permitted_use_in_this_repository: private_evaluation_only
+  required_actions:
+    - Ask DOBOT to confirm which license applies to cra_description and its Nova5 meshes.
+    - If MIT applies, retain the Forge install LICENSE and its copyright notice with redistributed copies.
+    - If BSD applies, obtain the exact BSD license text and required copyright notice.
+    - Do not include these upstream-derived artifacts in a public or customer delivery until resolved.
+
+notes:
+  - This inventory records repository evidence and is not legal advice.

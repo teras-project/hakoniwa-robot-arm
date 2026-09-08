@@ -1,0 +1,40 @@
+id: so101-model-forge
+title: SO-101 Pinned MuJoCo Model Forge
+recipe_version: 1.0
+
+goal:
+  user_request: SO-101の公式モデルを固定し、共通ランタイムで再現可能に使いたい
+  description: Fetch the pinned SO-101 follower model and materialize its new-calibration MJCF and STL assets.
+
+feasibility: {status: feasible, confidence: high}
+validation:
+  status: verified
+  verified_at: 2026-08-25
+  summary: The pinned upstream MJCF, license, and thirteen STL meshes were fetched twice with identical materialized outputs and a generated SHA-256 checksum manifest.
+
+foundation_contract:
+  mode: not_required
+  reason: Model materialization is an offline operation and does not execute Hakoniwa Core.
+
+recipe_local_requirements_schema_version: 1
+recipe_local_requirements:
+  hakoniwa-mbody-registry:
+    root: {default_path: ../hakoniwa-mbody-registry, override_env: HAKONIWA_MBODY_REGISTRY_ROOT, relative_to: recipe_repository}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-mbody-registry.git", revision: 93a053913445d2f97a6dddc1ccb959c985a3db44}
+    required_artifacts:
+      - {path: tools/fetch.py, kind: file}
+
+source_catalogs: [sources/models/so101/source.yaml]
+source_artifacts: [sources/models/so101/provenance.yaml]
+artifacts:
+  - {name: SO-101 MJCF, owner: hakoniwa-robot-arm, path: $HAKONIWA_WORK_DIR/model-forge/so101/install/so101.xml, purpose: Physics and visualization input for the common arm runtime.}
+  - {name: SO-101 Checksums, owner: hakoniwa-robot-arm, path: $HAKONIWA_WORK_DIR/model-forge/so101/install/SHA256SUMS, purpose: Verify the materialized model and upstream assets.}
+
+missing_pieces:
+  - Complete final license and redistribution review.
+
+demo:
+  objective: Regenerate the SO-101 model from the pinned source.
+  steps:
+    - {order: 1, component: hakoniwa-robot-arm, action: Run the work-owned SO-101 forge., command: "PYTHON_CMD=../hakoniwa-mbody-registry/.venv/bin/python3 recipes/so101/forge-so101.sh"}
+  success_signals: [so101.xml and all referenced STL meshes are materialized]

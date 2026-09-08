@@ -1,0 +1,14 @@
+{
+  "paths": [
+    {
+      "id": "fr5-pdutypes",
+      "path": "fr5-pdutypes.json"
+    }
+  ],
+  "robots": [
+    {
+      "name": "FR5",
+      "pdutypes_id": "fr5-pdutypes"
+    }
+  ]
+}

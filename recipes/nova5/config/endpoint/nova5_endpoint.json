@@ -1,0 +1,6 @@
+{
+  "name": "nova5_endpoint",
+  "pdu_def_path": "../pdu/nova5-pdudef.json",
+  "cache": "cache_buffer.json",
+  "comm": "comm_shm.json"
+}

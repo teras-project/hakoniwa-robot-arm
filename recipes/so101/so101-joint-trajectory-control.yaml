@@ -1,0 +1,60 @@
+id: so101-joint-trajectory-control
+title: SO-101 Foundation-managed JointTrajectory Runtime
+recipe_version: 1.0
+
+goal:
+  user_request: SO-101をFoundationとLauncherで起動し、JointTrajectory指令とJointState取得を確認したい
+  description: Run the SO-101 model with the common Manifest-driven robot runtime and Launcher lifecycle.
+
+feasibility: {status: feasible, confidence: high}
+validation:
+  status: verified
+  verified_at: 2026-08-25
+  summary: Launcher reached RUNNING, accepted six-joint trajectories through SHM and TCP, published JointState through TCP, remained numerically stable, and completed bidirectional ROS 2 E2E tests with Humble and Jazzy on macOS arm64.
+
+foundation_contract:
+  mode: required
+  reason: Runtime execution requires Core SHM, hako-cmd, hakopy, Endpoint callback transport, and Launcher.
+
+foundation_requirements:
+  hakoniwa-core-pro:
+    capabilities: {shared_memory: true, hako_cmd: true, python_binding: true}
+  hakoniwa-pdu-endpoint:
+    capabilities: {hakoniwa_core: true, core_callback: true, python_binding: true}
+  hakoniwa-pdu-bridge-core:
+    capabilities: {hakoniwa_app: true, web_bridge: true}
+  hakoniwa-pdu-python:
+    version: {min: 1.6.5}
+    capabilities: {hako_launcher: true, launcher_background_lifecycle: true, shm_backend: true}
+
+recipe_local_requirements_schema_version: 1
+recipe_local_requirements:
+  hakoniwa-business-pack:
+    root: {default_path: ../hakoniwa-business-pack, override_env: HAKONIWA_COMPOSER, relative_to: recipe_repository}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-business-pack.git", revision: main}
+    required_artifacts:
+      - {path: tools/foundation.py, kind: file}
+  hakoniwa-mujoco-robots:
+    root: {default_path: ../hakoniwa-mujoco-robots, override_env: HAKONIWA_MUJOCO_ROBOTS_ROOT, relative_to: recipe_repository}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-mujoco-robots.git", revision: 326ff7c7ccfa79bf735671c4ba7009cb629a3271}
+    required_artifacts:
+      - {path: src/CMakeLists.txt, kind: file}
+  hakoniwa-robot-runtime:
+    root: {default_path: ../hakoniwa-robot-runtime, override_env: HAKONIWA_ROBOT_RUNTIME_ROOT, relative_to: recipe_repository}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-robot-runtime.git", revision: main}
+    required_artifacts:
+      - {path: include/hakoniwa/robot_runtime/factory/manifest_factory.hpp, kind: file}
+      - {path: src/runtime/actuator_runtime.cpp, kind: file}
+
+artifact_sets:
+  physics_artifacts: {status: verified, artifacts: [$HAKONIWA_WORK_DIR/model-forge/so101/install/so101.xml]}
+  visualization_artifacts: {status: partially_verified, artifacts: [headless mode]}
+  pdu_artifacts: {status: verified, artifacts: [JointTrajectory input, JointState output, Humble TCP E2E, Jazzy TCP E2E]}
+  runtime_artifacts: {status: verified, artifacts: [hakoniwa-robot-runtime, robot-arm-hakoniwa-asset, generated Launcher configuration]}
+
+artifacts:
+  - {name: SO-101 Asset Manifest, owner: hakoniwa-robot-arm, path: recipes/so101/asset-manifest.json, purpose: Select the SO-101 model and runtime bindings.}
+
+missing_pieces:
+  - Complete MuJoCo viewer and native Linux validation.
+  - Complete final license and redistribution review.

@@ -1,0 +1,5 @@
+{
+  "type": "buffer",
+  "name": "default_latest_buffer",
+  "store": {"mode": "latest"}
+}

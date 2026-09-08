@@ -1,0 +1,22 @@
+robot: SO-101
+variant: follower-new-calibration
+source:
+  repository: https://github.com/TheRobotStudio/SO-ARM100.git
+  revision: 7629d2ad9853d10fb903093a33ef6114099d97e5
+  paths:
+    - Simulation/SO101/so101_new_calib.urdf
+    - Simulation/SO101/so101_new_calib.xml
+    - Simulation/SO101/assets
+upstream_model_notes:
+  generated_with: onshape-to-robot
+  cad_url: https://cad.onshape.com/documents/7715cc284bb430fe6dab4ffd/w/4fd0791b683777b02f8d975a/e/826c553ede3b7592eb9ca800
+local_changes:
+  - Renamed the runtime MJCF to the Forge install artifact so101.xml.
+  - Added a 0.002 second timestep and implicitfast integrator.
+  - Added Hakoniwa manifest, PDU, actuator, state-output, Launcher, and ROS 2 bindings.
+integrity:
+  algorithm: sha256
+  manifest: $HAKONIWA_WORK_DIR/model-forge/so101/install/SHA256SUMS
+license_review:
+  status: deferred
+  note: The upstream repository LICENSE was copied beside the model, but final redistribution review is intentionally deferred.

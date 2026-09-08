@@ -1,0 +1,169 @@
+id: fr5-model-forge
+title: FAIRINO FR5 Source to MuJoCo Model Forge
+recipe_version: 1.0
+
+goal:
+  user_request: FAIRINO FR5の取得元を固定し、調整可能なMuJoCoモデルを再現可能に生成したい
+  description: >
+    Materialize the pinned FR5 description, apply the delivery-specific normalization
+    patch, convert meshes and URDF to MJCF, then layer delivery-specific actuator and
+    contact tuning onto the generated model.
+
+feasibility:
+  status: feasible
+  confidence: high
+  rationale:
+    - The existing arm-local forge has generated the checked-in FR5 model.
+    - hakoniwa-mbody-registry provides each conversion and preparation tool.
+
+validation:
+  status: verified
+  verified_at: 2026-08-25
+  summary: The existing FR5 generated model and tuning are retained; sibling dependency resolution is newly automated.
+  steps:
+    - id: existing-fr5-forge
+      status: verified
+      evidence:
+        - repository: hakoniwa-robot-arm
+          path: $HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.contact.xml
+          revision: main
+
+constraints:
+  - private-recipe-and-tuning
+  - offline-artifact-generation
+  - pinned-upstream-source
+
+target_environment:
+  required_for: artifact-generation
+  status: specified
+  os: macOS | Linux
+  architecture: arm64 | x86_64
+  execution_mode: native
+  runtimes:
+    - name: Python
+      required: true
+      version: "3"
+      path: PYTHON_CMD
+  hakoniwa:
+    install_prefix: not-applicable
+    components_built: []
+
+execution_environment:
+  required_for: artifact-generation
+  status: specified
+  workspace:
+    mode: unmanaged
+  os: macOS | Linux
+  architecture: arm64 | x86_64
+  execution_mode: native
+  gui:
+    required: false
+    status: not_required
+  shared_memory:
+    required: false
+    access: not_required
+  python:
+    environment: system | venv
+    hakopy_available: not_required
+  hakoniwa:
+    install_prefix: not-applicable
+    hako_cmd_access: not_required
+
+foundation_contract:
+  mode: not_required
+  reason: Model forging does not execute Core, shared memory, hako-cmd, or hakopy.
+
+recipe_local_requirements_schema_version: 1
+recipe_local_requirements:
+  hakoniwa-mbody-registry:
+    root:
+      default_path: ../hakoniwa-mbody-registry
+      override_env: HAKONIWA_MBODY_REGISTRY_ROOT
+      relative_to: recipe_repository
+    source:
+      type: git
+      url: https://github.com/hakoniwalab/hakoniwa-mbody-registry.git
+      revision: 93a053913445d2f97a6dddc1ccb959c985a3db44
+    required_artifacts:
+      - path: tools/fetch.py
+        kind: file
+      - path: tools/urdf2mjcf.py
+        kind: file
+
+components:
+  - id: hakoniwa-mbody-registry
+    roles: [asset_generator, data_model]
+    purpose: Fetch and convert the FR5 robot description.
+  - id: hakoniwa-robot-arm
+    roles: [private_recipe, product_tuning]
+    purpose: Own FR5 source selection, patches, actuator tuning, and contact exclusions.
+
+connections:
+  - from: hakoniwa-robot-arm
+    to: hakoniwa-mbody-registry
+    interface: command-line forge tools
+    data: [source manifest, patch, actuator configuration, contact exclusions]
+    contract:
+      status: verified
+      requires: [sibling checkout at the declared revision]
+
+data_flow:
+  summary: Pinned FR5 source becomes a delivery-specific tuned MuJoCo model.
+  steps:
+    - from: upstream-fr5-source
+      to: hakoniwa-mbody-registry
+      data: [URDF, DAE meshes]
+      description: Materialize and convert the selected source closure.
+    - from: hakoniwa-mbody-registry
+      to: hakoniwa-robot-arm
+      data: [FR5WM.contact.xml, converted meshes]
+      description: Apply delivery-specific actuator and contact preparation.
+
+time_model:
+  uses_simulation_time: false
+  notes: This is an offline forge Recipe.
+
+artifact_sets:
+  physics_artifacts:
+    status: verified
+    artifacts: [$HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.contact.xml]
+  visualization_artifacts:
+    status: verified
+    artifacts: [converted FR5 OBJ meshes]
+  pdu_artifacts:
+    status: not_applicable
+    artifacts: []
+  runtime_artifacts:
+    status: not_applicable
+    artifacts: []
+
+artifacts:
+  - name: Tuned FR5 MJCF
+    owner: hakoniwa-robot-arm
+    path: $HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.contact.xml
+    purpose: Physics and visualization input for the runtime Recipe.
+
+missing_pieces:
+  - Add a fully automated structural and numerical regression report for regenerated models.
+
+demo:
+  objective: Regenerate the FR5 model into an explicit output directory.
+  steps:
+    - order: 1
+      component: hakoniwa-robot-arm
+      action: Run the FR5 forge against the sibling MBody checkout.
+      command: recipes/fr5/forge-fr5.sh
+  success_signals:
+    - FR5WM.contact.xml is generated without missing meshes.
+  failure_signals:
+    - Missing sibling checkout, upstream artifact, patch target, or conversion dependency.
+
+expected_result:
+  summary: A reproducible, delivery-specific tuned FR5 MuJoCo model is ready for runtime validation.
+
+source_catalogs:
+  - sources/models/fr5/source.yaml
+source_artifacts:
+  - sources/models/fr5/patches/FR5WM.patch
+  - recipes/fr5/actuator.yaml
+  - recipes/fr5/contact-excludes.yaml

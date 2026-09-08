@@ -1,0 +1,11 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/robot-arm-actuator-runtime.schema.json",
+  "actuators": {
+    "shoulder_pan": { "command_timeout_sec": 0.1 },
+    "shoulder_lift": { "command_timeout_sec": 0.1 },
+    "elbow_flex": { "command_timeout_sec": 0.1 },
+    "wrist_flex": { "command_timeout_sec": 0.1 },
+    "wrist_roll": { "command_timeout_sec": 0.1 },
+    "gripper": { "command_timeout_sec": 0.1 }
+  }
+}
