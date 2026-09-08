@@ -39,18 +39,19 @@ flowchart LR
   subgraph ROS["ROS 2側(Humble / Jazzy)<br/>Ubuntu / Docker"]
     RosBridge["箱庭ROS<br/>Bridge"]
     RosNode["ROSノード<br/>サンプル制御<br/>プログラム"]
-    Ros2["ROS 2<br/>Humble / Jazzy"]
 
     RosBridge <--> RosNode
   end
 
   PduBridge <-->|"TCP : 54001"| RosBridge
 
-  RobotRuntime -->|"JointState<br/>/pdu/joint_states"| PduBridge
+  RobotRuntime -->|"JointState<br/>/pdu/joint_states"| Core
+  Core -->|"JointState"| PduBridge
   RosBridge -->|"JointState"| RosNode
 
   RosNode -->|"JointTrajectory<br/>/joint_trajectory"| RosBridge
-  PduBridge -->|"JointTrajectory"| RobotRuntime
+  PduBridge -->|"JointTrajectory"| Core
+  Core -->|"JointTrajectory"| RobotRuntime
 ````
 
 ## 動作確認環境
