@@ -23,17 +23,16 @@
 シミュレータ側とROS 2側をTCPで分離し、ROS 2標準メッセージを用いてロボットアームを制御・観測します。
 
 ```mermaid
-flowchart LR
+flowchart TB
 
-  subgraph SIM["シミュレータ側<br/>Host / Docker"]
+  subgraph SIM["シミュレータ側<br/>macOS / Ubuntu / Docker"]
+    direction TB
+
     Launcher["箱庭 Launcher"]
-
-    subgraph HAKO["箱庭"]
-      Sim["アームロボット<br/>シミュレータ<br/>(DOBOT Nova5)"]
-      Mujoco["箱庭MuJoCo<br/>共通基盤"]
-      Core["箱庭コア機能<br/>(SHM)"]
-      PduBridge["箱庭PDU<br/>Bridge"]
-    end
+    Sim["アームロボット<br/>シミュレータ<br/>(DOBOT Nova5)"]
+    Mujoco["箱庭MuJoCo<br/>共通基盤"]
+    Core["箱庭コア機能<br/>(SHM)"]
+    PduBridge["箱庭PDU Bridge<br/>SHM ⇄ TCP"]
 
     Launcher --> Sim
     Sim --> Mujoco
@@ -41,24 +40,20 @@ flowchart LR
     Core <--> PduBridge
   end
 
+  PduBridge <-->|"TCP : 54001<br/>JointState ↓<br/>JointTrajectory ↑"| RosBridge
+
   subgraph ROS["ROS 2側<br/>Ubuntu / Docker"]
-    RosBridge["箱庭ROS<br/>Bridge"]
-    RosNode["ROSノード<br/>サンプル制御<br/>プログラム"]
+    direction TB
+
+    RosBridge["箱庭ROS Bridge<br/>TCP ⇄ ROS 2"]
+    RosNode["ROSノード<br/>サンプル制御プログラム"]
     Ros2["ROS 2<br/>Humble / Jazzy"]
 
     RosBridge <--> RosNode
     RosBridge --- Ros2
     RosNode --- Ros2
   end
-
-  PduBridge <-->|"TCP : 54001"| RosBridge
-
-  Sim -->|"JointState<br/>/pdu/joint_states"| PduBridge
-  RosBridge -->|"JointState"| RosNode
-
-  RosNode -->|"JointTrajectory<br/>/joint_trajectory"| RosBridge
-  PduBridge -->|"JointTrajectory"| Sim
-````
+```
 
 ## 動作確認環境
 
