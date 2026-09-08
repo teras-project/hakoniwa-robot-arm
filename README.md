@@ -30,7 +30,7 @@ flowchart TB
 
     Launcher["箱庭 Launcher"]
     Sim["アームロボット<br/>シミュレータ<br/>(DOBOT Nova5)"]
-    Mujoco["箱庭MuJoCo<br/>共通基盤"]
+    Mujoco["箱庭ロボットランタイム<br/>共通基盤"]
     Core["箱庭コア機能<br/>(SHM)"]
     PduBridge["箱庭PDU Bridge<br/>SHM ⇄ TCP"]
 
