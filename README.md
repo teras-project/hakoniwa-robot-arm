@@ -8,6 +8,15 @@
 
 - DOBOT Nova5
 
+## ドキュメント
+
+初めて利用する場合は、このREADMEで全体像を確認した後、[利用ガイド](docs/README.md)から実行環境を選んでください。
+
+- [セットアップ手順](docs/setup.md)
+- [ビルド手順](docs/build.md)
+- [起動・動作確認手順](docs/operation.md)
+- [Nova5 Model Forge](docs/model-forge.md)
+
 ## できること
 
 - URDF / Xacroで記述されたロボットモデルをMuJoCo形式へ変換
@@ -106,23 +115,33 @@ HostがmacOSの場合、ROS 2環境をDocker Container上で実行し、Host上�
 
 ## 前提ソフトウェア
 
-最初に、Hostへ以下をインストールしてください。
+選択する利用構成に応じて、Hostへ以下をインストールしてください。
 
 | ソフトウェア | 用途 |
 | --- | --- |
-| Git | 本リポジトリと依存リポジトリの取得 |
-| CPython 3.12 | Business Pack、Foundation、Recipeツールの実行。`python3.12`コマンドで起動できること |
-| CMakeとC/C++ビルド環境 | FoundationとNova5シミュレータのビルド |
+| Git | すべての構成で、本リポジトリとBusiness Packを取得するために使用 |
+| CPython 3.12 | host-only／host+dockerで、Business Pack、Foundation、Recipeツールを実行。`python3.12`コマンドで起動できること |
+| CMakeとC/C++ビルド環境 | host-only／host+dockerで、FoundationとNova5シミュレータをビルド |
 | Docker | host+dockerまたはdocker-only構成でのROS 2実行 |
 
 macOSではXcode Command Line Tools、UbuntuではC/C++コンパイラを含む標準的なビルド環境も必要です。
 
-作業を始める前に、少なくとも以下のコマンドが実行できることを確認してください。
+すべての構成でGitを確認します。
 
 ```bash
 git --version
+```
+
+host-onlyまたはhost+dockerを選ぶ場合は、Host側のPythonとビルド環境も確認します。
+
+```bash
 python3.12 --version
 cmake --version
+```
+
+host+dockerまたはdocker-onlyを選ぶ場合は、追加でDockerを確認します。
+
+```bash
 docker --version
 ```
 
@@ -138,39 +157,13 @@ Host上でシミュレータ、Docker Container上でROS 2 BridgeとROSノード
 
 ### docker-only
 
-シミュレータとROS 2を同一のLinux Container内で実行します。ネイティブUbuntuでも同じツールと手順を利用できます。macOS上のDockerではheadless実行を使用します。
+シミュレータとROS 2を同一のLinux Container内で実行します。HostへPython、CMake、ROS 2などの開発環境を導入せずに動作確認したい場合に適しています。ネイティブUbuntuでも同じContainer内手順を利用でき、macOS上のDockerではheadless実行を使用します。
 
-## クイックスタート
-
-以下は、macOS HostでNova5シミュレータをheadless実行し、Docker上のROS 2 Jazzyから軌道指令を送る最小構成です。
-
-### 1. checkout用workspaceの作成
-
-最初に空のディレクトリを作り、その直下へBusiness Packと本リポジトリをcloneします。本リポジトリはprivate repositoryであるため、アクセス権を持つGitHubアカウントまたは認証情報が必要です。
-
-```bash
-mkdir -p ~/hakoniwa-robot-arm-workspace
-cd ~/hakoniwa-robot-arm-workspace
-
-git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
-git clone https://github.com/teras-project/hakoniwa-robot-arm.git
-```
-
-この時点では次の2リポジトリだけで構いません。
-
-```text
-hakoniwa-robot-arm-workspace/
-├── hakoniwa-business-pack/
-└── hakoniwa-robot-arm/
-```
-
-Nova5が必要とする他のリポジトリは、後続の`configure`またはROS 2 workspaceの`build`が同じ親ディレクトリへ自動取得します。自動取得の対象は「必要なリポジトリ」を参照してください。
-
-### 2. `HAKONIWA_COMPOSER`について
+## `HAKONIWA_COMPOSER`について
 
 `HAKONIWA_COMPOSER`は、FoundationとRecipeを管理するComposerリポジトリのルートパスです。現時点では、cloneした`hakoniwa-business-pack`のルートを指します。生成物の置き場を示す`HAKONIWA_WORK_DIR`とは役割が異なります。
 
-上記の標準配置とリポジトリ名を使用する場合、利用者が`HAKONIWA_COMPOSER`を設定する必要はありません。本リポジトリのツールと`docker/env.bash`が、兄弟にある`hakoniwa-business-pack`を検出して設定します。
+後述のクイックスタートに示す標準配置とリポジトリ名を使用する場合、利用者が`HAKONIWA_COMPOSER`を設定する必要はありません。本リポジトリのツールと`docker/env.bash`が、兄弟にある`hakoniwa-business-pack`を検出して設定します。
 
 | 実行箇所 | `HAKONIWA_COMPOSER`未設定時の動作 |
 | --- | --- |
@@ -185,96 +178,59 @@ export HAKONIWA_COMPOSER=/absolute/path/to/composer-repository
 
 新しい手順では`HAKONIWA_COMPOSER`を使用します。`HAKONIWA_BUSINESS_PACK_ROOT`は既存環境との互換用fallbackです。
 
-### 3. Host側の準備
+## クイックスタート
 
-`hakoniwa-business-pack`のルートで実行します。既存環境との混在を避けるため、生成物には新しいworkディレクトリを指定します。
+### 共通：checkout用workspaceを作る
+
+空のディレクトリを作り、その直下へBusiness Packと本リポジトリをcloneします。本リポジトリはprivate repositoryであるため、アクセス権を持つGitHubアカウントまたは認証情報が必要です。
+
+```bash
+mkdir -p ~/hakoniwa-robot-arm-workspace
+cd ~/hakoniwa-robot-arm-workspace
+git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
+git clone https://github.com/teras-project/hakoniwa-robot-arm.git
+```
+
+この時点では2リポジトリだけで構いません。Nova5が必要とする他のリポジトリは、Recipeの`configure`またはROS 2 workspaceの`build`が自動取得します。
+
+### Ubuntuユーザー：host-only（推奨）
+
+Ubuntuをメイン環境とする場合は、Nova5 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードをすべてHost上で実行します。ROS 2を使わない箱庭シミュレーション単体としても実行できます。
 
 ```bash
 cd ~/hakoniwa-robot-arm-workspace/hakoniwa-business-pack
 export ARM_PACK="$(cd ../hakoniwa-robot-arm && pwd -P)"
 export NOVA5_HOST_WORK="$(cd .. && pwd -P)/work-host-nova5"
-
 python3.12 tools/workspace.py enter --workdir "$NOVA5_HOST_WORK"
 ```
 
-以降は、`enter`で開いた箱庭Workspace内で実行します。
+Foundation、Forge、Nova5、ROS 2の準備と動作確認は、次の順に進めます。
 
-```bash
-# 自動取得・checkout・ビルドの予定を確認する
-python3.12 tools/recipe.py plan \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+1. [host-onlyセットアップ](docs/setup-host-only.md)
+2. [host-onlyビルド](docs/build-host-only.md)
+3. [host-only起動・動作確認](docs/operation-host-only.md)
 
-# 依存リポジトリを取得し、Foundationを構築する
-python3.12 tools/recipe.py configure \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+Ubuntu 24.04ではROS 2 Jazzy、Ubuntu 22.04ではROS 2 Humbleを使用できます。
 
-# Forge用の依存リポジトリとPythonパッケージを準備する
-python3.12 tools/recipe.py configure \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-model-forge.yaml"
+### macOSユーザー：host+docker
 
-python "$ARM_PACK/tools/recipe/nova5.py" forge
+macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノードをDocker Containerで実行します。HostとDockerはTCPで接続します。
 
-export HAKONIWA_ROS2_TCP_HOST=host.docker.internal
-python "$ARM_PACK/tools/recipe/nova5.py" configure \
-  --headless --ros2-tcp --environment \
-  --realtime-sync-cycle-msec 50
-python "$ARM_PACK/tools/recipe/nova5.py" build --headless
-python "$ARM_PACK/tools/recipe/nova5.py" doctor
-```
+1. [host+dockerセットアップ](docs/setup-host-docker.md)
+2. [host+dockerビルド](docs/build-host-docker.md)
+3. [host+docker起動・動作確認](docs/operation-host-docker.md)
 
-Linux HostでDockerを同じHost network上へ起動する場合は、`HAKONIWA_ROS2_TCP_HOST=127.0.0.1`を使用します。
+人が操作する場合はHost上のMuJoCo Viewerを利用できます。CIや画面のない自動確認ではheadlessを選択します。
 
-`configure`は、存在しない依存リポジトリをRecipe記載のrevisionでcloneし、Foundationを`NOVA5_HOST_WORK`以下へ構築します。既存の依存リポジトリがある場合は検査して再利用します。固定revisionと異なるcleanなcheckoutは指定revisionへ切り替えますが、未コミット変更があるcheckoutは変更せずエラーにします。
+### Host環境を汚さず試したいユーザー：docker-only
 
-### 4. Docker側の準備
+HostへCPython 3.12、CMake、ROS 2などを導入せず、GitとDockerだけで動作確認したい場合はdocker-onlyを選択します。Nova5とROS 2を同じ1つのUbuntu Container内で実行します。
 
-別のHostターミナルで本リポジトリのルートへ移動して実行します。標準配置では`HAKONIWA_COMPOSER`の指定は不要です。
+1. [docker-onlyセットアップ](docs/setup-docker-only.md)
+2. [docker-onlyビルド](docs/build-docker-only.md)
+3. [docker-only起動・動作確認](docs/operation-docker-only.md)
 
-```bash
-cd ~/hakoniwa-robot-arm-workspace/hakoniwa-robot-arm
-export NOVA5_HOST_WORK="$(cd .. && pwd -P)/work-host-nova5"
-export HAKONIWA_ROS2_TCP_CONFIG="$NOVA5_HOST_WORK/recipes/nova5-joint-trajectory-control/config/ros2-tcp"
-export HAKONIWA_DOCKER_GUI=off
-
-bash docker/create-docker-image.bash jazzy
-bash docker/run.bash jazzy
-```
-
-Container内で、新しいROS 2 workspaceを構築してBridgeを起動します。
-
-```bash
-python "$ARM_PACK/tools/recipe/ros2_workspace.py" build
-source "$HAKONIWA_ROS2_WS/activate.bash"
-ros2 run hakoniwa_pdu_ros bridge --config "$HAKONIWA_ROS_BINDING"
-```
-
-この`build`は、ROS 2用の`hakoniwa-pdu-endpoint`と`hakoniwa-pdu-ros`が存在しなければ兄弟ディレクトリへ自動取得し、ROS 2のvenv、native library、colcon成果物を`HAKONIWA_ROS2_WS`以下へ構築します。
-
-### 5. シミュレータの起動と軌道指令
-
-Hostの箱庭Workspaceでシミュレータを起動します。
-
-```bash
-python "$ARM_PACK/tools/recipe/nova5.py" start
-```
-
-別のHostターミナルからContainerへ接続し、ROS 2環境を有効化して軌道指令と関節状態を確認します。
-
-```bash
-cd ~/hakoniwa-robot-arm-workspace/hakoniwa-robot-arm
-bash docker/attach.bash jazzy
-source "$HAKONIWA_ROS2_WS/activate.bash"
-
-ros2 run hakoniwa_arm_samples control \
-  --topic /joint_trajectory --joints 6 --amplitude 0.15 --duration 2.0
-ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
-```
-
-確認後、Hostの箱庭Workspaceで停止します。
-
-```bash
-python "$ARM_PACK/tools/recipe/nova5.py" stop
-```
+native Linux HostではViewerを利用できます。macOS Docker Desktopではnative architectureのheadless実行を使用します。
 
 ## リポジトリ構成
 
@@ -336,6 +292,7 @@ hakoniwa-robot-arm-workspace/
 
 ## 詳細情報
 
+- [環境別の詳細利用ガイド](docs/README.md)
 - [Nova5実行Recipe](recipes/nova5/nova5-joint-trajectory-control.yaml)
 - [Nova5モデルForge Recipe](recipes/nova5/nova5-model-forge.yaml)
 - [Nova5モデルの取得情報](sources/models/nova5/source.yaml)
