@@ -1,20 +1,23 @@
 # 対応ロボット
 
-本リポジトリには、Nova5、FR5、SO-101のモデル取得定義、Forge、Asset Manifest、Runtime／PDU設定、Recipe entrypointが含まれます。環境構築と操作の考え方は共通です。
+ロボットごとにシミュレータの構築手順や実施手順は変わりません。
+あらかじめ設定されているロボット定義ファイルやツールなどを用意しているため、それらのファイルやツールを同じ手順で利用できます。
 
 ## 対応状況
 
-| Robot | ID | Recipe entrypoint | Forge最終成果物 | このリポジトリへの移行後の確認状況 |
+| Robot | ID | レシピ | ロボット定義ファイル(MJCF) | 確認状況 |
 | --- | --- | --- | --- | --- |
-| DOBOT Nova5 | `nova5` | `tools/recipe/nova5.py` | `nova5.contact.xml` | host+dockerのTrajectory／JointStateを確認済み |
-| FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを移行済み。再検証は未実施 |
-| SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを移行済み。再検証は未実施 |
+| DOBOT Nova5 | `nova5` | `tools/recipe/nova5.py` | `nova5.contact.xml` | 動作確認済み |
+| FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
+| SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
 
-FR5とSO-101についても、[Nova5の環境別手順](README.md)と同じWorkspace、Foundation、Forge、configure、build、operationの流れを使用します。個別手順は複製せず、次の識別子を対象ロボットへ置き換えます。
+FR5とSO-101についても、[Nova5の環境別手順](README.md)と同じWorkspace、Foundation、Forge、configure、build、operationの流れで実行します。
 
-## 置換する場所
+個別手順はありません。ツールに渡すロボット名を変更するだけです。
 
-`<robot>`には`nova5`、`fr5`、`so101`のいずれかを指定します。
+## ロボット名を置き換えるポイント
+
+ロボット名(`<robot>`) には、`nova5`、`fr5`、`so101` を指定できます。
 
 | Nova5手順中の項目 | 共通表現 |
 | --- | --- |
@@ -44,7 +47,8 @@ Viewer、`--environment`、`--ros2-tcp`、realtime pacing、start／status／sto
 
 ## ROS 2の関節名
 
-ROS 2の`control` sampleは、Nova5以外では`--joint-names`を明示します。
+ROS 2の`control` sampleプログラムでは、ジョイント名はNova5を基準に構成されています。
+他のロボットの場合は、`--joint-names`を指定することで、Nova5以外のジョイント名を明示的に設定できます。
 
 | Robot | 関節名（軌道順） |
 | --- | --- |
@@ -57,7 +61,7 @@ ros2 run hakoniwa_arm_samples control \
   --joint-names j1_joint j2_joint j3_joint j4_joint j5_joint j6_joint
 ```
 
-ROS 2 TCP設定の生成先も、次のようにロボットIDで切り替わります。
+ROS 2 TCP設定の生成先も、次のようにロボット名で切り替わります。
 
 ```text
 $HAKONIWA_WORK_DIR/recipes/<robot>-joint-trajectory-control/config/ros2-tcp
