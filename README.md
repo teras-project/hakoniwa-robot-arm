@@ -4,9 +4,15 @@
 
 ロボットモデルをMuJoCo形式へ変換し、[箱庭ロボットランタイム](https://github.com/hakoniwalab/hakoniwa-robot-runtime)と組み合わせることで、実機を使用せずに関節制御や状態取得を行えます。また、ROS 2からの `JointTrajectory` による制御と `JointState` の取得にも対応しています。
 
-現在のサポート状況：
+現在の対応状況：
 
-- DOBOT Nova5
+| Robot | 状況 |
+| --- | --- |
+| DOBOT Nova5 | 移行・host+docker動作確認済み |
+| FAIRINO FR5 | ソースとツールを移行済み。再検証は未実施 |
+| SO-101 follower | ソースとツールを移行済み。再検証は未実施 |
+
+3機種は共通のRecipe操作を使用します。Nova5手順をFR5／SO-101へ適用する際の置換箇所は[対応ロボット](docs/robots.md)を参照してください。
 
 ## ドキュメント
 
@@ -17,6 +23,8 @@
 - [起動・動作確認手順](docs/operation.md)
 - [Nova5 Model Forge](docs/model-forge.md)
 - [設定変更と反映方法](docs/configuration-workflow.md)
+- [対応ロボット](docs/robots.md)
+- [ライセンス情報](docs/license/README.md)
 
 ## できること
 
@@ -35,7 +43,7 @@
 ```mermaid
 flowchart LR
   subgraph SIM["シミュレータ側<br/>Host / Docker"]
-    SimApp["Nova5シミュレータ<br/>MuJoCo + 箱庭ロボットランタイム"]
+    SimApp["Robot Armシミュレータ<br/>MuJoCo + 箱庭ロボットランタイム"]
     Core["箱庭コア機能<br/>(SHM)"]
     PduBridge["箱庭PDU<br/>TCP Bridge"]
     SimApp <-->|"箱庭PDU<br/>JointTrajectory / JointState"| Core
@@ -70,14 +78,14 @@ flowchart LR
 - PDU定義とPDU通信定義
 - アクチュエータ、コントローラ、センサ設定
 
-本リポジトリはNova5用の設定値と設定ファイルの組み合わせを所有し、各項目の意味、参照関係、検証規則は`hakoniwa-robot-runtime`を正本とします。通常利用ではこれらの設定を変更する必要はありませんが、ロボット構成や制御方法を変更する場合は、次のRuntime文書を参照してください。
+本リポジトリは各対応ロボット用の設定値と設定ファイルの組み合わせを所有し、各項目の意味、参照関係、検証規則は`hakoniwa-robot-runtime`を正本とします。通常利用ではこれらの設定を変更する必要はありませんが、ロボット構成や制御方法を変更する場合は、次のRuntime文書を参照してください。
 
 - [Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/configuration.md): Asset Manifest、Runtime、actuator、controller、state-output、PDU、Endpointの設定仕様と参照関係
 - [Robot Runtime Design](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/design.md): Runtimeの責務、内部構成、Adapterとの境界
 - [Runtime-owned JSON Schemas](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/schemas): Runtimeが所有する機械可読な設定Schema
 - [Hakoniwa PDU Endpoint Schemas](https://github.com/hakoniwalab/hakoniwa-pdu-endpoint/tree/main/config/schema): PDU Definition、PDU Types、Endpoint、Cache、Comm形式の正本
 
-Nova5の具体的な設定例は次にあります。
+具体的な設定例として、Nova5では次のファイルを使用します。FR5／SO-101にも`recipes/<robot>/`以下に同じ構成の設定があります。
 
 | 設定 | Nova5の設定ファイル | 主な役割 |
 | --- | --- | --- |
@@ -89,6 +97,14 @@ Nova5の具体的な設定例は次にあります。
 | Endpoint | [`recipes/nova5/config/endpoint/nova5_endpoint.json`](recipes/nova5/config/endpoint/nova5_endpoint.json) | PDU Definitionと通信backendの選択 |
 
 `nova5.py configure`がwork側へ生成する`launcher.json`や、Forgeが生成するMJCFは直接編集しません。元となるManifest、config、Recipeを変更して再生成します。変更対象ごとのForge／configure／buildの区別、生成先、反映確認は[設定変更と反映方法](docs/configuration-workflow.md)を参照してください。
+
+## ライセンスとRobot Model
+
+別途ライセンス表示のある第三者成果物を除き、本リポジトリ自身のソースコード、設定、ツール、文書には、ルートの[Apache License 2.0](LICENSE)が適用されます。利用するHakoniwa OSSと外部OSSには、それぞれのライセンスが適用されます。詳細は[依存コンポーネントのライセンス一覧](docs/license/dependencies.md)を参照してください。
+
+上流のURDF、Xacro、MJCF、mesh、CAD、textureなどのRobot Model本体と、Forgeで生成した派生成果物は、本リポジトリではGit管理しません。利用者が固定revisionから取得し、`$HAKONIWA_WORK_DIR/model-forge/`以下へ生成します。取得元、固定revision、確認したライセンス宣言、再配布上の注意は[Robot Modelのライセンス情報](docs/license/robot-models.md)にまとめています。
+
+特にNova5は、上流repositoryのMIT表記とROS package metadataのBSD表記が一致していません。上流モデルまたはForge生成物を再配布する前に、適用条件の確認が必要です。本リポジトリのApache License 2.0が、第三者モデルへ自動的に適用されるものではありません。
 
 ## 箱庭Business Packとの関係
 
@@ -120,7 +136,7 @@ Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証
 - `configure`: 依存リポジトリを準備し、必要なFoundationとPython依存を構築
 - `doctor`: FoundationとRecipe依存が実行可能な状態か検査
 
-本リポジトリの`tools/recipe/nova5.py`は、その環境を利用してNova5固有のForge、configure、build、start、stopを実行します。
+本リポジトリの`tools/recipe/<robot>.py`は、その環境を利用して各ロボット固有のForge、configure、build、start、stopを実行します。対応するentrypointと置換方法は[対応ロボット](docs/robots.md)を参照してください。
 
 ## 動作確認環境
 

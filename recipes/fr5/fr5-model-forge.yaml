@@ -87,8 +87,22 @@ recipe_local_requirements:
     required_artifacts:
       - path: tools/fetch.py
         kind: file
+      - path: tools/path_utils.py
+        kind: file
+      - path: tools/urdf_dae2obj.py
+        kind: file
       - path: tools/urdf2mjcf.py
         kind: file
+      - path: tools/urdf2actuator.py
+        kind: file
+      - path: tools/mjcf_add_actuators.py
+        kind: file
+      - path: tools/mjcf_add_contact_excludes.py
+        kind: file
+
+runtime_dependencies:
+  python:
+    requirements: recipes/fr5/model-forge-requirements.txt
 
 components:
   - id: hakoniwa-mbody-registry
@@ -164,6 +178,8 @@ expected_result:
 source_catalogs:
   - sources/models/fr5/source.yaml
 source_artifacts:
+  - sources/models/fr5/LICENSE_INFO.yaml
   - sources/models/fr5/patches/FR5WM.patch
   - recipes/fr5/actuator.yaml
   - recipes/fr5/contact-excludes.yaml
+  - recipes/fr5/model-forge-requirements.txt

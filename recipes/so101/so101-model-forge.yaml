@@ -24,8 +24,15 @@ recipe_local_requirements:
     required_artifacts:
       - {path: tools/fetch.py, kind: file}
 
+runtime_dependencies:
+  python:
+    requirements: recipes/so101/model-forge-requirements.txt
+
 source_catalogs: [sources/models/so101/source.yaml]
-source_artifacts: [sources/models/so101/provenance.yaml]
+source_artifacts:
+  - sources/models/so101/provenance.yaml
+  - sources/models/so101/LICENSE_INFO.yaml
+  - recipes/so101/model-forge-requirements.txt
 artifacts:
   - {name: SO-101 MJCF, owner: hakoniwa-robot-arm, path: $HAKONIWA_WORK_DIR/model-forge/so101/install/so101.xml, purpose: Physics and visualization input for the common arm runtime.}
   - {name: SO-101 Checksums, owner: hakoniwa-robot-arm, path: $HAKONIWA_WORK_DIR/model-forge/so101/install/SHA256SUMS, purpose: Verify the materialized model and upstream assets.}

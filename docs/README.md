@@ -1,6 +1,8 @@
 # 利用ガイド
 
-このディレクトリは、DOBOT Nova5を初めて利用する人が、環境構築からROS 2による動作確認までを再現するための詳細手順です。製品概要、アーキテクチャ、Business Packの基本概念は[トップREADME](../README.md)を先に参照してください。
+このディレクトリは、対応ロボットを初めて利用する人が、環境構築からROS 2による動作確認までを再現するための詳細手順です。製品概要、アーキテクチャ、Business Packの基本概念は[トップREADME](../README.md)を先に参照してください。
+
+環境別の詳細手順は、移行後の実動作を確認済みのNova5を基準に記載しています。FR5またはSO-101を使用する場合は、手順を複製せず、[対応ロボット](robots.md)の表に従ってロボットID、Recipe、entrypoint、関節名を置き換えてください。
 
 ## 読み方
 
@@ -21,6 +23,8 @@
 - [起動・動作確認手順](operation.md): ROSトピック、期待結果、終了方法
 - [Nova5 Model Forge](model-forge.md): 上流モデルの取得、変換、`kp`／`dampratio`の調整、生成物
 - [設定変更と反映方法](configuration-workflow.md): パラメータごとのForge／configure／buildの境界、生成先、反映確認
+- [対応ロボット](robots.md): Nova5手順をFR5／SO-101へ適用する置換表と機種固有の関節名
+- [ライセンス情報](license/README.md): 依存OSS、Robot Modelの取得元、再配布方針
 
 ## 設定仕様
 

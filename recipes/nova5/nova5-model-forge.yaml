@@ -62,6 +62,7 @@ artifacts:
 source_catalogs: [sources/models/nova5/source.yaml]
 source_artifacts:
   - sources/models/nova5/provenance.yaml
+  - sources/models/nova5/LICENSE_INFO.yaml
   - recipes/nova5/actuator.yaml
   - recipes/nova5/contact-excludes.yaml
   - recipes/nova5/model-forge-requirements.txt

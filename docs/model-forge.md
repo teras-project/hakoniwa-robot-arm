@@ -198,4 +198,4 @@ $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.environment.xml
 
 ## 7. ライセンスと再配布
 
-上流repositoryの`LICENSE`とROS package metadataではライセンス表記が一致していません。取得したXacro、URDF、mesh、生成MJCFを再配布する前に、[LICENSE_INFO.yaml](../sources/models/nova5/LICENSE_INFO.yaml)と[provenance.yaml](../sources/models/nova5/provenance.yaml)の確認事項を解消してください。
+上流repositoryの`LICENSE`とROS package metadataではライセンス表記が一致していません。取得したXacro、URDF、mesh、生成MJCFを再配布する前に、[Robot Modelのライセンス情報](license/robot-models.md)、[LICENSE_INFO.yaml](../sources/models/nova5/LICENSE_INFO.yaml)、[provenance.yaml](../sources/models/nova5/provenance.yaml)の確認事項を解消してください。
