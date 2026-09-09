@@ -16,7 +16,7 @@
 
 ## ドキュメント
 
-初めて利用する場合は、このREADMEで全体像を確認した後、[利用ガイド](docs/README.md)から実行環境を選んでください。
+初めて利用する場合は、このREADMEで全体像を確認した後、[利用ガイド](docs/README.md)を参照してください。
 
 - [セットアップ手順](docs/setup.md)
 - [ビルド手順](docs/build.md)
@@ -78,7 +78,7 @@ flowchart LR
 - PDU定義とPDU通信定義
 - アクチュエータ、コントローラ、センサ設定
 
-本リポジトリは各対応ロボット用の設定値と設定ファイルの組み合わせを所有し、各項目の意味、参照関係、検証規則は`hakoniwa-robot-runtime`を正本とします。通常利用ではこれらの設定を変更する必要はありませんが、ロボット構成や制御方法を変更する場合は、次のRuntime文書を参照してください。
+本リポジトリは各対応ロボット用の設定値と設定ファイルの組み合わせを所有し、各項目の意味、参照関係、検証規則は`hakoniwa-robot-runtime`を正本とします。通常利用ではこれらの設定を変更する必要はありませんが、ロボット構成や制御方法を変更する場合は、次の文書を参照してください。
 
 - [Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/configuration.md): Asset Manifest、Runtime、actuator、controller、state-output、PDU、Endpointの設定仕様と参照関係
 - [Robot Runtime Design](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/design.md): Runtimeの責務、内部構成、Adapterとの境界

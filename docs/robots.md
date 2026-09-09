@@ -11,9 +11,7 @@
 | FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
 
-FR5とSO-101についても、[Nova5の環境別手順](README.md)と同じWorkspace、Foundation、Forge、configure、build、operationの流れで実行します。
-
-個別手順はありません。ツールに渡すロボット名を変更するだけです。
+FR5とSO-101についても、[Nova5の環境別手順](README.md)5と同じ手順で実行できます。ロボット名だけを変更してください。
 
 ## ロボット名を置き換えるポイント
 
@@ -43,7 +41,8 @@ python "$ARM_PACK/tools/recipe/$ROBOT.py" build --headless
 python "$ARM_PACK/tools/recipe/$ROBOT.py" doctor
 ```
 
-Viewer、`--environment`、`--ros2-tcp`、realtime pacing、start／status／stopも、同じentrypointへNova5手順と同じoptionを指定します。生成物は選択中の`HAKONIWA_WORK_DIR`以下でロボットIDごとに分離されます。
+その他のオプションもNova5と共通です。
+生成されるファイルは、ロボット名ごとに `HAKONIWA_WORK_DIR`配下のディレクトリ内に作成されます。
 
 ## ROS 2の関節名
 
