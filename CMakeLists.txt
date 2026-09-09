@@ -109,6 +109,10 @@ if(NOT EXISTS "${HAKONIWA_FOUNDATION_PREFIX}/include")
         "HAKONIWA_FOUNDATION_PREFIX.")
 endif()
 
+find_package(hakoniwa-core CONFIG REQUIRED
+    PATHS "${HAKONIWA_FOUNDATION_PREFIX}"
+    NO_DEFAULT_PATH)
+
 # Public robot libraries are consumed from sibling checkouts. Core and PDU
 # Endpoint are always consumed from the Foundation installation.
 set(HAKO_USE_THIRDPARTY_HAKONIWA OFF CACHE BOOL
@@ -159,14 +163,8 @@ hako_import_mujoco_robots_variable(
 hako_import_mujoco_robots_variable(
     HAKO_PDU_TYPES_INCLUDE_DIR_IMPORTED HAKO_PDU_TYPES_INCLUDE_DIR)
 
-find_library(HAKO_ASSETS_LINK_TARGET_IMPORTED
-    NAMES assets
-    PATHS "${HAKONIWA_FOUNDATION_PREFIX}/lib"
-    REQUIRED NO_DEFAULT_PATH)
-find_library(HAKO_CONDUCTOR_LINK_TARGET_IMPORTED
-    NAMES conductor
-    PATHS "${HAKONIWA_FOUNDATION_PREFIX}/lib"
-    REQUIRED NO_DEFAULT_PATH)
+set(HAKO_ASSETS_LINK_TARGET_IMPORTED hakoniwa-core::assets)
+set(HAKO_CONDUCTOR_LINK_TARGET_IMPORTED hakoniwa-core::conductor)
 find_library(HAKO_PDU_ENDPOINT_LINK_TARGET_IMPORTED
     NAMES hakoniwa_pdu_endpoint
     PATHS "${HAKONIWA_FOUNDATION_PREFIX}/lib"
