@@ -7,8 +7,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-from common import arm
-from common.gamepad_profile import UnsupportedGamepadPlatform, resolve_dualsense_profile
+TOOLS_DIR = Path(__file__).resolve().parents[2]
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLS_DIR))
+
+from _hakoniwa_composer import workspace_work_dir  # noqa: E402
+from common import arm  # noqa: E402
+from common.gamepad_profile import (  # noqa: E402
+    UnsupportedGamepadPlatform,
+    resolve_dualsense_profile,
+)
 
 
 GAMEPAD_PYTHON_REQUIREMENT = "pygame==2.6.1"
@@ -80,7 +88,7 @@ def _validate_gamepad_install_target(command: str) -> None:
         raise ValueError("active Hakoniwa Workspace environment is incomplete")
 
     workspace_root = Path(workspace_root_value).expanduser().resolve()
-    expected_home = arm.workspace_work_dir() / "foundation/install"
+    expected_home = workspace_work_dir() / "foundation/install"
     expected_venv = expected_home / "python"
     # Keep the venv executable spelling: venv/bin/python commonly points at
     # the base interpreter, so resolving the executable itself would make a

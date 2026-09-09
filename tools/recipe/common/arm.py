@@ -497,9 +497,9 @@ def smoke() -> int:
         if start() != 0:
             return 1
         plant_log = workspace.recipe_logs / f"{ROBOT_ID}-plant.out"
+        plant_error_log = workspace.recipe_logs / f"{ROBOT_ID}-plant.err"
+        sender_log = workspace.recipe_logs / f"{ROBOT_ID}-trajectory-sender.out"
         for _ in range(40):
-            content = plant_log.read_text(encoding="utf-8", errors="replace") if plant_log.is_file() else ""
-            sender_log = workspace.recipe_logs / f"{ROBOT_ID}-trajectory-sender.out"
             sender = (
                 sender_log.read_text(encoding="utf-8", errors="replace")
                 if sender_log.is_file()
@@ -508,16 +508,36 @@ def smoke() -> int:
             command_observed = "Successfully sent" in sender
             if command_observed:
                 time.sleep(1.0)
-                content = plant_log.read_text(encoding="utf-8", errors="replace")
-                instability_markers = ("simulation is unstable", "Nan, Inf or huge value")
-                if any(marker in content for marker in instability_markers):
-                    print(f"[NG] MuJoCo numerical instability was observed: {plant_log}", file=sys.stderr)
+                plant_output = (
+                    plant_log.read_text(encoding="utf-8", errors="replace")
+                    if plant_log.is_file()
+                    else ""
+                )
+                plant_error = (
+                    plant_error_log.read_text(encoding="utf-8", errors="replace")
+                    if plant_error_log.is_file()
+                    else ""
+                )
+                combined_plant_log = f"{plant_output}\n{plant_error}".lower()
+                instability_markers = (
+                    "simulation is unstable",
+                    "nan, inf or huge value",
+                )
+                if any(marker in combined_plant_log for marker in instability_markers):
+                    print(
+                        "[NG] MuJoCo numerical instability was observed: "
+                        f"{plant_log}, {plant_error_log}",
+                        file=sys.stderr,
+                    )
                     return 1
-                print(f"[OK] {ROBOT_LABEL} received the Launcher-managed command input.")
-                print(f"[OK] {ROBOT_LABEL} remained numerically stable during the smoke window.")
+                print(f"[OK] {ROBOT_LABEL} Launcher-managed JointTrajectory PDU send completed.")
+                print(
+                    f"[OK] No MuJoCo numerical-instability marker was observed for "
+                    f"{ROBOT_LABEL} during the smoke window."
+                )
                 return 0
             time.sleep(0.5)
-        print(f"[NG] trajectory acceptance was not observed: {plant_log}", file=sys.stderr)
+        print(f"[NG] trajectory PDU send completion was not observed: {sender_log}", file=sys.stderr)
         return 1
     finally:
         run(launcher_command(foundation, workspace, "terminate"), env=environment(foundation, workspace))

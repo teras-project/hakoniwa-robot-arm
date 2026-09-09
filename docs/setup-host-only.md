@@ -12,13 +12,20 @@ Ubuntu 24.04／ROS 2 Jazzyで必要となるHostパッケージの例です。
 sudo apt update
 sudo apt install -y \
   git ruby python3.12 python3.12-venv \
-  build-essential cmake libboost-dev libglfw3 libopengl0
+  build-essential cmake libboost-dev libgl1-mesa-dev libglfw3-dev
 
 test -f /opt/ros/jazzy/setup.bash
 python3.12 --version
 ```
 
 ROS 2を使わず箱庭シミュレーション単体だけを実行する場合、ROS 2のインストールと`/opt/ros/...`の確認は不要です。
+ROS 2連携を利用する場合は、ROS 2のapt repositoryを設定した環境でcolconも導入し、
+ROS 2 workspaceをソースからbuildできることを確認してください。
+
+```bash
+sudo apt install -y python3-colcon-common-extensions
+/usr/bin/python3 -m colcon --help >/dev/null
+```
 
 ## 2. Host workとWorkspace
 
@@ -84,4 +91,3 @@ export HAKONIWA_ROS2_WS="$CHECKOUT_ROOT/ros2-work-host-jazzy"
 箱庭WorkspaceとROS 2 workspaceは共有しません。これらの値は、後続のROS 2用terminalでも同じ値を使用します。
 
 次は[host-onlyビルド](build-host-only.md)へ進んでください。
-
