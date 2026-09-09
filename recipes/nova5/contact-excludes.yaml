@@ -1,0 +1,3 @@
+excludes:
+  - body1: base_link
+    body2: Link1

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "dualsense-ubuntu-pygame-v1",
+  "match": {
+    "os": "Linux",
+    "backend": "pygame",
+    "name_regex": "(?i)(dualsense|wireless controller)",
+    "minimum_axes": 4,
+    "minimum_buttons": 11
+  },
+  "axes": {
+    "left_x":  { "index": 0, "invert": false },
+    "left_y":  { "index": 1, "invert": true },
+    "right_x": { "index": 2, "invert": false },
+    "right_y": { "index": 3, "invert": true }
+  },
+  "buttons": {
+    "cross":    { "index": 0 },
+    "circle":   { "index": 1 },
+    "triangle": { "index": 3 },
+    "options":  { "index": 6 },
+    "l1":       { "index": 9 },
+    "r1":       { "index": 10 }
+  }
+}

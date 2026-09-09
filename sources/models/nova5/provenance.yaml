@@ -1,0 +1,34 @@
+robot: DOBOT Nova5
+upstream:
+  repository: https://github.com/Dobot-Arm/DOBOT_6Axis_ROS2_V4
+  branch: feature/v4-optimization
+  revision: 0f21e9839888f188ac06b0a9fea622d13a29a74f
+  model: cra_description/urdf/nova5_robot.xacro
+  meshes: cra_description/meshes/nova5/
+
+license_review:
+  status: review_required_before_redistribution
+  observed_declarations:
+    - source: LICENSE
+      declaration: MIT
+      copyright: Copyright (c) 2026 Dobot
+    - source: cra_description/package.xml
+      declaration: BSD
+  note: >
+    The repository-level license and ROS package metadata do not name the same
+    license. Keep this private source closure traceable and confirm the intended
+    license for cra_description and its Nova5 meshes before redistributing them.
+
+source_integrity:
+  sha256:
+    LICENSE: 1f11e8247c5ef61f89352c934e79ebd9b375bbd8947b79c42201c69d99d0073e
+    cra_description/package.xml: 3c891ceacc864018b609dfc6f446d5efa9b963f9e272265c7152f4d80ef47750
+    cra_description/urdf/nova5_robot.xacro: ec86fd5020182c9c94a122245f831d41c5d9a3a9bb01fce6164ff2151fe32c03
+    cra_description/meshes/nova5/base_link.STL: ba127c64cf21500b64df841ea6563afbc9e0247ea60e52c7366e0fb2fe2bb43c
+    cra_description/meshes/nova5/Link1.STL: 9c83374745953200965462041d798c6c57c371438ccdf0948c74047a589a17b0
+    cra_description/meshes/nova5/Link2.STL: 9d6260d192b97db709006b8a0f8f3d68c608d4d522cea7e2a990ead86b190ee1
+    cra_description/meshes/nova5/Link3.STL: dd3f5b5101e612a9bb67c91b581b75e4a157d3201c30ae4b5d97b490d07e3898
+    cra_description/meshes/nova5/Link4.STL: 8815c3d12f352a9deb19b925a7a077b7690d3c37d1cfc4bfa2dff84d9cb5e4b2
+    cra_description/meshes/nova5/Link5.STL: acb9f5a49b2faa7e284d106afd401bd411d04d77d2a6b8a64833a5b3569a4a30
+    cra_description/meshes/nova5/Link6.STL: fce89b691a627dabf0e06ad31ba851478fb42f09101da52d3e66c5c42972bf70
+    nova5_moveit/config/joint_limits.yaml: 64473c1527f3e019b5e5b92800386f8502bf11595eb15f4491bbabc32351484e

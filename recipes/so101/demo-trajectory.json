@@ -1,0 +1,10 @@
+{
+  "joint_names": ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper"],
+  "points": [
+    {"time_from_start": 0.0, "positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+    {"time_from_start": 2.0, "positions": [0.35, -0.35, 0.45, 0.25, 0.35, 0.25]},
+    {"time_from_start": 4.5, "positions": [-0.45, 0.25, -0.35, -0.3, -0.5, 0.9]},
+    {"time_from_start": 7.0, "positions": [0.25, -0.55, 0.65, 0.45, 0.5, 1.35]},
+    {"time_from_start": 9.5, "positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "protocol": "shm",
+  "impl_type": "callback",
+  "name": "so101_shm",
+  "direction": "inout",
+  "io": {"robots": []}
+}

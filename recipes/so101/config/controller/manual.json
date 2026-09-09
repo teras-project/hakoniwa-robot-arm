@@ -1,0 +1,44 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/robot-arm-joy-manual-controller.schema.json",
+  "schema_version": 1,
+  "id": "so101-manual-jog-v1",
+  "joy_layout": "../../../../profiles/gamepads/logical-joy-v1.json",
+  "input": {
+    "pdu_name": "joy",
+    "message_type": "sensor_msgs/Joy",
+    "update_rate_hz": 20.0,
+    "timeout_sec": 0.25
+  },
+  "spec": {
+    "manual_enable_button": "l1",
+    "quit_button": "options",
+    "deadzone": 0.10,
+    "expo": 0.35,
+    "banks": [
+      {
+        "id": "shoulder",
+        "select_button": null,
+        "bindings": [
+          { "axis": "right_x", "joint": "shoulder_pan", "velocity_rad_s": 0.45 },
+          { "axis": "right_y", "joint": "shoulder_lift", "velocity_rad_s": 0.35 }
+        ]
+      },
+      {
+        "id": "elbow-wrist",
+        "select_button": "r1",
+        "bindings": [
+          { "axis": "right_y", "joint": "elbow_flex", "velocity_rad_s": 0.35 },
+          { "axis": "right_x", "joint": "wrist_flex", "velocity_rad_s": 0.50 }
+        ]
+      },
+      {
+        "id": "roll-gripper",
+        "select_button": "triangle",
+        "bindings": [
+          { "axis": "left_x", "joint": "wrist_roll", "velocity_rad_s": 0.50 },
+          { "axis": "left_y", "joint": "gripper", "velocity_rad_s": 0.35 }
+        ]
+      }
+    ]
+  }
+}

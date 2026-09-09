@@ -1,0 +1,19 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": {
+    "joint_name": "shoulder_lift",
+    "type": "position",
+    "limit": {
+      "lower": -1.74533,
+      "upper": 1.74533
+    }
+  },
+  "mjcf_binding": {
+    "actuator_name": "shoulder_lift"
+  },
+  "pdu_config": {
+    "pdu_name": "actuator/shoulder_lift/command",
+    "update_rate_hz": 50,
+    "message_type": "std_msgs/Float64"
+  }
+}

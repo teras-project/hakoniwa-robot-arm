@@ -1,0 +1,56 @@
+schema_version: 1
+robot:
+  id: so101
+  name: SO-101 follower
+reviewed_at: 2026-08-25
+
+source:
+  repository: https://github.com/TheRobotStudio/SO-ARM100
+  revision: 7629d2ad9853d10fb903093a33ef6114099d97e5
+  manifest: sources/models/so101/source.yaml
+  upstream_paths:
+    - LICENSE
+    - Simulation/SO101/so101_new_calib.urdf
+    - Simulation/SO101/so101_new_calib.xml
+    - Simulation/SO101/assets/
+
+observed_license_declarations:
+  - scope: pinned upstream repository and materialized SO-101 model assets
+    declared: Apache License 2.0
+    spdx_expression: Apache-2.0
+    evidence: $HAKONIWA_WORK_DIR/model-forge/so101/install/LICENSE
+  - scope: pinned upstream NOTICE file
+    declared: none found
+    spdx_expression: NOASSERTION
+    evidence: No NOTICE file exists in the pinned repository tree.
+
+covered_local_artifacts:
+  upstream_material:
+    - $HAKONIWA_WORK_DIR/model-forge/so101/install/LICENSE
+    - $HAKONIWA_WORK_DIR/model-forge/so101/install/assets/*.stl
+  derived_material:
+    - $HAKONIWA_WORK_DIR/model-forge/so101/install/so101.xml
+    - $HAKONIWA_WORK_DIR/model-forge/so101/install/SHA256SUMS
+
+local_changes:
+  - Renamed the upstream so101_new_calib.xml model to so101.xml.
+  - Set the MuJoCo timestep to 0.002 seconds and the integrator to implicitfast.
+  - Added Hakoniwa runtime manifests, PDU bindings, and demo configuration outside this directory.
+
+redistribution:
+  status: conditional
+  rationale: >-
+    The pinned repository provides Apache-2.0 terms. Redistribution is possible
+    only after satisfying the license conditions and confirming that the exact
+    delivery contains no separately licensed material outside this recorded source closure.
+  permitted_use_in_this_repository: private_evaluation
+  required_actions:
+    - Include a copy of the Forge install LICENSE with redistributed source or derived artifacts.
+    - Retain applicable copyright, patent, trademark, and attribution notices.
+    - Add a prominent modification notice to modified files in the delivery.
+    - Recheck the source closure and license evidence when changing the pinned revision.
+    - Treat SO-101 and other upstream product names and marks as trademarks; Apache-2.0 does not grant trademark rights.
+
+notes:
+  - The upstream model notes that it was generated with onshape-to-robot; this inventory covers files distributed by the pinned repository, not independent access to the linked CAD document.
+  - This inventory records repository evidence and is not legal advice.

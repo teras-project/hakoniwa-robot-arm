@@ -1,0 +1,11 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/robot-arm-actuator-runtime.schema.json",
+  "actuators": {
+    "j1": { "command_timeout_sec": 0.1 },
+    "j2": { "command_timeout_sec": 0.1 },
+    "j3": { "command_timeout_sec": 0.1 },
+    "j4": { "command_timeout_sec": 0.1 },
+    "j5": { "command_timeout_sec": 0.1 },
+    "j6": { "command_timeout_sec": 0.1 }
+  }
+}

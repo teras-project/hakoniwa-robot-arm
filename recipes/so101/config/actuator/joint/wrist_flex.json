@@ -1,0 +1,19 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": {
+    "joint_name": "wrist_flex",
+    "type": "position",
+    "limit": {
+      "lower": -1.65806,
+      "upper": 1.65806
+    }
+  },
+  "mjcf_binding": {
+    "actuator_name": "wrist_flex"
+  },
+  "pdu_config": {
+    "pdu_name": "actuator/wrist_flex/command",
+    "update_rate_hz": 50,
+    "message_type": "std_msgs/Float64"
+  }
+}

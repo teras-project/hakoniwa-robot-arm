@@ -1,0 +1,16 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/robot-arm-joint-trajectory-controller.schema.json",
+  "input": {
+    "pdu_name": "joint_trajectory",
+    "update_rate_hz": 50,
+    "message_type": "trajectory_msgs/JointTrajectory"
+  },
+  "joints": [
+    { "name": "shoulder_pan", "actuator": "shoulder_pan" },
+    { "name": "shoulder_lift", "actuator": "shoulder_lift" },
+    { "name": "elbow_flex", "actuator": "elbow_flex" },
+    { "name": "wrist_flex", "actuator": "wrist_flex" },
+    { "name": "wrist_roll", "actuator": "wrist_roll" },
+    { "name": "gripper", "actuator": "gripper" }
+  ]
+}

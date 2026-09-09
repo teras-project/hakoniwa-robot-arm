@@ -1,0 +1,21 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/hakoniwa-asset-manifest.schema.json",
+  "schema_version": 1,
+  "name": "SO101",
+  "description": "SO-101 using the manifest-driven scalar actuator runtime.",
+  "model": "so101.xml",
+  "pdu_def": "config/pdu/so101-pdudef.json",
+  "endpoint": "config/endpoint/so101_endpoint.json",
+  "runtime_config": "config/runtime.json",
+  "components": [
+    { "id": "shoulder_pan", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/shoulder_pan.json", "pdu_robot": "SO101" },
+    { "id": "shoulder_lift", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/shoulder_lift.json", "pdu_robot": "SO101" },
+    { "id": "elbow_flex", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/elbow_flex.json", "pdu_robot": "SO101" },
+    { "id": "wrist_flex", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/wrist_flex.json", "pdu_robot": "SO101" },
+    { "id": "wrist_roll", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/wrist_roll.json", "pdu_robot": "SO101" },
+    { "id": "gripper", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/gripper.json", "pdu_robot": "SO101" },
+    { "id": "manual_controller", "kind": "controller", "type": "joy_manual_controller", "config": "config/controller/manual.json", "pdu_robot": "SO101" },
+    { "id": "trajectory_controller", "kind": "controller", "type": "joint_trajectory_controller", "config": "config/controller/trajectory.json", "pdu_robot": "SO101" },
+    { "id": "joint_states", "kind": "state_output", "type": "joint_state", "config": "config/sensors/joint_state/so101-joint-states.json", "pdu_robot": "SO101" }
+  ]
+}

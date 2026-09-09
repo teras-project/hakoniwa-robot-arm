@@ -1,0 +1,42 @@
+id: arm-ros2-topic-bridge
+title: ROS 2 topic bridge and arm samples in a separate workspace
+recipe_version: 1
+goal:
+  description: Build and install the ROS side of the host-plus-Docker arm workflow using mounted source checkouts.
+execution_environment:
+  os: Linux
+  ros_distributions: [humble, jazzy]
+  workspace_variable: HAKONIWA_ROS2_WS
+  python: ROS system Python, with a recipe-owned system-site-packages venv
+foundation_contract:
+  mode: not_required
+  reason: The ROS side uses a Core-free TCP Endpoint and does not enter the host Foundation.
+components:
+  - id: hakoniwa-pdu-endpoint
+    capabilities: [tcp, shared_library, python_binding]
+    hakoniwa_core: false
+  - id: hakoniwa-pdu-ros
+    capabilities: [ros_topic_bridge]
+  - id: hakoniwa-pdu-python
+    distribution: hakoniwa-pdu
+    version: 1.6.9
+  - id: hakoniwa_arm_samples
+    source: ros2_packages/hakoniwa_arm_samples
+tool:
+  entrypoint: tools/recipe/ros2_workspace.py
+  commands: [build, doctor, env]
+  arguments: [--workdir, --ros-distro, --endpoint-src, --pdu-ros-src]
+  source_policy: The entrypoint pins new clones; existing source checkouts are reused without checkout or pull.
+artifacts:
+  - native/lib/libhakoniwa_pdu_endpoint.so
+  - venv
+  - build
+  - install
+  - log
+  - activate.bash
+  - ros-workspace.json
+validation:
+  status: not_tested_end_to_end
+  notes:
+    - Build runs import and ROS package discovery checks before recording installed status.
+    - Docker builds and live TCP/ROS traffic must be verified in Humble and Jazzy environments.

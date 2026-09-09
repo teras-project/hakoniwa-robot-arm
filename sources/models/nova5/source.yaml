@@ -1,0 +1,17 @@
+name: nova5
+
+repo: https://github.com/Dobot-Arm/DOBOT_6Axis_ROS2_V4
+branch: feature/v4-optimization
+revision: 0f21e9839888f188ac06b0a9fea622d13a29a74f
+
+files:
+  - LICENSE
+  - cra_description/package.xml
+  - cra_description/urdf/nova5_robot.xacro
+  - cra_description/meshes/nova5/
+  - nova5_moveit/config/joint_limits.yaml
+
+forge:
+  entry_xacro: cra_description/urdf/nova5_robot.xacro
+  normalized_urdf: cra_description/urdf/nova5_robot.urdf
+  package_root: cra_description

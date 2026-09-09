@@ -1,0 +1,16 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/robot-arm-joint-trajectory-controller.schema.json",
+  "input": {
+    "pdu_name": "joint_trajectory",
+    "update_rate_hz": 50,
+    "message_type": "trajectory_msgs/JointTrajectory"
+  },
+  "joints": [
+    { "name": "j1_joint", "actuator": "j1" },
+    { "name": "j2_joint", "actuator": "j2" },
+    { "name": "j3_joint", "actuator": "j3" },
+    { "name": "j4_joint", "actuator": "j4" },
+    { "name": "j5_joint", "actuator": "j5" },
+    { "name": "j6_joint", "actuator": "j6" }
+  ]
+}

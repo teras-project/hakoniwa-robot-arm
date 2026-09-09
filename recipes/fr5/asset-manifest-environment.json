@@ -1,0 +1,21 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/hakoniwa-asset-manifest.schema.json",
+  "schema_version": 1,
+  "name": "FR5",
+  "description": "FR5 collision-workspace variant generated from Recipe environment configuration.",
+  "model": "FR5WM.environment.xml",
+  "pdu_def": "config/pdu/fr5-pdudef.json",
+  "endpoint": "config/endpoint/fr5_endpoint.json",
+  "runtime_config": "config/runtime.json",
+  "components": [
+    { "id": "j1", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/j1.json", "pdu_robot": "FR5" },
+    { "id": "j2", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/j2.json", "pdu_robot": "FR5" },
+    { "id": "j3", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/j3.json", "pdu_robot": "FR5" },
+    { "id": "j4", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/j4.json", "pdu_robot": "FR5" },
+    { "id": "j5", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/j5.json", "pdu_robot": "FR5" },
+    { "id": "j6", "kind": "actuator", "type": "joint_position_actuator", "config": "config/actuator/joint/j6.json", "pdu_robot": "FR5" },
+    { "id": "manual_controller", "kind": "controller", "type": "joy_manual_controller", "config": "config/controller/manual.json", "pdu_robot": "FR5" },
+    { "id": "trajectory_controller", "kind": "controller", "type": "joint_trajectory_controller", "config": "config/controller/trajectory.json", "pdu_robot": "FR5" },
+    { "id": "joint_states", "kind": "state_output", "type": "joint_state", "config": "config/sensors/joint_state/fr5-joint-states.json", "pdu_robot": "FR5" }
+  ]
+}

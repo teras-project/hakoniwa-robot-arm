@@ -1,0 +1,80 @@
+id: nova5-model-forge
+title: DOBOT Nova5 Source to MuJoCo Model Forge
+recipe_version: 1.0
+
+goal:
+  user_request: DOBOT Nova5の公式モデルを固定し、MuJoCoモデルを再現可能に生成したい
+  description: Fetch the pinned official description, remove ROS/Gazebo-only elements, and generate an actuated MJCF model.
+
+feasibility:
+  status: feasible
+  confidence: high
+
+validation:
+  status: verified
+  verified_at: 2026-08-25
+  summary: The pinned Nova5 Xacro and seven STL meshes convert to a six-axis actuated MJCF model.
+
+foundation_contract:
+  mode: not_required
+  reason: Model forging is an offline operation and does not execute Hakoniwa Core; the forge tooling reuses the Business Pack managed Python environment prepared by setup.
+
+recipe_local_requirements_schema_version: 1
+recipe_local_requirements:
+  hakoniwa-mbody-registry:
+    root:
+      default_path: ../hakoniwa-mbody-registry
+      override_env: HAKONIWA_MBODY_REGISTRY_ROOT
+      relative_to: recipe_repository
+    source:
+      type: git
+      url: https://github.com/hakoniwalab/hakoniwa-mbody-registry.git
+      revision: 93a053913445d2f97a6dddc1ccb959c985a3db44
+    required_artifacts:
+      - {path: tools/fetch.py, kind: file}
+      - {path: tools/path_utils.py, kind: file}
+      - {path: tools/urdf2mjcf.py, kind: file}
+      - {path: tools/urdf2actuator.py, kind: file}
+      - {path: tools/mjcf_add_actuators.py, kind: file}
+      - {path: tools/mjcf_add_contact_excludes.py, kind: file}
+  hakoniwa-mujoco-robots:
+    root:
+      default_path: ../hakoniwa-mujoco-robots
+      override_env: HAKONIWA_MUJOCO_ROBOTS_ROOT
+      relative_to: recipe_repository
+    source:
+      type: git
+      url: https://github.com/hakoniwalab/hakoniwa-mujoco-robots.git
+      revision: 326ff7c7ccfa79bf735671c4ba7009cb629a3271
+    required_artifacts:
+      - {path: MUJOCO_VERSION.txt, kind: file}
+
+runtime_dependencies:
+  python:
+    requirements: recipes/nova5/model-forge-requirements.txt
+
+artifacts:
+  - name: Actuated Nova5 MJCF
+    owner: hakoniwa-robot-arm
+    path: $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml
+    purpose: Physics and visualization input for the common arm runtime.
+
+source_catalogs: [sources/models/nova5/source.yaml]
+source_artifacts:
+  - sources/models/nova5/provenance.yaml
+  - sources/models/nova5/LICENSE_INFO.yaml
+  - recipes/nova5/actuator.yaml
+  - recipes/nova5/contact-excludes.yaml
+  - recipes/nova5/model-forge-requirements.txt
+
+missing_pieces:
+  - Confirm whether the Nova5 description and mesh assets use the repository-level MIT license or package metadata BSD declaration before redistribution.
+
+demo:
+  objective: Regenerate the Nova5 model from the pinned official source.
+  steps:
+    - order: 1
+      component: hakoniwa-robot-arm
+      action: Run the Nova5 forge from the active Hakoniwa Composer workspace.
+      command: python ../hakoniwa-robot-arm/tools/recipe/nova5.py forge
+  success_signals: [nova5.contact.xml is generated with six position actuators]

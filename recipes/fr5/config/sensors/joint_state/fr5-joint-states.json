@@ -1,0 +1,60 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-state-output.schema.json",
+  "spec": {
+    "type": "joint_state",
+    "name": "joint_states",
+    "joints": [
+      {
+        "name": "j1_joint"
+      },
+      {
+        "name": "j2_joint"
+      },
+      {
+        "name": "j3_joint"
+      },
+      {
+        "name": "j4_joint"
+      },
+      {
+        "name": "j5_joint"
+      },
+      {
+        "name": "j6_joint"
+      }
+    ]
+  },
+  "mjcf_binding": {
+    "joints": [
+      {
+        "name": "j1_joint",
+        "mjcf_joint": "j1"
+      },
+      {
+        "name": "j2_joint",
+        "mjcf_joint": "j2"
+      },
+      {
+        "name": "j3_joint",
+        "mjcf_joint": "j3"
+      },
+      {
+        "name": "j4_joint",
+        "mjcf_joint": "j4"
+      },
+      {
+        "name": "j5_joint",
+        "mjcf_joint": "j5"
+      },
+      {
+        "name": "j6_joint",
+        "mjcf_joint": "j6"
+      }
+    ]
+  },
+  "pdu_config": {
+    "pdu_name": "joint_states",
+    "update_rate_hz": 50.0,
+    "message_type": "sensor_msgs/JointState"
+  }
+}

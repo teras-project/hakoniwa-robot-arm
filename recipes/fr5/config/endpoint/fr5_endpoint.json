@@ -1,0 +1,6 @@
+{
+  "name": "fr5_endpoint",
+  "pdu_def_path": "../pdu/fr5-pdudef.json",
+  "cache": "cache_buffer.json",
+  "comm": "comm_shm.json"
+}

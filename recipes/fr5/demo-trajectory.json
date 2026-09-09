@@ -1,0 +1,14 @@
+{
+  "joint_names": ["j1_joint", "j2_joint", "j3_joint", "j4_joint", "j5_joint", "j6_joint"],
+  "points": [
+    {"time_from_start": 0.0, "positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+    {"time_from_start": 1.5, "positions": [0.3, -0.6, 0.3, 0.0, 0.1, 0.0]},
+    {"time_from_start": 3.5, "positions": [0.8, -1.2, 0.8, -0.3, 0.4, 0.2]},
+    {"time_from_start": 5.0, "positions": [0.8, -1.2, 0.8, -0.3, 0.4, 1.5]},
+    {"time_from_start": 7.5, "positions": [0.8, -3.0, 1.5, -0.3, 0.4, 1.5]},
+    {"time_from_start": 10.0, "positions": [-0.5, -3.0, 1.5, 0.2, -0.3, 1.5]},
+    {"time_from_start": 12.5, "positions": [-0.5, -1.2, 0.8, 0.2, -0.3, 1.5]},
+    {"time_from_start": 14.0, "positions": [-0.5, -0.6, 0.3, 0.2, -0.3, 0.0]},
+    {"time_from_start": 16.5, "positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}
+  ]
+}
