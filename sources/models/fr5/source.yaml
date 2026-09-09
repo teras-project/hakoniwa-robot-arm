@@ -9,4 +9,4 @@ files:
 
 forge:
   entry_urdf: fairino_description/urdf/FR5WM.urdf
-    
+  normalized_urdf: fairino_description/urdf/FR5WM.urdf

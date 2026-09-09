@@ -30,7 +30,7 @@ covered_local_artifacts:
     - $HAKONIWA_WORK_DIR/model-forge/fr5/install/FR5WM.contact.xml
 
 local_changes:
-  - Patched the upstream FR5WM URDF for conversion.
+  - The user creates a normalized FR5WM URDF in HAKONIWA_WORK_DIR and removes the invalid tool joint before conversion.
   - Converted DAE meshes to OBJ and URDF to MJCF.
   - Added MuJoCo position actuators and contact exclusions.
   - Added Hakoniwa runtime manifests, PDU bindings, and demo configuration outside this directory.

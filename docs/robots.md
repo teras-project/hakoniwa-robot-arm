@@ -69,4 +69,4 @@ HostとDockerを接続する場合は、このロボット固有ディレクト�
 
 機種固有のモデル取得元、固定revision、変換内容は`recipes/<robot>/`と`sources/models/<robot>/`で管理します。Robot Model本体はGit管理せず、Forgeによってworkへ取得・生成します。
 
-ライセンスと再配布条件は[Robot Modelのライセンス情報](license/robot-models.md)を参照してください。特にFR5は上流ライセンスが未確定のため、モデルと同モデル由来のpatchを外部へ再配布しません。
+ライセンスと再配布条件は[Robot Modelのライセンス情報](license/robot-models.md)を参照してください。特にFR5は上流ライセンスが未確定のため、モデルや正規化済みURDFを外部へ再配布しません。Forge前に必要な正規化は[FR5 source normalization](../sources/models/fr5/README.md)に従い、利用者のwork内で行います。

@@ -5,9 +5,9 @@ recipe_version: 1.0
 goal:
   user_request: FAIRINO FR5の取得元を固定し、調整可能なMuJoCoモデルを再現可能に生成したい
   description: >
-    Materialize the pinned FR5 description, apply the delivery-specific normalization
-    patch, convert meshes and URDF to MJCF, then layer delivery-specific actuator and
-    contact tuning onto the generated model.
+    Materialize the pinned FR5 description, validate a work-owned normalized URDF,
+    convert meshes and URDF to MJCF, then layer delivery-specific actuator and contact
+    tuning onto the generated model.
 
 feasibility:
   status: feasible
@@ -110,13 +110,13 @@ components:
     purpose: Fetch and convert the FR5 robot description.
   - id: hakoniwa-robot-arm
     roles: [private_recipe, product_tuning]
-    purpose: Own FR5 source selection, patches, actuator tuning, and contact exclusions.
+    purpose: Own FR5 source selection, normalization instructions, actuator tuning, and contact exclusions.
 
 connections:
   - from: hakoniwa-robot-arm
     to: hakoniwa-mbody-registry
     interface: command-line forge tools
-    data: [source manifest, patch, actuator configuration, contact exclusions]
+    data: [source manifest, normalization instructions, actuator configuration, contact exclusions]
     contract:
       status: verified
       requires: [sibling checkout at the declared revision]
@@ -127,7 +127,11 @@ data_flow:
     - from: upstream-fr5-source
       to: hakoniwa-mbody-registry
       data: [URDF, DAE meshes]
-      description: Materialize and convert the selected source closure.
+      description: Materialize the selected source closure without modifying the fetched original.
+    - from: user-normalization
+      to: hakoniwa-robot-arm
+      data: [work-owned normalized URDF]
+      description: Remove the invalid tool joint after Forge reports its unresolved gripper_Link reference.
     - from: hakoniwa-mbody-registry
       to: hakoniwa-robot-arm
       data: [FR5WM.contact.xml, converted meshes]
@@ -170,7 +174,8 @@ demo:
   success_signals:
     - FR5WM.contact.xml is generated without missing meshes.
   failure_signals:
-    - Missing sibling checkout, upstream artifact, patch target, or conversion dependency.
+    - Missing sibling checkout, upstream artifact, normalized URDF, or conversion dependency.
+    - A joint parent or child references a link not defined by the normalized URDF.
 
 expected_result:
   summary: A reproducible, delivery-specific tuned FR5 MuJoCo model is ready for runtime validation.
@@ -179,7 +184,7 @@ source_catalogs:
   - sources/models/fr5/source.yaml
 source_artifacts:
   - sources/models/fr5/LICENSE_INFO.yaml
-  - sources/models/fr5/patches/FR5WM.patch
+  - sources/models/fr5/README.md
   - recipes/fr5/actuator.yaml
   - recipes/fr5/contact-excludes.yaml
   - recipes/fr5/model-forge-requirements.txt

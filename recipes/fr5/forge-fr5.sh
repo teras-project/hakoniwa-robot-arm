@@ -16,12 +16,13 @@ RECIPE_DIR="$PACK_ROOT/recipes/fr5"
 SOURCE_YAML="$PACK_ROOT/sources/models/fr5/source.yaml"
 FORGE_ROOT="$("$PYTHON_CMD" "$PACK_ROOT/tools/model_workspace.py" fr5)"
 SOURCE_DIR="$FORGE_ROOT/source"
+NORMALIZED_DIR="$FORGE_ROOT/normalized"
 BUILD_DIR="$FORGE_ROOT/build"
 OUTPUT_DIR="$FORGE_ROOT/install"
 STAGING_DIR="$FORGE_ROOT/.install-next"
 
-rm -rf "$SOURCE_DIR" "$BUILD_DIR" "$STAGING_DIR"
-mkdir -p "$SOURCE_DIR" "$BUILD_DIR" "$STAGING_DIR"
+rm -rf "$BUILD_DIR" "$STAGING_DIR"
+mkdir -p "$SOURCE_DIR" "$NORMALIZED_DIR" "$BUILD_DIR" "$STAGING_DIR"
 
 if [ ! -f "$MBODY_ROOT/tools/fetch.py" ]; then
     echo "Error: hakoniwa-mbody-registry sibling checkout was not found:"
@@ -36,16 +37,7 @@ echo "  - Source YAML: $SOURCE_YAML"
 echo "  - Output dir:  $OUTPUT_DIR"
 
 #
-# Fetch FR5 source assets.
-#
-"$PYTHON_CMD" "$MBODY_ROOT/tools/fetch.py" \
-    "$SOURCE_YAML" \
-    --output-dir "$SOURCE_DIR"
-
-cp -R "$SOURCE_DIR"/. "$BUILD_DIR"/
-
-#
-# Read entry URDF from fr5.yaml.
+# Read source and normalized URDF paths from source.yaml.
 #
 ENTRY_URDF_REL="$("$PYTHON_CMD" - <<'PY' "$SOURCE_YAML"
 from pathlib import Path
@@ -64,43 +56,118 @@ entry_urdf = (
 print(entry_urdf)
 PY
 )"
+NORMALIZED_URDF_REL="$("$PYTHON_CMD" - <<'PY' "$SOURCE_YAML"
+from pathlib import Path
+import sys
+import yaml
+
+config = yaml.safe_load(
+    Path(sys.argv[1]).read_text(encoding="utf-8")
+)
+
+normalized_urdf = (
+    config.get("forge", {})
+    .get("normalized_urdf", "")
+)
+
+print(normalized_urdf)
+PY
+)"
 
 if [ -z "$ENTRY_URDF_REL" ]; then
     echo "Error: forge.entry_urdf is not defined in $SOURCE_YAML"
     exit 1
 fi
-
-ENTRY_URDF="$BUILD_DIR/$ENTRY_URDF_REL"
-
-if [ ! -f "$ENTRY_URDF" ]; then
-    echo "Error: Entry URDF not found:"
-    echo "  $ENTRY_URDF"
+if [ -z "$NORMALIZED_URDF_REL" ]; then
+    echo "Error: forge.normalized_urdf is not defined in $SOURCE_YAML"
     exit 1
 fi
 
-echo
-echo "FR5 source fetch complete."
-echo "Entry URDF:"
-echo "  $ENTRY_URDF"
+SOURCE_URDF="$SOURCE_DIR/$ENTRY_URDF_REL"
+NORMALIZED_URDF="$NORMALIZED_DIR/$NORMALIZED_URDF_REL"
+ENTRY_URDF="$BUILD_DIR/$NORMALIZED_URDF_REL"
 
-PATCH_FILE="$PACK_ROOT/sources/models/fr5/patches/FR5WM.patch"
+if [ ! -f "$SOURCE_URDF" ]; then
+    "$PYTHON_CMD" "$MBODY_ROOT/tools/fetch.py" \
+        "$SOURCE_YAML" \
+        --output-dir "$SOURCE_DIR"
+else
+    echo "Using retained FR5 source:"
+    echo "  $SOURCE_URDF"
+fi
 
-if [ ! -f "$PATCH_FILE" ]; then
-    echo "Error: Patch file not found:"
-    echo "  $PATCH_FILE"
+if [ ! -f "$SOURCE_URDF" ]; then
+    echo "Error: Source URDF not found after fetch:"
+    echo "  $SOURCE_URDF"
     exit 1
 fi
 
+validate_urdf_links() {
+    "$PYTHON_CMD" - "$1" <<'PY'
+from pathlib import Path
+import sys
+import xml.etree.ElementTree as ET
+
+path = Path(sys.argv[1])
+try:
+    root = ET.parse(path).getroot()
+except (OSError, ET.ParseError) as error:
+    print(f"Error: failed to parse URDF {path}: {error}", file=sys.stderr)
+    raise SystemExit(1)
+
+links = {
+    link.get("name")
+    for link in root.findall("link")
+    if link.get("name")
+}
+invalid = []
+for joint in root.findall("joint"):
+    joint_name = joint.get("name", "<unnamed>")
+    for relation in ("parent", "child"):
+        element = joint.find(relation)
+        link_name = element.get("link") if element is not None else None
+        if not link_name:
+            invalid.append(f"joint '{joint_name}' has no {relation} link")
+        elif link_name not in links:
+            invalid.append(
+                f"joint '{joint_name}' {relation} references undefined link '{link_name}'"
+            )
+
+if invalid:
+    for message in invalid:
+        print(f"Error: {message}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+}
+
+if [ ! -f "$NORMALIZED_URDF" ]; then
+    echo
+    echo "=== FR5 Forge: Validate Upstream URDF ==="
+    if ! validate_urdf_links "$SOURCE_URDF"; then
+        echo "FR5 source normalization is required before conversion." >&2
+        echo "Keep the fetched original unchanged and create the corrected URDF at:" >&2
+        echo "  $NORMALIZED_URDF" >&2
+        echo "Follow: $PACK_ROOT/sources/models/fr5/README.md" >&2
+        exit 1
+    fi
+    mkdir -p "$(dirname "$NORMALIZED_URDF")"
+    cp "$SOURCE_URDF" "$NORMALIZED_URDF"
+fi
+
 echo
-echo "=== FR5 Forge: Apply Patch ==="
-echo "  - Patch: $PATCH_FILE"
+echo "=== FR5 Forge: Validate Normalized URDF ==="
+echo "  - Original:   $SOURCE_URDF"
+echo "  - Normalized: $NORMALIZED_URDF"
+if ! validate_urdf_links "$NORMALIZED_URDF"; then
+    echo "Correct the normalized URDF and rerun this Forge command." >&2
+    echo "Follow: $PACK_ROOT/sources/models/fr5/README.md" >&2
+    exit 1
+fi
 
-(
-    cd "$BUILD_DIR"
-    patch -p1 < "$PATCH_FILE"
-)
-
-echo "FR5 patch applied successfully."
+cp -R "$SOURCE_DIR"/. "$BUILD_DIR"/
+mkdir -p "$(dirname "$ENTRY_URDF")"
+cp "$NORMALIZED_URDF" "$ENTRY_URDF"
+echo "FR5 normalized URDF is ready for conversion."
 
 #
 # Convert DAE meshes to OBJ and rewrite URDF references.
