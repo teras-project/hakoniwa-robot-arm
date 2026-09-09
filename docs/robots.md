@@ -49,12 +49,12 @@ ROS 2の`control` sampleは、Nova5以外では`--joint-names`を明示します
 | Robot | 関節名（軌道順） |
 | --- | --- |
 | Nova5 | `joint1 joint2 joint3 joint4 joint5 joint6` |
-| FR5 | `j1 j2 j3 j4 j5 j6` |
+| FR5 | `j1_joint j2_joint j3_joint j4_joint j5_joint j6_joint` |
 | SO-101 | `shoulder_pan shoulder_lift elbow_flex wrist_flex wrist_roll gripper` |
 
 ```bash
 ros2 run hakoniwa_arm_samples control \
-  --joint-names j1 j2 j3 j4 j5 j6
+  --joint-names j1_joint j2_joint j3_joint j4_joint j5_joint j6_joint
 ```
 
 ROS 2 TCP設定の生成先も、次のようにロボットIDで切り替わります。

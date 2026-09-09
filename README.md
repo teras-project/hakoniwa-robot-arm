@@ -277,7 +277,7 @@ native Linux HostではViewerを利用できます。macOS Docker Desktopではn
 | `recipes/nova5/` | Nova5のManifest、PDU、制御、Forge設定 |
 | `recipes/ros2/` | ROS 2 TCP BridgeのRecipe |
 | `ros2_packages/` | 納品対象のROS 2パッケージとサンプルノード |
-| `sources/models/` | 上流モデルの取得情報、出典、適用パッチ。取得したモデル本体は含まない |
+| `sources/models/` | 上流モデルの取得情報、出典、work内での正規化手順。取得したモデル本体は含まない |
 | `tools/` | Forge、Recipe操作、環境生成、制御用ツール |
 | `docker/` | ROS 2 Humble/Jazzy用のContainer環境 |
 

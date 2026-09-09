@@ -53,3 +53,10 @@ python "$ARM_PACK/tools/recipe/fr5.py" forge
 Forgeは`normalized/`のURDFを再検査し、問題がなければ`build/`へコピーしてDAE変換、
 MJCF変換、actuator追加、contact設定を継続します。再実行時に`source/`と`normalized/`は
 削除されません。変換中間物は`build/`、実行用成果物は`install/`へ生成されます。
+
+## 取得定義を変更する場合
+
+`source.yaml`の取得元repository、固定revision、取得対象ファイルを変更する場合は、
+新しい`HAKONIWA_WORK_DIR`を選び、原本の取得と正規化を最初から行ってください。
+既存workの`source/`と`normalized/`は自動更新されません。これは、取得定義だけが新しく、
+実際の変換入力は以前のrevisionという混在や、手編集した正規化結果の意図しない削除を防ぐためです。
