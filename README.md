@@ -16,6 +16,7 @@
 - [ビルド手順](docs/build.md)
 - [起動・動作確認手順](docs/operation.md)
 - [Nova5 Model Forge](docs/model-forge.md)
+- [設定変更と反映方法](docs/configuration-workflow.md)
 
 ## できること
 
@@ -68,6 +69,26 @@ flowchart LR
 - MuJoCoモデル（MJCF）
 - PDU定義とPDU通信定義
 - アクチュエータ、コントローラ、センサ設定
+
+本リポジトリはNova5用の設定値と設定ファイルの組み合わせを所有し、各項目の意味、参照関係、検証規則は`hakoniwa-robot-runtime`を正本とします。通常利用ではこれらの設定を変更する必要はありませんが、ロボット構成や制御方法を変更する場合は、次のRuntime文書を参照してください。
+
+- [Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/configuration.md): Asset Manifest、Runtime、actuator、controller、state-output、PDU、Endpointの設定仕様と参照関係
+- [Robot Runtime Design](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/design.md): Runtimeの責務、内部構成、Adapterとの境界
+- [Runtime-owned JSON Schemas](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/schemas): Runtimeが所有する機械可読な設定Schema
+- [Hakoniwa PDU Endpoint Schemas](https://github.com/hakoniwalab/hakoniwa-pdu-endpoint/tree/main/config/schema): PDU Definition、PDU Types、Endpoint、Cache、Comm形式の正本
+
+Nova5の具体的な設定例は次にあります。
+
+| 設定 | Nova5の設定ファイル | 主な役割 |
+| --- | --- | --- |
+| Asset Manifest | [`recipes/nova5/asset-manifest.json`](recipes/nova5/asset-manifest.json) | モデル、PDU、Endpoint、Runtime componentを束ねる入口 |
+| Runtime | [`recipes/nova5/config/runtime.json`](recipes/nova5/config/runtime.json) | actuator Runtimeの共通設定とcommand timeout |
+| MuJoCo actuator | [`recipes/nova5/actuator.yaml`](recipes/nova5/actuator.yaml) | position actuatorの`kp`、`dampratio`、`ctrlrange`。ゲイン変更は再Forgeが必須。調整手順は[Model Forge](docs/model-forge.md#4-kpとdampratioの調整)を参照 |
+| Actuator / Controller / State Output | [`recipes/nova5/config/`](recipes/nova5/config/) | joint binding、軌道制御、関節状態出力 |
+| PDU Definition / Types | [`recipes/nova5/config/pdu/`](recipes/nova5/config/pdu/) | Nova5が使用するPDU robot、channel、message type |
+| Endpoint | [`recipes/nova5/config/endpoint/nova5_endpoint.json`](recipes/nova5/config/endpoint/nova5_endpoint.json) | PDU Definitionと通信backendの選択 |
+
+`nova5.py configure`がwork側へ生成する`launcher.json`や、Forgeが生成するMJCFは直接編集しません。元となるManifest、config、Recipeを変更して再生成します。変更対象ごとのForge／configure／buildの区別、生成先、反映確認は[設定変更と反映方法](docs/configuration-workflow.md)を参照してください。
 
 ## 箱庭Business Packとの関係
 

@@ -19,7 +19,12 @@
 - [セットアップ手順](setup.md): 利用構成の選択、共通前提、workの分離
 - [ビルド手順](build.md): Viewerあり／headlessの選択と生成先
 - [起動・動作確認手順](operation.md): ROSトピック、期待結果、終了方法
-- [Nova5 Model Forge](model-forge.md): 上流モデルの取得、変換、生成物
+- [Nova5 Model Forge](model-forge.md): 上流モデルの取得、変換、`kp`／`dampratio`の調整、生成物
+- [設定変更と反映方法](configuration-workflow.md): パラメータごとのForge／configure／buildの境界、生成先、反映確認
+
+## 設定仕様
+
+Nova5の設定インスタンスは本リポジトリの`recipes/nova5/`にあります。Asset Manifest、Runtime component、PDU、Endpointの意味と検証規則は、Recipeが固定している[`hakoniwa-robot-runtime`のConfiguration文書](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/configuration.md)を正本として参照してください。設定ファイルと仕様文書の対応は[トップREADMEの「箱庭ロボットランタイム」](../README.md#箱庭ロボットランタイム)、変更後に必要な処理と確認方法は[設定変更と反映方法](configuration-workflow.md)にまとめています。
 
 ## 手順の前提
 
