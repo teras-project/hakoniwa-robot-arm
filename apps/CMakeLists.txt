@@ -7,6 +7,7 @@ add_executable(robot-arm-hakoniwa-asset
 
 set_target_properties(robot-arm-hakoniwa-asset PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin"
 )
 
 target_compile_features(robot-arm-hakoniwa-asset PRIVATE cxx_std_20)

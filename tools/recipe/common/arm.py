@@ -24,6 +24,7 @@ from _hakoniwa_composer import (  # noqa: E402
 RECIPE_ID = ""
 ROBOT_ID = ""
 ROBOT_LABEL = ""
+BUILD_CONFIGURATION = "Release"
 
 
 def select_robot(robot_id: str, robot_label: str) -> None:
@@ -368,7 +369,7 @@ def build(mujoco_root: Path, headless: bool) -> int:
     build_dir = workspace.recipe_root / "build"
     configure_command = [
         "cmake", "-S", str(arm_root()), "-B", str(build_dir),
-        "-DCMAKE_BUILD_TYPE=Release",
+        f"-DCMAKE_BUILD_TYPE={BUILD_CONFIGURATION}",
         f"-DHAKONIWA_FOUNDATION_PREFIX={workspace.install_prefix}",
         f"-DHAKONIWA_MUJOCO_ROBOTS_ROOT={mujoco_root}",
         "-DHAKO_USE_THIRDPARTY_HAKONIWA=OFF",
@@ -378,7 +379,11 @@ def build(mujoco_root: Path, headless: bool) -> int:
     if run(configure_command, cwd=arm_root(), env=env) != 0:
         return 1
     return run(
-        ["cmake", "--build", str(build_dir), "--target", runtime_target(), "--parallel", "2"],
+        [
+            "cmake", "--build", str(build_dir),
+            "--config", BUILD_CONFIGURATION,
+            "--target", runtime_target(), "--parallel", "2",
+        ],
         cwd=arm_root(), env=env,
     )
 
