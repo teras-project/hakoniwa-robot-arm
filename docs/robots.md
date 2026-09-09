@@ -11,7 +11,7 @@
 | FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
 
-FR5とSO-101についても、[Nova5の環境別手順](README.md)5と同じ手順で実行できます。ロボット名だけを変更してください。
+FR5とSO-101についても、[Nova5の環境別手順](README.md)と同じ手順で実行できます。ロボット名だけを変更してください。
 
 ## ロボット名を置き換えるポイント
 
