@@ -15,7 +15,7 @@ host-onlyは、箱庭シミュレーション単体でも利用できます。Ub
 ## 共通原則
 
 - 3つの利用構成から1つだけを選び、同じ名前のsetup、build、operationを使用します。
-- 人がViewerを確認できる環境ではViewerありを標準とします。CI、画面のない環境、macOS上のdocker-onlyでは`--headless`を使用します。
+- HostではViewerありを標準とします。CI、画面のない環境、macOS上のdocker-onlyでは`--headless`を使用します。
 - `HAKONIWA_WORK_DIR`にはFoundation、Forge、Recipe build、設定、ログ、セッションを生成します。
 - `HAKONIWA_ROS2_WS`にはROS 2専用venv、Endpoint、colcon build/install/logを生成します。
 - Host、Container、Humble、Jazzyの生成物には、それぞれ異なるworkディレクトリを使用します。
