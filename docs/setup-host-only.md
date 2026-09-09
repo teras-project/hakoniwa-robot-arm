@@ -6,6 +6,8 @@ Nova5 RuntimeをHost上で実行します。箱庭シミュレーション単体
 
 [トップREADMEの前提ソフトウェア](../README.md#前提ソフトウェア)と[共通セットアップ](setup.md)を確認し、2つのリポジトリをcloneしてください。
 
+このページの具体例はUbuntu 24.04／ROS 2 Jazzyを基準としています。Humbleを利用する場合はROS 2 distroに合わせて読み替えてください。Ubuntu 22.04などCPython 3.12が標準提供されない環境では、Python 3.12を別途準備する必要があります。
+
 Ubuntu 24.04／ROS 2 Jazzyで必要となるHostパッケージの例です。
 
 ```bash

@@ -161,6 +161,8 @@ $HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/logs/nova5-plant.err
   └── recipes/nova5/config/actuator/joint/ の spec.limit
 ```
 
+`tools/sync_arm_joint_limits.py`による同期では、これらのGit管理対象の設定ファイルが更新される場合があります。通常の固定revisionでは差分が発生しない想定ですが、特に上流revisionを変更した後は、Forge後に`git diff`を実行し、意図した変更であることを確認してください。
+
 `kp`と`dampratio`は調整対象ですが、`ctrlrange`は上流モデルとの同期対象、という違いがあります。
 
 ## 5. 生成結果の確認

@@ -11,7 +11,7 @@
 | FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
 
-FR5とSO-101についても、[Nova5の環境別手順](README.md)と同じ手順で実行できます。ロボット名だけを変更してください。
+FR5とSO-101についても、基本的な実行手順は[Nova5の環境別手順](README.md)と共通です。ただしFR5では、初回Model Forge時に機種固有のURDF正規化が必要です。詳細は[FR5 source normalization](../sources/models/fr5/README.md)を参照してください。
 
 ## ロボット名を置き換えるポイント
 
