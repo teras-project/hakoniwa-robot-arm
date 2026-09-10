@@ -16,6 +16,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 from _hakoniwa_composer import (  # noqa: E402
     HakoniwaComposerError,
     arm_root,
+    load_foundation_consumer_module,
     load_foundation_module,
     model_install_dir,
 )
@@ -365,11 +366,13 @@ def run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | No
 
 def build(mujoco_root: Path, headless: bool) -> int:
     foundation, workspace = workspace_and_foundation()
+    foundation_consumer = load_foundation_consumer_module()
     required(mujoco_root / "src/CMakeLists.txt", "hakoniwa-mujoco-robots sibling")
     build_dir = workspace.recipe_root / "build"
     configure_command = [
         "cmake", "-S", str(arm_root()), "-B", str(build_dir),
         f"-DCMAKE_BUILD_TYPE={BUILD_CONFIGURATION}",
+        *foundation_consumer.cmake_consumer_args(workspace),
         f"-DHAKONIWA_FOUNDATION_PREFIX={workspace.install_prefix}",
         f"-DHAKONIWA_MUJOCO_ROBOTS_ROOT={mujoco_root}",
         "-DHAKO_USE_THIRDPARTY_HAKONIWA=OFF",

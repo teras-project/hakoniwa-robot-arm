@@ -155,6 +155,28 @@ def load_foundation_module():
     return _FoundationAdapter(module, root)
 
 
+def load_foundation_consumer_module():
+    script = (
+        composer_root()
+        / "foundation"
+        / "python"
+        / "hakoniwa_foundation_consumer.py"
+    )
+    if not script.is_file():
+        raise HakoniwaComposerError(
+            f"Foundation consumer API was not found: {script}"
+        )
+    spec = importlib.util.spec_from_file_location(
+        "robot_arm_hakoniwa_foundation_consumer", script
+    )
+    if spec is None or spec.loader is None:
+        raise HakoniwaComposerError(f"cannot load Foundation consumer API: {script}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def load_workspace_module():
     root = composer_root()
     script = root / "tools" / "workspace.py"
