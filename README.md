@@ -80,9 +80,9 @@ flowchart LR
 
 本リポジトリは各対応ロボット用の設定値と設定ファイルの組み合わせを所有し、各項目の意味、参照関係、検証規則は`hakoniwa-robot-runtime`を正本とします。通常利用ではこれらの設定を変更する必要はありませんが、ロボット構成や制御方法を変更する場合は、次の文書を参照してください。
 
-- [Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/configuration.md): Asset Manifest、Runtime、actuator、controller、state-output、PDU、Endpointの設定仕様と参照関係
-- [Robot Runtime Design](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/design.md): Runtimeの責務、内部構成、Adapterとの境界
-- [Runtime-owned JSON Schemas](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/schemas): Runtimeが所有する機械可読な設定Schema
+- [Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/configuration.md): Asset Manifest、Runtime、actuator、controller、state-output、PDU、Endpointの設定仕様と参照関係
+- [Robot Runtime Design](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/design.md): Runtimeの責務、内部構成、Adapterとの境界
+- [Runtime-owned JSON Schemas](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/main/schemas): Runtimeが所有する機械可読な設定Schema
 - [Hakoniwa PDU Endpoint Schemas](https://github.com/hakoniwalab/hakoniwa-pdu-endpoint/tree/main/config/schema): PDU Definition、PDU Types、Endpoint、Cache、Comm形式の正本
 
 具体的な設定例として、Nova5では次のファイルを使用します。FR5／SO-101にも`recipes/<robot>/`以下に同じ構成の設定があります。

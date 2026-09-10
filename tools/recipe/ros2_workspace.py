@@ -14,8 +14,8 @@ from pathlib import Path
 
 ARM_ROOT = Path(__file__).resolve().parents[2]
 SOURCES = {
-    "hakoniwa-pdu-endpoint": "3e06ca5f4bd899d72639b4e0ac9452d88383c7ae",
-    "hakoniwa-pdu-ros": "f180e38da1852d756b94a5a551a6e45812b5ce84",
+    "hakoniwa-pdu-endpoint": "main",
+    "hakoniwa-pdu-ros": "main",
 }
 
 

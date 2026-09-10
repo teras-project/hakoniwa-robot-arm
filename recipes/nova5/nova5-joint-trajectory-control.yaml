@@ -52,7 +52,7 @@ recipe_local_requirements:
     source:
       type: git
       url: "https://github.com/hakoniwalab/hakoniwa-mujoco-robots.git"
-      revision: 326ff7c7ccfa79bf735671c4ba7009cb629a3271
+      revision: main
     required_artifacts:
       - path: src/CMakeLists.txt
         kind: file
@@ -64,7 +64,7 @@ recipe_local_requirements:
     source:
       type: git
       url: "https://github.com/hakoniwalab/hakoniwa-robot-runtime.git"
-      revision: f7db45434ae86d8fbc1c9c1682018db7c6106aa8
+      revision: main
     required_artifacts:
       - path: include/hakoniwa/robot_runtime/factory/manifest_factory.hpp
         kind: file

@@ -20,7 +20,7 @@ recipe_local_requirements_schema_version: 1
 recipe_local_requirements:
   hakoniwa-mbody-registry:
     root: {default_path: ../hakoniwa-mbody-registry, override_env: HAKONIWA_MBODY_REGISTRY_ROOT, relative_to: recipe_repository}
-    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-mbody-registry.git", revision: 93a053913445d2f97a6dddc1ccb959c985a3db44}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-mbody-registry.git", revision: main}
     required_artifacts:
       - {path: tools/fetch.py, kind: file}
 

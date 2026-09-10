@@ -36,7 +36,7 @@ recipe_local_requirements:
       - {path: tools/foundation.py, kind: file}
   hakoniwa-mujoco-robots:
     root: {default_path: ../hakoniwa-mujoco-robots, override_env: HAKONIWA_MUJOCO_ROBOTS_ROOT, relative_to: recipe_repository}
-    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-mujoco-robots.git", revision: 326ff7c7ccfa79bf735671c4ba7009cb629a3271}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-mujoco-robots.git", revision: main}
     required_artifacts:
       - {path: src/CMakeLists.txt, kind: file}
   hakoniwa-robot-runtime:

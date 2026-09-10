@@ -1,6 +1,6 @@
 # 設定変更と反映方法
 
-この文書は、Nova5のどの設定を変更すると、Forge、configure、buildのどれを再実行する必要があるかをまとめた利用者向けガイドです。各JSON項目の厳密な意味と制約は、[Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/docs/configuration.md)と[JSON Schema](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/f7db45434ae86d8fbc1c9c1682018db7c6106aa8/schemas)を正本とします。
+この文書は、Nova5のどの設定を変更すると、Forge、configure、buildのどれを再実行する必要があるかをまとめた利用者向けガイドです。各JSON項目の厳密な意味と制約は、[Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/configuration.md)と[JSON Schema](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/main/schemas)を正本とします。
 
 ## 1. 変更の基本ルール
 
