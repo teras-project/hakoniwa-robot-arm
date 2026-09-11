@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from common.entrypoint import run_arm_recipe_with_model_forge
+from common.model_forge import run_arm_recipe_with_python_model_forge
 
 
 if __name__ == "__main__":
-    raise SystemExit(run_arm_recipe_with_model_forge("fr5", "FR5"))
+    raise SystemExit(run_arm_recipe_with_python_model_forge("fr5", "FR5"))

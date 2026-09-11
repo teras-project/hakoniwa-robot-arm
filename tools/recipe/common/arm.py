@@ -99,6 +99,11 @@ def binary(workspace) -> Path:
     return workspace.recipe_root / "build" / "bin" / f"{runtime_target()}{suffix}"
 
 
+def hako_cmd_binary(prefix: Path) -> Path:
+    suffix = ".exe" if platform.system() == "Windows" else ""
+    return prefix / "bin" / f"hako-cmd{suffix}"
+
+
 def session_file(workspace) -> Path:
     return workspace.recipe_root / "runtime" / "launcher-session.json"
 
@@ -406,11 +411,12 @@ def doctor(mujoco_root: Path) -> int:
         if isinstance(model_value, str) and model_value
         else model_install_dir(ROBOT_ID) / "<missing-model>"
     )
+    hako_cmd = hako_cmd_binary(workspace.install_prefix)
     checks = (
         ("Hakoniwa Composer Foundation engine", True, "reused from configured checkout"),
         ("hakoniwa-mujoco-robots sibling", (mujoco_root / "src/CMakeLists.txt").is_file(), str(mujoco_root)),
         ("Foundation Python", python.is_file(), str(python)),
-        ("hako-cmd", (workspace.install_prefix / "bin/hako-cmd").is_file(), str(workspace.install_prefix / "bin/hako-cmd")),
+        ("hako-cmd", hako_cmd.is_file(), str(hako_cmd)),
         ("Endpoint core callback", endpoint_library(workspace.install_prefix).is_file(), str(endpoint_library(workspace.install_prefix))),
         ("Core runtime config", (workspace.foundation_config / "cpp_core_config.json").is_file(), str(workspace.foundation_config / "cpp_core_config.json")),
         (f"{ROBOT_LABEL} manifest", manifest_path.is_file(), str(manifest_path)),

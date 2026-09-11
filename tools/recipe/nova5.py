@@ -210,16 +210,15 @@ def forge() -> int:
             f"{mbody_root}; missing={', '.join(missing_tools)}"
         )
 
-    forge_script = arm_root() / "recipes/nova5/forge-nova5.sh"
-    if not forge_script.is_file():
-        raise HakoniwaComposerError(f"Nova5 forge script not found: {forge_script}")
+    forge_program = arm_root() / "recipes/nova5/forge.py"
+    if not forge_program.is_file():
+        raise HakoniwaComposerError(f"Nova5 forge program not found: {forge_program}")
 
     output_dir = model_install_dir("nova5")
     env = os.environ.copy()
-    env["PYTHON_CMD"] = str(python)
     env["HAKONIWA_MBODY_REGISTRY_ROOT"] = str(mbody_root)
 
-    command = ["bash", str(forge_script)]
+    command = [str(python), str(forge_program)]
     print(f"Composer         : {composer_root_path}")
     print(f"Forge Python     : {python}")
     print(f"MBody Registry   : {mbody_root}")
