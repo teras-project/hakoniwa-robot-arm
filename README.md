@@ -102,9 +102,18 @@ flowchart LR
 
 別途ライセンス表示のある第三者成果物を除き、本リポジトリ自身のソースコード、設定、ツール、文書には、ルートの[Apache License 2.0](LICENSE)が適用されます。利用するHakoniwa OSSと外部OSSには、それぞれのライセンスが適用されます。詳細は[依存コンポーネントのライセンス一覧](docs/license/dependencies.md)を参照してください。
 
-上流のURDF、Xacro、MJCF、mesh、CAD、textureなどのRobot Model本体と、Forgeで生成した派生成果物は、本リポジトリではGit管理しません。利用者が固定revisionから取得し、`$HAKONIWA_WORK_DIR/model-forge/`以下へ生成します。取得元、固定revision、確認したライセンス宣言、再配布上の注意は[Robot Modelのライセンス情報](docs/license/robot-models.md)にまとめています。
+上流のURDF、Xacro、MJCF、mesh、CAD、textureなどのRobot Model本体と、Forgeで生成した派生成果物は、本リポジトリへ同梱・再配布しません。利用者自身が固定revisionから取得し、`$HAKONIWA_WORK_DIR/model-forge/`以下へ生成します。本リポジトリが管理するのは、取得・変換の定義、箱庭固有の設定、およびライセンス調査の記録です。
 
-特にNova5は、上流repositoryのMIT表記とROS package metadataのBSD表記が一致していません。上流モデルまたはForge生成物を再配布する前に、適用条件の確認が必要です。本リポジトリのApache License 2.0が、第三者モデルへ自動的に適用されるものではありません。
+各モデルの取得元、固定revision、確認したライセンス宣言、再配布上の注意は、[Robot Modelのライセンス情報](docs/license/robot-models.md)を参照してください。この台帳にはNova5、FR5、SO-101の調査結果を掲載しています。本リポジトリのApache License 2.0が、第三者モデルまたはその派生成果物へ自動的に適用されるものではありません。
+
+モデルごとの`source.yaml`と`LICENSE_INFO.yaml`は、次のように責務を分けています。変換・正規化の手順は、対応するForge Recipeとツールで管理します。
+
+| ファイル | 責務 |
+| --- | --- |
+| `source.yaml` | Forgeが取得する上流repository、固定revision、対象ファイルを指定する取得定義 |
+| `LICENSE_INFO.yaml` | 固定revisionで確認したライセンス根拠、未確定事項、再配布の判定と必要な対応を記録する調査台帳 |
+
+これらはモデル本体を含まず、また法的助言ではありません。上流モデルまたはForge生成物を外部へ再配布する前には、対象モデルの台帳と上流のライセンス本文・NOTICE・package metadataを確認してください。
 
 ## 箱庭Business Packとの関係
 
@@ -332,11 +341,15 @@ hakoniwa-robot-arm-workspace/
 - [環境別の詳細利用ガイド](docs/README.md)
 - [Nova5実行Recipe](recipes/nova5/nova5-joint-trajectory-control.yaml)
 - [Nova5モデルForge Recipe](recipes/nova5/nova5-model-forge.yaml)
-- [Nova5モデルの取得情報](sources/models/nova5/source.yaml)
-- [Nova5モデルの出典情報](sources/models/nova5/provenance.yaml)
+- [Robot Modelのライセンス情報（Nova5／FR5／SO-101）](docs/license/robot-models.md)
 - [ROS 2 Bridge Recipe](recipes/ros2/arm-ros2-topic-bridge.yaml)
 - [Docker実行設定](docker/env.bash)
 
 ## ライセンスとモデル出典
 
-本リポジトリのソースコードは[Apache License 2.0](LICENSE)で提供します。Forgeが取得するロボットモデルや外部成果物には、それぞれの上流プロジェクトのライセンスが適用されます。Nova5モデルのライセンスと出典は、[LICENSE_INFO.yaml](sources/models/nova5/LICENSE_INFO.yaml)および[provenance.yaml](sources/models/nova5/provenance.yaml)を確認してください。
+本リポジトリのソースコードは[Apache License 2.0](LICENSE)で提供します。
+
+本リポジトリで扱うRobot Modelおよびその派生成果物には、各上流プロジェクトのライセンスと利用条件が適用されます。
+モデル本体やForgeで生成した成果物を、本リポジトリから再配布するものではありません。
+
+モデル別の調査結果、利用上の注意、再配布判定は[Robot Modelのライセンス情報](docs/license/robot-models.md)を確認してください。

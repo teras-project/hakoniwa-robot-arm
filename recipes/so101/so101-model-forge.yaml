@@ -30,7 +30,6 @@ runtime_dependencies:
 
 source_catalogs: [sources/models/so101/source.yaml]
 source_artifacts:
-  - sources/models/so101/provenance.yaml
   - sources/models/so101/LICENSE_INFO.yaml
   - recipes/so101/model-forge-requirements.txt
 artifacts:

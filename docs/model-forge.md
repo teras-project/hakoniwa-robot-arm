@@ -4,7 +4,7 @@
 
 ## 1. 基本方針
 
-Nova5の上流モデル本体はこのリポジトリへコミットしません。取得元、branch、固定revision、必要ファイルは[source.yaml](../sources/models/nova5/source.yaml)、出典とライセンス確認情報は[provenance.yaml](../sources/models/nova5/provenance.yaml)で管理します。
+Nova5の上流モデル本体はこのリポジトリへコミットしません。取得元、branch、固定revision、必要ファイルは[source.yaml](../sources/models/nova5/source.yaml)、ライセンス確認と再配布判断は[LICENSE_INFO.yaml](../sources/models/nova5/LICENSE_INFO.yaml)で管理します。変換内容は、このForge RecipeとツールのGit履歴で追跡します。
 
 Forgeが取得・生成するsource、build、installは、すべて次のwork所有領域へ配置します。
 
@@ -200,4 +200,4 @@ $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.environment.xml
 
 ## 7. ライセンスと再配布
 
-上流repositoryの`LICENSE`とROS package metadataではライセンス表記が一致していません。取得したXacro、URDF、mesh、生成MJCFを再配布する前に、[Robot Modelのライセンス情報](license/robot-models.md)、[LICENSE_INFO.yaml](../sources/models/nova5/LICENSE_INFO.yaml)、[provenance.yaml](../sources/models/nova5/provenance.yaml)の確認事項を解消してください。
+上流repositoryの`LICENSE`とROS package metadataではライセンス表記が一致していません。取得したXacro、URDF、mesh、生成MJCFを再配布する前に、[Robot Modelのライセンス情報](license/robot-models.md)および[LICENSE_INFO.yaml](../sources/models/nova5/LICENSE_INFO.yaml)の確認事項を解消してください。
