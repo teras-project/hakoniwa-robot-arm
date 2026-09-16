@@ -41,7 +41,7 @@ redistribution:
     The pinned upstream source does not provide a usable license declaration.
     Copyright permission for the description and mesh assets therefore has not
     been established.
-  permitted_use_in_this_repository: private_evaluation_only
+  permitted_handling_of_upstream_artifacts: private_evaluation_only
   required_actions:
     - Obtain an explicit license or redistribution permission from the rights holder.
     - Alternatively replace the model and meshes with assets having documented redistribution terms.

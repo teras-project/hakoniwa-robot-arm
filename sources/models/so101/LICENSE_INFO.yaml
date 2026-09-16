@@ -43,7 +43,7 @@ redistribution:
     The pinned repository provides Apache-2.0 terms. Redistribution is possible
     only after satisfying the license conditions and confirming that the exact
     delivery contains no separately licensed material outside this recorded source closure.
-  permitted_use_in_this_repository: private_evaluation
+  permitted_handling_of_upstream_artifacts: private_evaluation
   required_actions:
     - Include a copy of the Forge install LICENSE with redistributed source or derived artifacts.
     - Retain applicable copyright, patent, trademark, and attribution notices.

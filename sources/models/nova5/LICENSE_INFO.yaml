@@ -50,7 +50,7 @@ redistribution:
     The repository-level MIT license and the cra_description package's generic
     BSD declaration are inconsistent. The intended terms for the Nova5 URDF and
     mesh assets must be confirmed before external redistribution.
-  permitted_use_in_this_repository: private_evaluation_only
+  permitted_handling_of_upstream_artifacts: private_evaluation_only
   required_actions:
     - Ask DOBOT to confirm which license applies to cra_description and its Nova5 meshes.
     - If MIT applies, retain the Forge install LICENSE and its copyright notice with redistributed copies.
