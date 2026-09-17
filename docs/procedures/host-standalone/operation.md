@@ -15,6 +15,8 @@ PS5コントローラー（DualSense）で操作する場合は、このペー�
 
 この構成では`start`直後に自動デモ軌道が送信され、Nova5が動きます。これはROS 2制御ではなく、箱庭シミュレーション単体の動作確認です。
 
+送信プログラム、軌道JSON、設定変更、任意の外部JSONを直接送信する方法は[JointTrajectoryサンプル](../../design/trajectory-control-samples.md)を参照してください。
+
 ```bash
 python tools/recipe/nova5.py doctor
 ```

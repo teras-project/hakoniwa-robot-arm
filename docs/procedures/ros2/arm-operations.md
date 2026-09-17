@@ -23,6 +23,8 @@ ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 
 `control`は`/joint_trajectory`へ`trajectory_msgs/msg/JointTrajectory`を1回publishします。既定では6関節を対象に、4点からなる正弦波状の目標位置列を送信します。
 
+サンプルのソース配置、箱庭単体版との違い、軌道の生成方法、変更時の再build条件は[JointTrajectoryサンプル](../../design/trajectory-control-samples.md)を参照してください。
+
 ```bash
 ros2 topic info /joint_trajectory
 ros2 run hakoniwa_arm_samples control \
@@ -32,11 +34,22 @@ ros2 run hakoniwa_arm_samples control \
 | option | 意味 | この例 |
 | --- | --- | --- |
 | `--topic` | 送信先のJointTrajectory topic | `/joint_trajectory` |
+| `--trajectory` | 箱庭単体版と同じ形式の外部軌道JSON。指定時は軌道生成optionと併用不可 | 未指定 |
 | `--joints` | `joint1`から順に対象とする関節数 | `6` |
 | `--amplitude` | 各関節の目標位置を作る正弦波の振幅。JointTrajectoryの関節位置として通常radで扱う。 | `0.15` |
 | `--duration` | 連続する軌道点の時間間隔（sec）。4点の最終点は`3 × duration`秒となる。 | `2.0` |
 
 `--amplitude`は小さな値から試してください。Robot Modelのjoint limitを超える目標を指定しないようにし、Viewerとmonitorを同時に確認します。関節名が連番でないRobot Modelでは、`--joints`の代わりに`--joint-names`へ実際の関節名を列挙します。
+
+任意の軌道JSONを送る場合は、`--joints`、`--joint-names`、`--amplitude`、`--duration`を付けずに実行します。
+
+```bash
+ros2 run hakoniwa_arm_samples control \
+  --topic /joint_trajectory \
+  --trajectory /absolute/path/to/my-trajectory.json
+```
+
+JSONの配置、形式、変更方法は[JointTrajectoryサンプル](../../design/trajectory-control-samples.md)を参照してください。
 
 ## カスタマイズ
 
