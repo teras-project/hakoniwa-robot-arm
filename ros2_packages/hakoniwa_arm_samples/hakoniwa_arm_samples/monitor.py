@@ -7,6 +7,11 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import JointState
 
+try:
+    from rclpy.exceptions import RCLError
+except ImportError:  # ROS 2 Humble does not export RCLError from rclpy.exceptions.
+    from rclpy._rclpy_pybind11 import RCLError
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Monitor Hakoniwa arm joint states")
@@ -40,6 +45,12 @@ def main() -> None:
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
+    except RCLError:
+        # Humble can report an invalid wait set after its SIGINT handler has
+        # already shut down the context. Treat only that shutdown path as a
+        # normal Ctrl+C exit; preserve unrelated ROS errors.
+        if rclpy.ok():
+            raise
     finally:
         node.destroy_node()
         if rclpy.ok():

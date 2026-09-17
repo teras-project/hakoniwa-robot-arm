@@ -90,7 +90,8 @@ def build(root, distro, endpoint, pdu_ros):
         env.pop(key, None)
     run(["/usr/bin/python3", "-m", "venv", "--system-site-packages", root / "venv"], env=env)
     python = root / "venv/bin/python"
-    run([python, "-m", "pip", "install", "wheel", "setuptools>=68,<80", "cffi>=1.16", "hakoniwa-pdu==1.6.9"], env=env)
+    run([python, "-m", "pip", "install", "wheel", "setuptools>=68,<80", "packaging>=24,<27",
+         "cffi>=1.16", "hakoniwa-pdu==1.6.9"], env=env)
     run(["cmake", "-S", endpoint, "-B", root / "build/endpoint",
          "-DCMAKE_BUILD_TYPE=Release", f"-DCMAKE_INSTALL_PREFIX={root / 'native'}",
          "-DCMAKE_INSTALL_LIBDIR=lib", "-DBUILD_SHARED_LIBS=ON", "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
