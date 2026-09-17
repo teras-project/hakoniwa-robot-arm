@@ -8,7 +8,7 @@
 
 | Robot | 状況 |
 | --- | --- |
-| DOBOT Nova5 | Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。native Linux Viewerは未検証。 |
+| DOBOT Nova5 | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。 |
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
 
@@ -164,6 +164,8 @@ Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証
 | Build System | CMake / colcon                      |
 
 HostがmacOSまたはWindowsの場合、ROS 2環境をDocker Container上で実行し、Host上の箱庭ロボットアームシミュレータとTCP Bridgeを介して接続します。Windows 11では、Nova5の箱庭単体RuntimeとMuJoCo Viewerに加えて、Docker Desktop上のROS 2 JazzyからJointTrajectoryを入力し、JointStateを取得するhost+Docker構成まで確認しています。
+
+Ubuntu 24.04では、native host-ros2構成でROS 2からJointTrajectoryを入力し、Nova5が動作することを確認しています。
 
 ## 前提ソフトウェア
 
