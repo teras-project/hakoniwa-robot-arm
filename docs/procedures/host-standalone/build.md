@@ -2,6 +2,8 @@
 
 [箱庭単体セットアップ](setup.md)でNova5 MJCFを生成してから実行します。この手順ではROS 2連携を構成しません。
 
+PS5コントローラー（DualSense）で操作する場合は、このページの代わりに[箱庭単体・ゲームパッドビルド](build-gamepad.md)を使用してください。
+
 ## 1. 箱庭単体用Launcherを生成する
 
 | 項目 | 内容 |
@@ -12,6 +14,7 @@
 | この作業のゴール | ROS 2を使用しないLauncherと`host-hako` profileが`../work-host`へ生成される。 |
 
 ```bash
+cd ../hakoniwa-robot-arm
 python tools/recipe/nova5.py configure \
   --environment --realtime-sync-cycle-msec 50
 ```
