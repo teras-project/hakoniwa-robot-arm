@@ -4,7 +4,8 @@
 
 | 利用構成 | ビルド手順 |
 | --- | --- |
-| host-only | [build-host-only.md](host-only/build.md) |
+| host-standalone | [箱庭単体ビルド](host-standalone/build.md) |
+| host-ros2 | [Host ROS 2連携ビルド](host-ros2/build.md) |
 | host+docker | [build-host-docker.md](host-docker/build.md) |
 | docker-only | [build-docker-only.md](docker-only/build.md) |
 
@@ -31,4 +32,3 @@ python "$ARM_PACK/tools/recipe/nova5.py" build --headless
 `build`はCMakeによる実行ファイルの構築を担当します。Viewer、ROS 2 TCP、周辺環境、realtime pacingなどの起動条件は`configure`がwork側のLauncher設定へ反映します。
 
 ビルド後は、選択した利用構成の[起動・動作確認手順](operation.md)へ進んでください。
-

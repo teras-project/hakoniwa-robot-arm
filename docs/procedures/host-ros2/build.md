@@ -1,35 +1,15 @@
-# host-onlyビルド
+# Host ROS 2連携ビルド
 
-[host-onlyセットアップ](setup.md)でNova5 MJCFを生成してから実行します。このページでは、最初に「単体デモ」または「ROS 2連携」のどちらか一方を選びます。
+[Host ROS 2連携セットアップ](setup.md)でNova5 MJCFを生成してから実行します。この手順では、箱庭RuntimeとROS 2をTCPで接続する構成を生成します。
 
-## 1. 起動構成を選んでLauncherを生成する
+## 1. ROS 2連携用Launcherを生成する
 
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | `host-hako` |
 | 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
 | この作業の入力成果物 | `../work-host/model-forge/nova5/install/nova5.contact.xml` |
-| この作業のゴール | 選択した構成のLauncherとrole profileが`../work-host`へ生成される。 |
-
-次のAまたはBを一つだけ選びます。ROS 2連携を試す場合は、必ずBを実行してください。
-
-### A. ROS 2を使わない単体デモ
-
-```bash
-python tools/recipe/nova5.py configure \
-  --environment --realtime-sync-cycle-msec 50
-```
-
-正常時は末尾に次の形式で表示されます。
-
-```text
-Launcher        : /.../work-host/recipes/nova5-joint-trajectory-control/config/launcher.json
-ROS 2 TCP       : disabled
-```
-
-`ROS 2 TCP`が`disabled`なら単体デモ用の構成生成は完了です。`error:`で終了した場合はNGです。
-
-### B. ROS 2連携
+| この作業のゴール | ROS 2用Launcher、binding、4種類のROS端末profileが`../work-host`へ生成される。 |
 
 `--ros2-tcp`を付けることで、ROS 2用Launcher、binding、4種類のROS端末profileを生成します。
 
@@ -50,7 +30,7 @@ ROS 2 TCP       : enabled
 ... /.../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
 ```
 
-`ROS 2 TCP`が`enabled`で、profileとbindingの両方が表示されればOKです。`No such file or directory`なら先へ進まず、このBの`configure --ros2-tcp`を再実行します。
+`ROS 2 TCP`が`enabled`で、profileとbindingの両方が表示されればOKです。`No such file or directory`なら先へ進まず、この手順の`configure --ros2-tcp`を再実行します。
 
 ## 2. Nova5 Runtimeをbuildする
 
@@ -70,7 +50,7 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 
 画面のないHostやCIでは、最初のコマンドだけ`build --headless`へ置き換えます。最後の`ls`で`robot-arm-hakoniwa-asset`が表示されればOK、`No such file or directory`ならNGです。
 
-単体デモを選択した場合は、[箱庭シミュレーション単体](operation.md#a-箱庭シミュレーション単体)へ進みます。ROS 2連携を選択した場合は、次の手順3を続けます。
+続けてROS 2基盤環境をbuildします。
 
 ## 3. ROS 2 workspaceをbuildする
 
@@ -78,14 +58,14 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 | --- | --- |
 | 実行端末 | 新しい通常Host terminal。この作業で`host-ros-build`になる。`host-hako`では実行しない。 |
 | 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
-| この作業の入力成果物 | 手順1-Bで生成した`activate-host-ros-build.bash`と、手順2でbuildしたNova5 Runtime |
+| この作業の入力成果物 | 手順1で生成した`activate-host-ros-build.bash`と、手順2でbuildしたNova5 Runtime |
 | この作業のゴール | EndpointとROS Bridgeを含むROS 2基盤環境が`../work-host/ros2`へ生成され、doctorが成功する。 |
 
-手順1-BのconfigureがROS 2成果物の配置先と端末profileを生成済みです。この手順では、その配置先へEndpointとROS Bridgeをbuildします。利用者がCMake option、Python環境、共有ライブラリの検索pathを個別に設定する必要はありません。
+手順1のconfigureがROS 2成果物の配置先と端末profileを生成済みです。この手順では、その配置先へEndpointとROS Bridgeをbuildします。利用者がCMake option、Python環境、共有ライブラリの検索pathを個別に設定する必要はありません。
 
 生成されるファイルの配置と、`ros2 run`からEndpoint共有ライブラリ、TCP、箱庭Runtimeまでの接続関係は、[ROS 2 Bridge基盤環境の成果物と接続関係](../../design/ros2-bridge-environment.md)を参照してください。
 
-この手順へ進む前に、手順1-Bの`ls`で`activate-host-ros-build.bash`が表示されたことを確認してください。未確認の場合は手順1-Bへ戻ります。
+この手順へ進む前に、手順1の`ls`で`activate-host-ros-build.bash`が表示されたことを確認してください。未確認の場合は手順1へ戻ります。
 
 新しい通常Host terminalで実行します。`/absolute/path/to/hakoniwa-robot-arm`は実際のclone先へ置き換えます。
 
@@ -94,7 +74,7 @@ cd /absolute/path/to/hakoniwa-robot-arm
 ls -l ../work-host/profiles/activate-host-ros-build.bash
 ```
 
-profileのファイル情報が表示されれば続けます。`No such file or directory`ならprofileをsourceせず、手順1-Bへ戻ります。
+profileのファイル情報が表示されれば続けます。`No such file or directory`ならprofileをsourceせず、手順1へ戻ります。
 
 ```bash
 source ../work-host/profiles/activate-host-ros-build.bash
@@ -145,10 +125,10 @@ hakoniwa_arm_samples control
 hakoniwa_arm_samples monitor
 ```
 
-次は[host-only起動・動作確認](operation.md#b-ubuntu-host上のros-2連携)へ進みます。
+次は[Host ROS 2連携の起動・動作確認](operation.md)へ進みます。
 
 ## 応用：独自ROS 2 nodeを追加する
 
-まず[host-only起動・動作確認](operation.md#b-ubuntu-host上のros-2連携)を最後まで実行し、付属の`monitor`と`control`でROS 2連携が成功することを確認してください。
+まず[Host ROS 2連携の起動・動作確認](operation.md)を最後まで実行し、付属の`monitor`と`control`でROS 2連携が成功することを確認してください。
 
 標準動作確認の完了後、この基盤環境を利用して独自packageを作成できます。手順は[独自ROS 2 nodeの作成とbuild](../ros2/custom-nodes.md)を参照してください。

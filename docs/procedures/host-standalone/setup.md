@@ -1,6 +1,6 @@
-# host-onlyセットアップ
+# 箱庭単体セットアップ
 
-Nova5 RuntimeをHost上で実行するための準備手順です。ROS 2連携までHostだけで行う場合はUbuntu 22.04／ROS 2 Humble、またはUbuntu 24.04／ROS 2 Jazzyを使用します。
+Nova5 RuntimeとMuJoCo ViewerをHost上で実行し、ROS 2を使わずに箱庭単体で動作確認するための準備手順です。
 
 各手順の直後に正常時の出力例とNG条件を示します。実際のログを照合し、NG条件に該当した場合はその段階で止めてください。
 
@@ -11,7 +11,7 @@ Nova5 RuntimeをHost上で実行するための準備手順です。ROS 2連携�
 | 実行端末 | 通常のHost terminal |
 | 実行ディレクトリ | 任意 |
 | この作業の入力成果物 | 同じ親ディレクトリへclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm` |
-| この作業のゴール | Nova5 Runtimeのconfigureとbuildに必要なHostコマンドが使用できる。ROS 2連携を行う場合はROS 2とcolconも使用できる。 |
+| この作業のゴール | Nova5 Runtimeのconfigureとbuildに必要なHostコマンドが使用できる。 |
 
 UbuntuへHost用パッケージを導入します。
 
@@ -26,16 +26,6 @@ cmake --version
 ```
 
 両方のversionが表示されればHost用パッケージはOKです。command not foundになればNGです。
-
-ROS 2連携を行う場合だけ、使用するROS distributionを確認します。以下はUbuntu 24.04／Jazzyの例です。
-
-```bash
-sudo apt install -y python3-colcon-common-extensions
-ls -l /opt/ros/jazzy/setup.bash
-/usr/bin/python3 -m colcon --help
-```
-
-`setup.bash`のファイル情報とcolconのhelpが表示されればOKです。`No such file or directory`またはPython errorになればNGです。
 
 ## 2. `host-hako`端末を開く
 
@@ -152,4 +142,4 @@ Nova5 output     : /.../work-host/model-forge/nova5/install
 
 `nova5.contact.xml`が表示されればOK、`No such file or directory`ならNGです。変換内容は[Nova5 Model Forge](../../reference/model-forge.md)を参照してください。
 
-次は[host-onlyビルド](build.md)へ進みます。
+次は[箱庭単体ビルド](build.md)へ進みます。

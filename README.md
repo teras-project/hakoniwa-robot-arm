@@ -21,7 +21,7 @@
 - `hakoniwa-business-pack` — Composer、Workspace、Foundationを提供します。
 - `hakoniwa-robot-arm` — ロボット固有のRecipe、設定、アプリケーションを提供します。
 
-その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-only、host+docker、docker-onlyの手順を選んでください。
+その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-standalone、host-ros2、host+docker、docker-onlyの手順を選んでください。
 
 ## ドキュメント
 
@@ -172,8 +172,8 @@ HostがmacOSの場合、ROS 2環境をDocker Container上で実行し、Host上�
 | ソフトウェア | 用途 |
 | --- | --- |
 | Git | すべての構成で、本リポジトリとBusiness Packを取得するために使用 |
-| CPython 3.12 | host-only／host+dockerで、Business Pack、Foundation、Recipeツールを実行。`python3.12`コマンドで起動できること |
-| CMakeとC/C++ビルド環境 | host-only／host+dockerで、FoundationとNova5シミュレータをビルド |
+| CPython 3.12 | host-standalone／host-ros2／host+dockerで、Business Pack、Foundation、Recipeツールを実行。`python3.12`コマンドで起動できること |
+| CMakeとC/C++ビルド環境 | host-standalone／host-ros2／host+dockerで、FoundationとNova5シミュレータをビルド |
 | Docker | host+dockerまたはdocker-only構成でのROS 2実行 |
 
 macOSではXcode Command Line Tools、UbuntuではC/C++コンパイラを含む標準的なビルド環境も必要です。
@@ -184,7 +184,7 @@ macOSではXcode Command Line Tools、UbuntuではC/C++コンパイラを含む�
 git --version
 ```
 
-host-onlyまたはhost+dockerを選ぶ場合は、Host側のPythonとビルド環境も確認します。
+host-standalone、host-ros2、host+dockerのいずれかを選ぶ場合は、Host側のPythonとビルド環境も確認します。
 
 ```bash
 python3.12 --version
@@ -199,9 +199,13 @@ docker --version
 
 ## 利用構成
 
-### host-only
+### host-standalone
 
-すべてのプロセスをHost上で実行します。箱庭シミュレーション単体として、ROS 2を介さずに箱庭PDUレベルの動作確認ができます。HostがUbuntuでROS 2 HumbleまたはJazzyを利用できる場合は、ROS 2 BridgeとROSノードも同じHost上で実行し、`JointTrajectory`による制御と`JointState`の取得ができます。MuJoCo Viewerによる可視化にも対応します。
+箱庭RuntimeとMuJoCo ViewerをHost上で実行し、ROS 2を介さずに箱庭PDUレベルの動作確認を行います。
+
+### host-ros2
+
+箱庭Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードを同じUbuntu Host上で実行し、`JointTrajectory`による制御と`JointState`の取得を確認します。
 
 ### host+docker
 
@@ -227,11 +231,17 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 
 この時点では2リポジトリだけで構いません。標準配置では、後続のprofileがこの兄弟配置を自動検出します。Nova5が必要とする他のリポジトリは、Recipeの`configure`またはROS 2 workspaceの`build`が自動取得します。
 
-### Ubuntuユーザー：host-only（推奨）
+### 箱庭単体で確認するユーザー：host-standalone
 
-1. [host-onlyセットアップ](docs/procedures/host-only/setup.md)
-2. [host-onlyビルド](docs/procedures/host-only/build.md)
-3. [host-only起動・動作確認](docs/procedures/host-only/operation.md)
+1. [箱庭単体セットアップ](docs/procedures/host-standalone/setup.md)
+2. [箱庭単体ビルド](docs/procedures/host-standalone/build.md)
+3. [箱庭単体の起動・動作確認](docs/procedures/host-standalone/operation.md)
+
+### Ubuntu HostだけでROS 2連携するユーザー：host-ros2
+
+1. [Host ROS 2連携セットアップ](docs/procedures/host-ros2/setup.md)
+2. [Host ROS 2連携ビルド](docs/procedures/host-ros2/build.md)
+3. [Host ROS 2連携の起動・動作確認](docs/procedures/host-ros2/operation.md)
 
 ### macOSユーザー：host+docker
 

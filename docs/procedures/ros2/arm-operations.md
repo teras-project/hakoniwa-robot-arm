@@ -1,6 +1,6 @@
 # ROS 2によるアーム操作
 
-この文書は、対応するRobot Modelで共通のROS 2操作を説明します。host-only、host+docker、docker-onlyの各手順は、Bridgeへ接続できる端末を用意するところまでを扱い、monitorとcontrolの意味・期待結果はこの文書を正本とします。
+この文書は、対応するRobot Modelで共通のROS 2操作を説明します。host-ros2、host+docker、docker-onlyの各手順は、Bridgeへ接続できる端末を用意するところまでを扱い、monitorとcontrolの意味・期待結果はこの文書を正本とします。
 
 ## 入力とゴール
 

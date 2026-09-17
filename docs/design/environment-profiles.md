@@ -51,7 +51,7 @@ clone
        └─ 構成固有profileをwork配下へ生成する
 ```
 
-host-onlyで`--ros2-tcp`を指定した場合の生成先とファイル名は次です。
+host-ros2で`--ros2-tcp`を指定した場合の生成先とファイル名は次です。
 
 ```text
 $HAKONIWA_WORK_DIR/profiles/

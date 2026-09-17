@@ -24,7 +24,7 @@ EndpointのCMake option、Python環境、Python接続モジュールの生成手
 
 ## 2. workディレクトリの構成
 
-標準のhost-only構成では、すべての生成物を`../work-host`以下へ配置します。
+標準のhost-ros2構成では、すべての生成物を`../work-host`以下へ配置します。
 
 ### 2.1 configureが生成する接続設定
 

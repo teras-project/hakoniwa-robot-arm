@@ -4,7 +4,8 @@
 
 | 利用構成 | 動作確認手順 |
 | --- | --- |
-| host-only | [operation-host-only.md](host-only/operation.md) |
+| host-standalone | [箱庭単体の起動・動作確認](host-standalone/operation.md) |
+| host-ros2 | [Host ROS 2連携の起動・動作確認](host-ros2/operation.md) |
 | host+docker | [operation-host-docker.md](host-docker/operation.md) |
 | docker-only | [operation-docker-only.md](docker-only/operation.md) |
 
@@ -37,4 +38,3 @@ python "$ARM_PACK/tools/recipe/nova5.py" status
 $HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/logs/
 $HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/runtime/launcher-session.json.log
 ```
-

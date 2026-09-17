@@ -6,15 +6,14 @@
 
 | 利用構成 | 適した環境 | Nova5 Runtime / MuJoCo | ROS 2 | 詳細手順 |
 | --- | --- | --- | --- | --- |
-| host-only | Ubuntuをメイン環境として使う、またはROS 2なしで単体確認する | Host | Ubuntu Hostでは同じHost | [setup-host-only.md](host-only/setup.md) |
+| host-standalone | ROS 2を使わず箱庭単体で確認する | Host | 使用しない | [setup](host-standalone/setup.md) |
+| host-ros2 | Ubuntu HostだけでROS 2連携まで確認する | Host | 同じUbuntu Host | [setup](host-ros2/setup.md) |
 | host+docker | macOSからROS 2を使う、またはUbuntuでROS 2環境を分離する | Host | Docker Container | [setup-host-docker.md](host-docker/setup.md) |
 | docker-only | HostへPython、CMake、ROS 2などを導入せず試す | Container | 同じContainer | [setup-docker-only.md](docker-only/setup.md) |
 
-host-onlyは、箱庭シミュレーション単体でも利用できます。Ubuntu HostへROS 2を導入した場合は、Dockerを使わずROS 2連携まで実行できます。
-
 ## 共通原則
 
-- 3つの利用構成から1つだけを選び、同じ名前のsetup、build、operationを使用します。
+- 4つの利用構成から1つだけを選び、同じ行のsetup、build、operationを使用します。
 - HostではViewerありを標準とします。CI、画面のない環境、macOS上のdocker-onlyでは`--headless`を使用します。
 - `HAKONIWA_WORK_DIR`にはFoundation、Forge、Recipe build、設定、ログ、セッションを生成します。
 - `HAKONIWA_ROS2_WS`にはROS 2専用venv、Endpoint、colcon build/install/logを生成します。
@@ -46,7 +45,8 @@ python3.12 tools/recipe.py plan \
 
 ## 次の手順
 
-- [host-onlyセットアップ](host-only/setup.md)
+- [箱庭単体セットアップ](host-standalone/setup.md)
+- [Host ROS 2連携セットアップ](host-ros2/setup.md)
 - [host+dockerセットアップ](host-docker/setup.md)
 - [docker-onlyセットアップ](docker-only/setup.md)
 - [Nova5 Model Forge](../reference/model-forge.md)

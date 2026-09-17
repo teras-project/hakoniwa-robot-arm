@@ -1,50 +1,6 @@
-# host-only起動・動作確認
+# Host ROS 2連携の起動・動作確認
 
-[host-onlyビルド](build.md)で選択した構成に合わせて、AまたはBへ進みます。
-
-- 単体デモ用にconfigureした場合: A
-- `configure --ros2-tcp`を実行し、ROS 2 workspaceもbuildした場合: B
-
-## A. 箱庭シミュレーション単体
-
-| 項目 | 内容 |
-| --- | --- |
-| 実行端末 | `host-hako` |
-| 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
-| この作業の入力成果物 | 単体デモ用`launcher.json`、build済み`robot-arm-hakoniwa-asset`、Forge済み`nova5.contact.xml` |
-| この作業のゴール | ROS 2を使わず、Runtime、PDU、MuJoCo Viewer、自動デモ軌道が一連で動作する。 |
-
-この構成では`start`直後に自動デモ軌道が送信され、Nova5が動きます。これはROS 2制御ではなく、箱庭シミュレーション単体の動作確認です。
-
-```bash
-python tools/recipe/nova5.py doctor
-```
-
-すべての行が`[OK]`なら起動します。`[NG]`が一つでもあれば起動しません。
-
-```bash
-python tools/recipe/nova5.py start
-python tools/recipe/nova5.py status
-```
-
-次の状態を確認します。
-
-- terminalに`Nova5 demo is running in the background.`が表示される。
-- `status`が`RUNNING`を返す。
-- MuJoCo Viewer上でNova5が自動軌道を動く。
-
-一つでも満たさなければNGです。確認後に停止します。
-
-```bash
-python tools/recipe/nova5.py stop
-python tools/recipe/nova5.py status
-```
-
-`status`が`TERMINATED`を返せば停止完了です。
-
-## B. Ubuntu Host上のROS 2連携
-
-この構成では4端末を同時に使用します。
+[Host ROS 2連携ビルド](build.md)の完了が前提です。この構成では4端末を同時に使用します。
 
 | 端末 | 実行するもの | 維持する状態 |
 | --- | --- | --- |
@@ -53,7 +9,7 @@ python tools/recipe/nova5.py status
 | `host-ros-monitor` | `/pdu/joint_states`のmonitor | 受信したまま |
 | `host-ros-control` | `/joint_trajectory`への軌道送信 | 送信後に終了 |
 
-### 1. RuntimeとHost TCP Bridgeを起動する
+## 1. RuntimeとHost TCP Bridgeを起動する
 
 | 項目 | 内容 |
 | --- | --- |
@@ -70,7 +26,7 @@ python tools/recipe/nova5.py status
 
 doctorの全項目が`[OK]`で、start後に`Nova5 demo is running in the background.`、statusに`RUNNING`が表示されれば次へ進みます。このLauncherがHost TCP Bridgeを起動するため、`ros2_tcp.py start-host`を別途実行しません。
 
-### 2. ROS Bridgeを起動する
+## 2. ROS Bridgeを起動する
 
 | 項目 | 内容 |
 | --- | --- |
@@ -84,7 +40,7 @@ cd /absolute/path/to/hakoniwa-robot-arm
 ls -l ../work-host/profiles/activate-host-ros-bridge.bash
 ```
 
-profileのファイル情報が表示されれば続けます。`No such file or directory`なら実行を止め、[ROS 2連携用configure](build.md#b-ros-2連携)へ戻ります。
+profileのファイル情報が表示されれば続けます。`No such file or directory`なら実行を止め、[ROS 2連携用configure](build.md#1-ros-2連携用launcherを生成する)へ戻ります。
 
 ```bash
 source ../work-host/profiles/activate-host-ros-bridge.bash
@@ -95,7 +51,7 @@ ros2 run hakoniwa_pdu_ros bridge \
 
 `ls`でbindingが表示され、Bridgeがerrorなく起動を継続すればOKです。このterminalは開いたままにします。
 
-### 3. JointStateを観察する
+## 3. JointStateを観察する
 
 | 項目 | 内容 |
 | --- | --- |
@@ -122,7 +78,7 @@ OKの場合は、次の形式のログが繰り返し表示されます。数値
 
 `monitoring`だけで関節値が表示されない場合はNGです。このterminalは観察のため開いたままにします。
 
-### 4. JointTrajectoryを送信する
+## 4. JointTrajectoryを送信する
 
 | 項目 | 内容 |
 | --- | --- |
@@ -149,7 +105,7 @@ ros2 run hakoniwa_arm_samples control \
 
 このログに加え、Viewer上でNova5が動き、`host-ros-monitor`の6関節値が変化すればOKです。`--amplitude`と`--duration`の意味は[ROS 2によるアーム操作](../ros2/arm-operations.md)を参照してください。
 
-### 5. 終了する
+## 5. 終了する
 
 | 項目 | 内容 |
 | --- | --- |
