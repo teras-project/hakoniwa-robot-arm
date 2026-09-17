@@ -40,6 +40,7 @@ doctorの全項目が`[OK]`で、statusが`RUNNING`ならOKです。X11 Viewer�
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+cd ../hakoniwa-robot-arm
 source "$HAKONIWA_ROS2_WS/activate.bash"
 
 ls -l "$HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json"
@@ -61,6 +62,7 @@ Humbleでは`jazzy`を`humble`へ置き換えます。`binding.json`が表示さ
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+cd ../hakoniwa-robot-arm
 source "$HAKONIWA_ROS2_WS/activate.bash"
 source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 
@@ -82,6 +84,7 @@ ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+cd ../hakoniwa-robot-arm
 source "$HAKONIWA_ROS2_WS/activate.bash"
 source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 

@@ -71,12 +71,11 @@ ROS 2成果物: /workspace/ros2-work-jazzy
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | `docker-hako` |
-| 実行ディレクトリ | Container内の`hakoniwa-robot-arm` repository rootから開始 |
+| 実行ディレクトリ | `run.bash`が開いたContainer内のComposer repository root |
 | この作業の入力成果物 | `run.bash`が設定した`HAKONIWA_COMPOSER`と`HAKONIWA_WORK_DIR` |
 | この作業のゴール | Container内でFoundation、Forge、Runtimeを操作する箱庭Workspaceが開く。 |
 
 ```bash
-cd ../hakoniwa-business-pack
 python3.12 tools/workspace.py enter --workdir "$HAKONIWA_WORK_DIR"
 ```
 
@@ -102,7 +101,7 @@ python3.12 tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
-`plan`に`Recipe plan:`、doctorに`[OK]`と`SATISFIED`が表示され、`[NG]`、`MISSING`、`error:`がなければOKです。
+`plan`に`Recipe plan:`が表示されれば、構築予定を確認できています。初回の`plan`では、まだ存在しないFoundation成果物が`MISSING`と表示されても正常です。`configure`後に実行する2つのdoctorで`[OK]`と`SATISFIED`が表示され、ここでは`[NG]`、`MISSING`、`error:`がなければOKです。
 
 ## 5. Nova5 MJCFを生成する
 

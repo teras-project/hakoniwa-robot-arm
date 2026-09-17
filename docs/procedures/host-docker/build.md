@@ -97,6 +97,7 @@ GUI: off; DISPLAY: disabled
 | この作業のゴール | ROS 2 Bridgeとサンプルの`control`、`monitor`が実行可能になる。 |
 
 ```bash
+cd ../hakoniwa-robot-arm
 /usr/bin/python3 tools/recipe/ros2_workspace.py build
 source "$HAKONIWA_ROS2_WS/activate.bash"
 /usr/bin/python3 tools/recipe/ros2_workspace.py doctor
@@ -112,7 +113,7 @@ source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 ros2 pkg executables hakoniwa_arm_samples
 ```
 
-doctorに`hakoniwa_pdu_ros bridge`、最後のコマンドに次の2行が表示されればOKです。
+`run.bash`はContainer内のComposer repository rootを開くため、最初にRobot Arm repositoryへ移動します。doctorに`hakoniwa_pdu_ros bridge`、最後のコマンドに次の2行が表示されればOKです。
 
 ```text
 hakoniwa_arm_samples control

@@ -34,7 +34,9 @@ artifacts:
   - activate.bash
   - ros-workspace.json
 validation:
-  status: not_tested_end_to_end
+  status: partially_verified
+  verified_at: 2026-09-17
   notes:
     - Build runs import and ROS package discovery checks before recording installed status.
-    - Docker builds and live TCP/ROS traffic must be verified in Humble and Jazzy environments.
+    - Jazzy was built and verified end to end in the Docker-only Linux arm64 environment: JointTrajectory crossed ROS 2 to TCP, and JointState crossed TCP to ROS 2 with observed joint motion.
+    - The equivalent Docker build and live TCP/ROS traffic remain to be verified in Humble.

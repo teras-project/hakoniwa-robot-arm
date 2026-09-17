@@ -66,9 +66,10 @@ python tools/recipe/nova5.py doctor
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+cd ../hakoniwa-robot-arm
 ```
 
-Humbleでは`jazzy`を`humble`へ置き換えます。Container shellが開き、`echo "$HAKONIWA_ROS2_WS"`に`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`が表示されればOKです。
+Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer内のComposer repository rootを開くため、3行目でRobot Arm repositoryへ移動します。`pwd`の末尾が`hakoniwa-robot-arm`で、`echo "$HAKONIWA_ROS2_WS"`に`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`が表示されればOKです。
 
 ## 4. ROS 2 Bridgeとサンプルをbuildする
 

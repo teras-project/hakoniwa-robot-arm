@@ -56,6 +56,7 @@ doctorがerrorなく終了し、`binding.json`が表示され、Bridgeが終了�
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+cd ../hakoniwa-robot-arm
 source "$HAKONIWA_ROS2_WS/activate.bash"
 source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 
@@ -77,6 +78,7 @@ Humbleでは`jazzy`を`humble`へ置き換えます。`monitoring /pdu/joint_sta
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+cd ../hakoniwa-robot-arm
 source "$HAKONIWA_ROS2_WS/activate.bash"
 source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 
