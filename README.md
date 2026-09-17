@@ -218,25 +218,6 @@ Host上でシミュレータ、Docker Container上でROS 2 BridgeとROSノード
 
 シミュレータとROS 2を同一のLinux Container内で実行します。HostへPython、CMake、ROS 2などの開発環境を導入せずに動作確認したい場合に適しています。ネイティブUbuntuでも同じContainer内手順を利用でき、macOS上のDockerではheadless実行を使用します。
 
-## `HAKONIWA_COMPOSER`について
-
-`HAKONIWA_COMPOSER`は、FoundationとRecipeを管理するComposerリポジトリのルートパスです。現時点では、cloneした`hakoniwa-business-pack`のルートを指します。生成物の置き場を示す`HAKONIWA_WORK_DIR`とは役割が異なります。
-
-後述のクイックスタートに示す標準配置とリポジトリ名を使用する場合、利用者が`HAKONIWA_COMPOSER`を設定する必要はありません。本リポジトリのツールと`docker/env.bash`が、兄弟にある`hakoniwa-business-pack`を検出して設定します。
-
-| 実行箇所 | `HAKONIWA_COMPOSER`未設定時の動作 |
-| --- | --- |
-| 本リポジトリのPythonツール | 兄弟の`hakoniwa-business-pack`を既定のComposerとして使用 |
-| `docker/env.bash` | 兄弟の`hakoniwa-business-pack`を解決し、Containerへ渡すために`HAKONIWA_COMPOSER`をexport |
-
-Business Packを改名した場合、標準配置以外へ置いた場合、または候補が複数ある場合に限り、実行前に絶対パスを指定してください。
-
-```bash
-export HAKONIWA_COMPOSER=/absolute/path/to/composer-repository
-```
-
-新しい手順では`HAKONIWA_COMPOSER`を使用します。`HAKONIWA_BUSINESS_PACK_ROOT`は既存環境との互換用fallbackです。
-
 ## クイックスタート
 
 ### 共通：checkout用workspaceを作る
@@ -251,13 +232,13 @@ git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
 git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 ```
 
-この時点では2リポジトリだけで構いません。Nova5が必要とする他のリポジトリは、Recipeの`configure`またはROS 2 workspaceの`build`が自動取得します。
+この時点では2リポジトリだけで構いません。標準配置では、後続のprofileがこの兄弟配置を自動検出します。Nova5が必要とする他のリポジトリは、Recipeの`configure`またはROS 2 workspaceの`build`が自動取得します。
 
 ### Ubuntuユーザー：host-only（推奨）
 
 Ubuntuをメイン環境とする場合は、Nova5 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードをすべてHost上で実行します。ROS 2を使わない箱庭シミュレーション単体としても実行できます。
 
-通常のHost terminalでRobot Arm repositoryへ移動し、bootstrap profileをsourceします。profileはcheckout配置からBusiness Packを解決し、`HAKOBASE_DIR`、`ARM_PACK`、`HAKONIWA_COMPOSER`、汎用work directory（既定値: `$HAKOBASE_DIR/work-host`）を設定して、`host-hako` Workspaceを開きます。
+通常のHost terminalでRobot Arm repositoryへ移動し、bootstrap profileをsourceします。profileがcheckout配置を解決して`host-hako` Workspaceを開くため、利用者が環境変数を設定する必要はありません。
 
 ```bash
 cd /path/to/hakoniwa-robot-arm
