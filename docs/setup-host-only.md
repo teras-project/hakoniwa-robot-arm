@@ -1,18 +1,19 @@
 # host-onlyセットアップ
 
-Nova5 RuntimeをHost上で実行する構成です。箱庭シミュレーション単体はmacOSまたはUbuntuで実行できます。ROS 2連携までHostだけで完結させる場合は、ROS 2 HumbleまたはJazzyを導入したUbuntuを使用します。
+Nova5 RuntimeをHost上で実行するための準備手順です。ROS 2連携までHostだけで行う場合はUbuntu 22.04／ROS 2 Humble、またはUbuntu 24.04／ROS 2 Jazzyを使用します。
 
-各段階の読み方は[手順の読み方と進行ゲート](procedure-guide.md)、端末の使い分けは[端末ロール](terminal-roles.md)を参照してください。
+各手順の直後に正常時の出力例とNG条件を示します。実際のログを照合し、NG条件に該当した場合はその段階で止めてください。
 
-## 1. Hostの前提
+## 1. Hostの前提を準備する
 
-**実行場所:** 通常のHost terminal。作業ディレクトリは任意です。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | 通常のHost terminal |
+| 実行ディレクトリ | 任意 |
+| この作業の入力成果物 | 同じ親ディレクトリへclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm` |
+| この作業のゴール | Nova5 Runtimeのconfigureとbuildに必要なHostコマンドが使用できる。ROS 2連携を行う場合はROS 2とcolconも使用できる。 |
 
-**入力:** [トップREADME](../README.md#クイックスタート)に従ってclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm`。
-
-**ゴール:** Nova5 RuntimeをbuildできるHost環境を用意する。ROS 2連携を行う場合は、ROS 2 workspaceもbuildできる状態にする。
-
-このページの例はUbuntu 24.04／ROS 2 Jazzyです。Humbleを使う場合は`jazzy`を`humble`へ読み替えます。
+UbuntuへHost用パッケージを導入します。
 
 ```bash
 sudo apt update
@@ -21,87 +22,134 @@ sudo apt install -y \
   build-essential cmake libboost-dev libgl1-mesa-dev libglfw3-dev
 
 python3.12 --version
+cmake --version
 ```
 
-ROS 2連携を使う場合だけ、ROS 2とcolconを確認します。
+両方のversionが表示されればHost用パッケージはOKです。command not foundになればNGです。
+
+ROS 2連携を行う場合だけ、使用するROS distributionを確認します。以下はUbuntu 24.04／Jazzyの例です。
 
 ```bash
 sudo apt install -y python3-colcon-common-extensions
-test -f /opt/ros/jazzy/setup.bash
-/usr/bin/python3 -m colcon --help >/dev/null
+ls -l /opt/ros/jazzy/setup.bash
+/usr/bin/python3 -m colcon --help
 ```
 
-**成功判定:** 必要なコマンドが正常終了する。ROS 2を使わない単体デモでは、後半のROS 2確認は不要です。
+`setup.bash`のファイル情報とcolconのhelpが表示されればOKです。`No such file or directory`またはPython errorになればNGです。
 
-**次段への出力:** `host-hako`を開けるHost環境。
+## 2. `host-hako`端末を開く
 
-## 2. `host-hako`を開く
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | 通常のHost terminal。この操作後に開くchild shellが`host-hako`になる。 |
+| 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 前段で確認済みのHostコマンドと、clone済みの2リポジトリ |
+| この作業のゴール | Foundation、Forge、Runtimeの操作に使用する`host-hako`端末が開く。 |
 
-**実行場所:** 通常のHost terminalの`$ARM_PACK`（`hakoniwa-robot-arm`のrepository root）。まだ`host-hako`には入っていません。
-
-**入力:** 前段のHost環境。
-
-**ゴール:** Foundation、Forge、Runtimeを操作する`host-hako`端末を開く。
-
-通常のHost terminalで、Robot Arm repositoryへ移動してbootstrap profileをsourceします。
+`/absolute/path/to/hakoniwa-robot-arm`は、実際にcloneしたディレクトリへ置き換えます。
 
 ```bash
-cd /path/to/hakoniwa-robot-arm
+cd /absolute/path/to/hakoniwa-robot-arm
 source profiles/tool-env/enter-host-hako.bash
 ```
 
-この操作は、checkout配置からComposerを自動解決し、`$HAKOBASE_DIR/work-host`を`HAKONIWA_WORK_DIR`として箱庭Workspaceを開きます。手動で環境変数を`export`する必要はありません。
+新しく開いたshellで確認します。
 
-**成功判定:** 子shellのpromptが`(host-hako) (hako)`で始まる。
+```bash
+pwd
+```
 
-**次段への出力:** active Hakoniwa Workspace。以降、このページの「`host-hako`で実行」はこのshellを指します。
+正常時は次の形式になります。
+
+```text
+/.../hakoniwa-business-pack
+```
+
+promptが`(host-hako) (hako)`で始まり、ディレクトリ末尾が`hakoniwa-business-pack`ならOKです。
 
 ## 3. FoundationとRuntime Recipeを準備する
 
-**実行場所:** activeな`host-hako`。作業ディレクトリは`$HAKONIWA_COMPOSER`（`hakoniwa-business-pack`のrepository root）です。`workspace.py enter`がこの位置でchild shellを開きます。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `host-hako` |
+| 実行ディレクトリ | `hakoniwa-business-pack`のrepository root |
+| この作業の入力成果物 | clone済みリポジトリと、前段で確認済みのHostコマンド |
+| この作業のゴール | FoundationとNova5 Runtime Recipeの依存が兄弟の`work-host`へ準備され、両方のdoctorが成功する。 |
 
-**入力:** activeな`host-hako`。
-
-**ゴール:** Nova5 Runtime Recipeが依存取得・Foundation構築を実行できる状態にする。
-
-`host-hako`で、まず変更を加えない`plan`で取得・build予定を確認します。予定が意図どおりなら`configure`を実行します。
+`plan`はファイルを変更せず、Recipeを解決できることを事前確認します。基本手順では内容を利用者が判断する必要はなく、コマンドの成否だけを確認します。
 
 ```bash
 python3.12 tools/recipe.py plan \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
+```
 
+先頭に`Recipe plan:`が表示され、`error:`で終了しなければOKです。
+
+```bash
 python3.12 tools/recipe.py configure \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 
 python3.12 tools/workspace.py doctor
 python3.12 tools/recipe.py doctor \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
-**成功判定:** `plan`の対象Recipeと依存repositoryが意図どおりであり、両方の`doctor`で必須項目がすべて`[OK]`または`SATISFIED`となる。
+正常時は、doctorの末尾を含む出力が次の状態になります。
 
-**次段への出力:** FoundationとNova5 Runtime Recipeの依存が準備されたwork。
+```text
+[OK] Foundation Python and Hakoniwa modules are workspace-owned.
+Foundation: SATISFIED
+[SATISFIED] Recipe dependency ...
+[SATISFIED] Recipe runtime: ...
+```
 
-## 4. Nova5 Model Forgeを実行する
+`[NG]`、`MISSING`、`error:`が一つもなければOKです。
 
-**実行場所:** activeな`host-hako`。作業ディレクトリは`$HAKONIWA_COMPOSER`です。
+## 4. Model Forge Recipeを準備する
 
-**入力:** FoundationとRuntime Recipeの準備が完了した`host-hako`。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `host-hako` |
+| 実行ディレクトリ | `hakoniwa-business-pack`のrepository root |
+| この作業の入力成果物 | Nova5 Model Forge Recipeと、前段で準備したFoundation |
+| この作業のゴール | 上流モデルの取得とMJCF変換に必要なツール、Python packageを準備する。 |
 
-**ゴール:** 上流モデルからNova5のMuJoCo入力を生成する。
+Forge Recipeを解決し、変換に必要なツールとPython packageを準備します。
 
 ```bash
 python3.12 tools/recipe.py plan \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-model-forge.yaml"
-python3.12 tools/recipe.py configure \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-model-forge.yaml"
-python "$ARM_PACK/tools/recipe/nova5.py" forge
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 
-test -f "$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml"
+python3.12 tools/recipe.py configure \
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 ```
 
-**成功判定:** `nova5.contact.xml`が存在し、Forgeがerrorなく終了する。
+`plan`の先頭に`Recipe plan:`が表示され、両コマンドが`error:`で終了しなければOKです。
 
-**次段への出力:** buildで使用するNova5 MJCF。詳細は[Nova5 Model Forge](model-forge.md)を参照してください。
+## 5. 上流モデルからNova5 MJCFを生成する
 
-次は[host-onlyビルド](build-host-only.md)へ進んでください。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `host-hako` |
+| 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 固定revisionで指定された上流Nova5 Xacro／STL mesh、`actuator.yaml`、`contact-excludes.yaml`、前段で準備したForge変換ツール |
+| この作業のゴール | 上流のURDF/XacroモデルをMuJoCo形式のMJCFへ変換し、`../work-host/model-forge/nova5/install/nova5.contact.xml`を生成する。 |
+
+`host-hako`でRobot Arm repositoryへ移動して実行します。
+
+```bash
+cd ../hakoniwa-robot-arm
+python tools/recipe/nova5.py forge
+ls -l ../work-host/model-forge/nova5/install/nova5.contact.xml
+```
+
+正常時はForgeログに次の出力先が表示され、最後の`ls`で同じファイルの情報を確認できます。
+
+```text
+Nova5 output     : /.../work-host/model-forge/nova5/install
+... /.../work-host/model-forge/nova5/install/nova5.contact.xml
+```
+
+`nova5.contact.xml`が表示されればOK、`No such file or directory`ならNGです。変換内容は[Nova5 Model Forge](model-forge.md)を参照してください。
+
+次は[host-onlyビルド](build-host-only.md)へ進みます。

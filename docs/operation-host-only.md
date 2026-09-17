@@ -1,122 +1,169 @@
 # host-only起動・動作確認
 
-[host-onlyビルド](build-host-only.md)の完了が前提です。単体デモは`host-hako`だけで確認できます。ROS 2連携では、[端末ロール](terminal-roles.md)で定義した4端末を使用します。monitorとcontrolの意味、パラメータ、カスタマイズは[ROS 2によるアーム操作](ros2-arm-operations.md)を参照してください。
+[host-onlyビルド](build-host-only.md)で選択した構成に合わせて、AまたはBへ進みます。
+
+- 単体デモ用にconfigureした場合: A
+- `configure --ros2-tcp`を実行し、ROS 2 workspaceもbuildした場合: B
 
 ## A. 箱庭シミュレーション単体
 
-**実行場所:** activeな`host-hako`。作業ディレクトリは`$HAKONIWA_COMPOSER`です。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `host-hako` |
+| 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 単体デモ用`launcher.json`、build済み`robot-arm-hakoniwa-asset`、Forge済み`nova5.contact.xml` |
+| この作業のゴール | ROS 2を使わず、Runtime、PDU、MuJoCo Viewer、自動デモ軌道が一連で動作する。 |
 
-**入力:** 単体デモ構成でconfigure・build済みのNova5 Runtimeと、activeな`host-hako`。
-
-**ゴール:** ROS 2を使わず、Runtime、Launcher、PDU、MuJoCo Viewerの経路が単体で成立することを確認する。
-
-このモードでは、`start`がRuntimeとViewerに加えて自動デモ軌道送信を起動します。`start`直後にNova5が動くのは正常な期待挙動です。
-
-`host-hako`で実行します。
-
-```bash
-python "$ARM_PACK/tools/recipe/nova5.py" doctor
-python "$ARM_PACK/tools/recipe/nova5.py" start
-python "$ARM_PACK/tools/recipe/nova5.py" status
-```
-
-**成功判定:** `doctor`の必須項目がすべて`[OK]`であり、`status`が`RUNNING`となる。Viewerありの構成では、Nova5が自動デモ軌道を安全に完走する。
-
-**次段への出力:** 単体動作が確認済みのRuntime。ROS 2連携を行う場合は、単体モードを停止してからBへ進む。
+この構成では`start`直後に自動デモ軌道が送信され、Nova5が動きます。これはROS 2制御ではなく、箱庭シミュレーション単体の動作確認です。
 
 ```bash
-python "$ARM_PACK/tools/recipe/nova5.py" stop
-python "$ARM_PACK/tools/recipe/nova5.py" status
+python tools/recipe/nova5.py doctor
 ```
 
-停止後の成功判定は`TERMINATED`です。
+すべての行が`[OK]`なら起動します。`[NG]`が一つでもあれば起動しません。
+
+```bash
+python tools/recipe/nova5.py start
+python tools/recipe/nova5.py status
+```
+
+次の状態を確認します。
+
+- terminalに`Nova5 demo is running in the background.`が表示される。
+- `status`が`RUNNING`を返す。
+- MuJoCo Viewer上でNova5が自動軌道を動く。
+
+一つでも満たさなければNGです。確認後に停止します。
+
+```bash
+python tools/recipe/nova5.py stop
+python tools/recipe/nova5.py status
+```
+
+`status`が`TERMINATED`を返せば停止完了です。
 
 ## B. Ubuntu Host上のROS 2連携
 
-**実行場所:** 下表の4端末。`host-hako`は`$HAKONIWA_COMPOSER`、残りの3端末はprofileをsourceする前に`$ARM_PACK`へ移動します。
+この構成では4端末を同時に使用します。
 
-**入力:** `--ros2-tcp`でconfigure・build済みのRuntimeと、ROS 2 workspace build済みのwork。
-
-**ゴール:** `JointTrajectory`でアームを動かし、`JointState`で結果を観察する。
-
-ROS 2連携では、最初に4端末を用意します。
-
-| 端末 | 使うprofile | 操作 |
+| 端末 | 実行するもの | 維持する状態 |
 | --- | --- | --- |
-| `host-hako` | activeな箱庭Workspace | Runtime、Viewer、Host TCP Bridgeを起動する。 |
-| `host-ros-bridge` | `activate-host-ros-bridge.bash` | ROS Bridgeを起動したままにする。 |
-| `host-ros-monitor` | `activate-host-ros-monitor.bash` | JointStateを監視する。 |
-| `host-ros-control` | `activate-host-ros-control.bash` | JointTrajectoryを送信する。 |
+| `host-hako` | Nova5 Runtime、MuJoCo Viewer、Host TCP Bridge | `RUNNING` |
+| `host-ros-bridge` | 箱庭PDUとROS topicを接続するROS Bridge | 起動したまま |
+| `host-ros-monitor` | `/pdu/joint_states`のmonitor | 受信したまま |
+| `host-ros-control` | `/joint_trajectory`への軌道送信 | 送信後に終了 |
 
 ### 1. RuntimeとHost TCP Bridgeを起動する
 
-**実行場所:** activeな`host-hako`の`$HAKONIWA_COMPOSER`。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `host-hako` |
+| 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | ROS 2用`launcher.json`、build済み`robot-arm-hakoniwa-asset`、生成済みROS binding |
+| この作業のゴール | Nova5 Runtime、Viewer、Host TCP Bridgeが`RUNNING`になる。 |
 
 ```bash
-python "$ARM_PACK/tools/recipe/nova5.py" doctor
-python "$ARM_PACK/tools/recipe/nova5.py" start
-python "$ARM_PACK/tools/recipe/nova5.py" status
+python tools/recipe/nova5.py doctor
+python tools/recipe/nova5.py start
+python tools/recipe/nova5.py status
 ```
 
-**成功判定:** `doctor`の必須項目がすべて`[OK]`であり、`status`が`RUNNING`となる。LauncherがRuntimeとHost側SHM/TCP Bridgeを一緒に起動するため、`ros2_tcp.py start-host`は実行しません。
+doctorの全項目が`[OK]`で、start後に`Nova5 demo is running in the background.`、statusに`RUNNING`が表示されれば次へ進みます。このLauncherがHost TCP Bridgeを起動するため、`ros2_tcp.py start-host`を別途実行しません。
 
 ### 2. ROS Bridgeを起動する
 
-**実行場所:** 新しい通常Host terminalの`$ARM_PACK`。profileをsource後、この端末は`host-ros-bridge`になります。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | 新しい通常Host terminal。profile適用後は`host-ros-bridge`。 |
+| 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | build済みROS 2 workspace、`activate-host-ros-bridge.bash`、生成済み`binding.json` |
+| この作業のゴール | ROS Bridgeが起動し、箱庭PDUとROS topicの変換を継続する。 |
 
 ```bash
-cd /path/to/hakoniwa-robot-arm
+cd /absolute/path/to/hakoniwa-robot-arm
 source profiles/tool-env/activate.bash
-source "$HAKOBASE_DIR/work-host/profiles/activate-host-ros-bridge.bash"
-
-test -f "$HAKONIWA_ROS_BINDING"
-ros2 run hakoniwa_pdu_ros bridge --config "$HAKONIWA_ROS_BINDING"
+ls -l ../work-host/profiles/activate-host-ros-bridge.bash
 ```
 
-**成功判定:** promptが`(host-ros-bridge)`で始まり、Bridgeがerrorなく起動している。このterminalは終了まで開いたままにします。
+profileのファイル情報が表示されれば続けます。`No such file or directory`なら実行を止め、[ROS 2連携用configure](build-host-only.md#b-ros-2連携)へ戻ります。
+
+```bash
+source ../work-host/profiles/activate-host-ros-bridge.bash
+ls -l ../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
+ros2 run hakoniwa_pdu_ros bridge \
+  --config ../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
+```
+
+`ls`でbindingが表示され、Bridgeがerrorなく起動を継続すればOKです。このterminalは開いたままにします。
 
 ### 3. JointStateを観察する
 
-**実行場所:** 別の通常Host terminalの`$ARM_PACK`。profileをsource後、この端末は`host-ros-monitor`になります。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | 新しい通常Host terminal。profile適用後は`host-ros-monitor`。 |
+| 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 起動中のRuntimeとROS Bridge、`activate-host-ros-monitor.bash` |
+| この作業のゴール | `/pdu/joint_states`から`joint1`〜`joint6`の現在角度を継続受信する。 |
 
 ```bash
-cd /path/to/hakoniwa-robot-arm
+cd /absolute/path/to/hakoniwa-robot-arm
 source profiles/tool-env/activate.bash
-source "$HAKOBASE_DIR/work-host/profiles/activate-host-ros-monitor.bash"
+source ../work-host/profiles/activate-host-ros-monitor.bash
 
 ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 ```
 
-**成功判定:** promptが`(host-ros-monitor)`で始まり、`joint1`から`joint6`の位置が表示される。このterminalは観察のため開いたままにします。
+OKの場合は、次の形式のログが繰り返し表示されます。数値は実行ごとに変わります。
+
+```text
+[INFO] [...] [hakoniwa_arm_joint_state_monitor]: monitoring /pdu/joint_states
+[INFO] [...] [hakoniwa_arm_joint_state_monitor]: joint1=..., joint2=..., joint3=..., joint4=..., joint5=..., joint6=...
+```
+
+`monitoring`だけで関節値が表示されない場合はNGです。このterminalは観察のため開いたままにします。
 
 ### 4. JointTrajectoryを送信する
 
-**実行場所:** さらに別の通常Host terminalの`$ARM_PACK`。profileをsource後、この端末は`host-ros-control`になります。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | 新しい通常Host terminal。profile適用後は`host-ros-control`。 |
+| 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 起動中のRuntimeとROS Bridge、受信中のJointState monitor、`activate-host-ros-control.bash` |
+| この作業のゴール | 6関節・4点のJointTrajectoryを送信し、Viewerとmonitorの両方で関節動作を確認する。 |
 
 ```bash
-cd /path/to/hakoniwa-robot-arm
+cd /absolute/path/to/hakoniwa-robot-arm
 source profiles/tool-env/activate.bash
-source "$HAKOBASE_DIR/work-host/profiles/activate-host-ros-control.bash"
+source ../work-host/profiles/activate-host-ros-control.bash
 
 ros2 topic info /joint_trajectory
 ros2 run hakoniwa_arm_samples control \
   --topic /joint_trajectory --joints 6 --amplitude 0.15 --duration 2.0
 ```
 
-**成功判定:** promptが`(host-ros-control)`で始まり、controlが軌道をpublishする。Viewer上でNova5が動き、`host-ros-monitor`の関節位置も変化する。
+送信に成功すると、次の形式のログが表示されます。
 
-**次段への出力:** ROS 2からの軌道制御と状態取得が確認済みのRuntime。
+```text
+[INFO] [...] [hakoniwa_arm_trajectory_sample]: published 4 points for 6 joints to /joint_trajectory
+```
+
+このログに加え、Viewer上でNova5が動き、`host-ros-monitor`の6関節値が変化すればOKです。`--amplitude`と`--duration`の意味は[ROS 2によるアーム操作](ros2-arm-operations.md)を参照してください。
 
 ### 5. 終了する
 
-**実行場所:** `host-hako`の`$HAKONIWA_COMPOSER`。ほかの3端末は先にCtrl+Cで停止します。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `host-ros-control`、`host-ros-monitor`、`host-ros-bridge`、最後に`host-hako` |
+| 実行ディレクトリ | `host-hako`では`hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 動作確認済みで`RUNNING`のNova5 Runtimeと、起動中のROS process |
+| この作業のゴール | ROS processとNova5 Runtimeがすべて停止し、Runtimeの状態が`TERMINATED`になる。 |
 
-`host-ros-control`、`host-ros-monitor`、`host-ros-bridge`をCtrl+Cで停止します。最後に`host-hako`でRuntimeを停止します。
+先に`host-ros-control`、`host-ros-monitor`、`host-ros-bridge`をCtrl+Cで停止します。最後に`host-hako`で実行します。
 
 ```bash
-python "$ARM_PACK/tools/recipe/nova5.py" stop
-python "$ARM_PACK/tools/recipe/nova5.py" status
+python tools/recipe/nova5.py stop
+python tools/recipe/nova5.py status
 ```
 
-**成功判定:** `TERMINATED`となる。
+`status`が`TERMINATED`を返せば終了完了です。
