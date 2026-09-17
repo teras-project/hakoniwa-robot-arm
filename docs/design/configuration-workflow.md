@@ -38,7 +38,8 @@ C++ソース・Viewer有無 ─── build ─────┴──> Nova5実�
 | `--environment`、`--ros2-tcp`、`--gamepad`、`--realtime-sync-cycle-msec` | 起動モードとLauncher構成 | 同じoptionで`nova5.py configure` | `launcher.json`と関連する派生設定 |
 | `--headless` | Viewerの組み込みと起動抑止 | `build --headless`と`configure --headless` | 実行ファイルと`launcher.json` |
 | C++ソース、`CMakeLists.txt` | Runtime applicationの実装 | `nova5.py build` | Recipe work内の実行ファイル |
-| `ros2_packages/` | ROS 2 Bridge／sample node | ROS 2 workspaceを再build | `$HAKONIWA_ROS2_WS/install/` |
+| `hakoniwa-pdu-endpoint`、`hakoniwa-pdu-ros` | Endpoint native／CFFIとROS 2 Bridge | `ros2_workspace.py build`でROS 2基盤環境を再build | `$HAKONIWA_ROS2_WS/native/`、`$HAKONIWA_ROS2_WS/install/` |
+| `ros2_packages/hakoniwa_arm_samples` | monitor／control sample node | 標準の`colcon build`でサンプル用ワークスペースを再build | `../work-host/ros2-samples/install/` |
 
 表中の`install/`は、特記がない限り`$HAKONIWA_WORK_DIR/model-forge/nova5/install/`を表します。
 
@@ -126,6 +127,8 @@ $HAKONIWA_ROS2_WS/
 └── activate.bash
 ```
 
+このworkspaceはEndpointとBridgeだけを含むROS 2基盤環境です。付属の`hakoniwa_arm_samples`と利用者packageは、それぞれ標準colconで別のROS 2ワークスペースへbuildします。生成先と実行時の接続関係は[ROS 2 Bridge基盤環境の成果物と接続関係](ros2-bridge-environment.md)を参照してください。
+
 HostとDockerのROS 2 TCP設定の受け渡しには、次のディレクトリを`HAKONIWA_ROS2_TCP_CONFIG`として使用します。
 
 ```text
@@ -173,4 +176,4 @@ test -f "$HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/config/ros2-t
 test -f "$HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/config/ros2-tcp/metadata.json"
 ```
 
-最後は[利用構成別の動作確認手順](operation.md)に従い、軌道指令、JointState、ログを確認します。ファイル生成の成功だけでは、制御応答やHost／Docker間の接続まで保証しないためです。
+最後は[利用構成別の動作確認手順](../procedures/operation.md)に従い、軌道指令、JointState、ログを確認します。ファイル生成の成功だけでは、制御応答やHost／Docker間の接続まで保証しないためです。

@@ -4,7 +4,7 @@
 
 ## 1. 基本方針
 
-Nova5の上流モデル本体はこのリポジトリへコミットしません。取得元、branch、固定revision、必要ファイルは[source.yaml](../sources/models/nova5/source.yaml)、ライセンス確認と再配布判断は[LICENSE_INFO.yaml](../sources/models/nova5/LICENSE_INFO.yaml)で管理します。変換内容は、このForge RecipeとツールのGit履歴で追跡します。
+Nova5の上流モデル本体はこのリポジトリへコミットしません。取得元、branch、固定revision、必要ファイルは[source.yaml](../../sources/models/nova5/source.yaml)、ライセンス確認と再配布判断は[LICENSE_INFO.yaml](../../sources/models/nova5/LICENSE_INFO.yaml)で管理します。変換内容は、このForge RecipeとツールのGit履歴で追跡します。
 
 Forgeが取得・生成するsource、build、installは、すべて次のwork所有領域へ配置します。
 
@@ -17,11 +17,11 @@ $HAKONIWA_WORK_DIR/model-forge/nova5/
 
 生成済みMJCFを直接編集せず、Recipe設定または変換ツールを変更してForgeを再実行してください。
 
-Forgeの対象外であるEnvironment、Asset Manifest、PDU、Endpoint、Runtime component設定を含む全体の区分は、[設定変更と反映方法](configuration-workflow.md)を参照してください。
+Forgeの対象外であるEnvironment、Asset Manifest、PDU、Endpoint、Runtime component設定を含む全体の区分は、[設定変更と反映方法](../design/configuration-workflow.md)を参照してください。
 
 ## 2. Forge環境の準備
 
-いずれかの[環境別セットアップ](setup.md)に従い、Business Packの`(hako)` Workspaceへ入ります。操作起点はComposerのルートです。
+いずれかの[環境別セットアップ](../procedures/setup.md)に従い、Business Packの`(hako)` Workspaceへ入ります。操作起点はComposerのルートです。
 
 ```text
 (hako) .../hakoniwa-business-pack $
@@ -76,7 +76,7 @@ Forgeは次の処理を行います。
 
 ## 4. `kp`と`dampratio`の調整
 
-Nova5はMuJoCoのposition actuatorを使用します。サーボ応答は[`recipes/nova5/actuator.yaml`](../recipes/nova5/actuator.yaml)の`kp`と`dampratio`で調整します。
+Nova5はMuJoCoのposition actuatorを使用します。サーボ応答は[`recipes/nova5/actuator.yaml`](../../recipes/nova5/actuator.yaml)の`kp`と`dampratio`で調整します。
 
 | 項目 | 意味 | 大きくした場合 | 小さくした場合 |
 | --- | --- | --- | --- |
@@ -136,7 +136,7 @@ python tools/recipe.py configure \
 
 ### 4.2 調整後の確認
 
-最初は小さな変更幅と小さな軌道振幅で確認してください。[環境別の動作確認手順](operation.md)に従い、少なくとも次を確認します。
+最初は小さな変更幅と小さな軌道振幅で確認してください。[環境別の動作確認手順](../procedures/operation.md)に従い、少なくとも次を確認します。
 
 - `/joint_trajectory`の目標へ各jointが追従する。
 - `/pdu/joint_states`の値が滑らかに変化する。
@@ -183,7 +183,7 @@ test -f "$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml"
 
 ## 6. 周辺環境の生成
 
-床、背景、固定障害物はRobot Model Forgeへ含めません。[workspace.json](../recipes/nova5/config/environment/workspace.json)から、Nova5のruntime `configure`時に生成します。
+床、背景、固定障害物はRobot Model Forgeへ含めません。[workspace.json](../../recipes/nova5/config/environment/workspace.json)から、Nova5のruntime `configure`時に生成します。
 
 ```bash
 python "$ARM_PACK/tools/recipe/nova5.py" configure \
@@ -196,8 +196,8 @@ python "$ARM_PACK/tools/recipe/nova5.py" configure \
 $HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.environment.xml
 ```
 
-元の`nova5.contact.xml`は変更しません。ROS 2 TCPやheadlessなど、実際に使用する利用構成のoptionは各[動作確認手順](operation.md)に従って追加してください。
+元の`nova5.contact.xml`は変更しません。ROS 2 TCPやheadlessなど、実際に使用する利用構成のoptionは各[動作確認手順](../procedures/operation.md)に従って追加してください。
 
 ## 7. ライセンスと再配布
 
-上流repositoryの`LICENSE`とROS package metadataではライセンス表記が一致していません。取得したXacro、URDF、mesh、生成MJCFを再配布する前に、[Robot Modelのライセンス情報](license/robot-models.md)および[LICENSE_INFO.yaml](../sources/models/nova5/LICENSE_INFO.yaml)の確認事項を解消してください。
+上流repositoryの`LICENSE`とROS package metadataではライセンス表記が一致していません。取得したXacro、URDF、mesh、生成MJCFを再配布する前に、[Robot Modelのライセンス情報](../license/robot-models.md)および[LICENSE_INFO.yaml](../../sources/models/nova5/LICENSE_INFO.yaml)の確認事項を解消してください。

@@ -119,9 +119,9 @@ def build(root, distro, endpoint, pdu_ros):
         shutil.copy2(extension, package / extension.name)
     env["PATH"] = str(python.parent) + os.pathsep + env.get("PATH", "")
     command = [str(python), "-m", "colcon", "--log-base", str(root / "log"), "build",
-               "--base-paths", str(pdu_ros), str(ARM_ROOT / "ros2_packages/hakoniwa_arm_samples"),
+               "--base-paths", str(pdu_ros),
                "--build-base", str(root / "build/ros"), "--install-base", str(root / "install"),
-               "--symlink-install", "--packages-select", "hakoniwa_pdu_ros", "hakoniwa_arm_samples"]
+               "--symlink-install", "--packages-select", "hakoniwa_pdu_ros"]
     run(["bash", "-c", 'source "$1" && shift && exec "$@"', "ros-build",
          f"/opt/ros/{distro}/setup.bash", *command], cwd=root, env=env)
     (root / "activate.bash").write_text(shell_environment(root, distro))
@@ -136,13 +136,11 @@ def doctor(root):
     activation = root / "activate.bash"
     if not activation.is_file():
         raise ValueError("ROS workspace is not installed; run build first")
-    for package, command in (("hakoniwa_pdu_ros", "bridge"),
-                             ("hakoniwa_arm_samples", "control"),
-                             ("hakoniwa_arm_samples", "monitor")):
+    for package, command in (("hakoniwa_pdu_ros", "bridge"),):
         executable = root / "install" / package / "lib" / package / command
         if not executable.is_file():
             raise ValueError(f"missing installed ROS executable: {executable}")
-    run(["bash", "-c", 'source "$1" && python -c "$2" && ros2 pkg executables hakoniwa_arm_samples',
+    run(["bash", "-c", 'source "$1" && python -c "$2" && ros2 pkg executables hakoniwa_pdu_ros',
          "ros-doctor", activation,
          "import rclpy, hakoniwa_pdu, hakoniwa_pdu_endpoint.c_endpoint, hakoniwa_pdu_ros; "
          "from hakoniwa_pdu_endpoint._c_endpoint_ffi import ffi, lib; "

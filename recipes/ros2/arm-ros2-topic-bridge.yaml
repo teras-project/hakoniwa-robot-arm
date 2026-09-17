@@ -1,8 +1,8 @@
 id: arm-ros2-topic-bridge
-title: ROS 2 topic bridge and arm samples in a separate workspace
+title: ROS 2 topic bridge in a separate managed workspace
 recipe_version: 1
 goal:
-  description: Build and install the ROS side of the host-plus-Docker arm workflow using mounted source checkouts.
+  description: Build the Core-free Endpoint and ROS topic Bridge as a reusable managed ROS 2 environment; application and sample packages remain in separate standard colcon workspaces.
 execution_environment:
   os: Linux
   ros_distributions: [humble, jazzy]
@@ -20,8 +20,6 @@ components:
   - id: hakoniwa-pdu-python
     distribution: hakoniwa-pdu
     version: 1.6.9
-  - id: hakoniwa_arm_samples
-    source: ros2_packages/hakoniwa_arm_samples
 tool:
   entrypoint: tools/recipe/ros2_workspace.py
   commands: [build, doctor, env]

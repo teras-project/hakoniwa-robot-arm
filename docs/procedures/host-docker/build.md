@@ -1,6 +1,6 @@
 # host+dockerビルド
 
-[host+dockerセットアップ](setup-host-docker.md)の完了が前提です。
+[host+dockerセットアップ](setup.md)の完了が前提です。
 
 ## 1. HostのNova5 Runtime
 
@@ -77,7 +77,15 @@ Container内では箱庭Workspaceへenterしません。新しいROS 2 workspace
 /usr/bin/python3 "$ARM_PACK/tools/recipe/ros2_workspace.py" build
 source "$HAKONIWA_ROS2_WS/activate.bash"
 /usr/bin/python3 "$ARM_PACK/tools/recipe/ros2_workspace.py" doctor
+
+colcon --log-base "${HAKONIWA_ROS2_WS}-samples/log" build \
+  --base-paths "$ARM_PACK/ros2_packages/hakoniwa_arm_samples" \
+  --build-base "${HAKONIWA_ROS2_WS}-samples/build" \
+  --install-base "${HAKONIWA_ROS2_WS}-samples/install" \
+  --symlink-install \
+  --packages-select hakoniwa_arm_samples
+source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
+ros2 pkg executables hakoniwa_arm_samples
 ```
 
-`doctor`でBridge、`control`、`monitor`が検出されることを確認します。このrun shellとContainerを終了せず、[host+docker起動・動作確認](operation-host-docker.md)へ進んでください。
-
+`doctor`でBridgeが検出され、最後にサンプルの`control`と`monitor`が表示されることを確認します。このrun shellとContainerを終了せず、[host+docker起動・動作確認](operation.md)へ進んでください。

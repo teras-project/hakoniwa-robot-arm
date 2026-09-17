@@ -1,6 +1,6 @@
 # docker-only起動・動作確認
 
-[docker-onlyビルド](build-docker-only.md)の完了が前提です。Nova5とROS 2を、セットアップで起動した同じ1つのContainer内で動かします。
+[docker-onlyビルド](build.md)の完了が前提です。Nova5とROS 2を、セットアップで起動した同じ1つのContainer内で動かします。
 
 `HAKONIWA_ROS2_TCP_CONFIG`は使用しません。TCP設定はContainer内の同じ`HAKONIWA_WORK_DIR`へ生成し、各attach shellから直接参照します。
 
@@ -54,6 +54,7 @@ ros2 run hakoniwa_pdu_ros bridge --config "$HAKONIWA_ROS_BINDING"
 
 ```bash
 source "$HAKONIWA_ROS2_WS/activate.bash"
+source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 ```
@@ -64,6 +65,7 @@ ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 
 ```bash
 source "$HAKONIWA_ROS2_WS/activate.bash"
+source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 ros2 topic info /joint_trajectory
 ros2 run hakoniwa_arm_samples control \
   --topic /joint_trajectory --joints 6 --amplitude 0.15 --duration 2.0

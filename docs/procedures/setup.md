@@ -1,14 +1,14 @@
 # セットアップ手順
 
-この文書は利用構成を選ぶための入口です。初回のclone方法と前提ソフトウェアは[トップREADME](../README.md#クイックスタート)を参照してください。環境変数の責務とprofileの仕組みは[環境profile](environment-profiles.md)を正本とします。
+この文書は利用構成を選ぶための入口です。初回のclone方法と前提ソフトウェアは[トップREADME](../../README.md#クイックスタート)を参照してください。環境変数の責務とprofileの仕組みは[環境profile](../design/environment-profiles.md)を正本とします。
 
 ## 利用構成を選ぶ
 
 | 利用構成 | 適した環境 | Nova5 Runtime / MuJoCo | ROS 2 | 詳細手順 |
 | --- | --- | --- | --- | --- |
-| host-only | Ubuntuをメイン環境として使う、またはROS 2なしで単体確認する | Host | Ubuntu Hostでは同じHost | [setup-host-only.md](setup-host-only.md) |
-| host+docker | macOSからROS 2を使う、またはUbuntuでROS 2環境を分離する | Host | Docker Container | [setup-host-docker.md](setup-host-docker.md) |
-| docker-only | HostへPython、CMake、ROS 2などを導入せず試す | Container | 同じContainer | [setup-docker-only.md](setup-docker-only.md) |
+| host-only | Ubuntuをメイン環境として使う、またはROS 2なしで単体確認する | Host | Ubuntu Hostでは同じHost | [setup-host-only.md](host-only/setup.md) |
+| host+docker | macOSからROS 2を使う、またはUbuntuでROS 2環境を分離する | Host | Docker Container | [setup-host-docker.md](host-docker/setup.md) |
+| docker-only | HostへPython、CMake、ROS 2などを導入せず試す | Container | 同じContainer | [setup-docker-only.md](docker-only/setup.md) |
 
 host-onlyは、箱庭シミュレーション単体でも利用できます。Ubuntu HostへROS 2を導入した場合は、Dockerを使わずROS 2連携まで実行できます。
 
@@ -46,7 +46,7 @@ python3.12 tools/recipe.py plan \
 
 ## 次の手順
 
-- [host-onlyセットアップ](setup-host-only.md)
-- [host+dockerセットアップ](setup-host-docker.md)
-- [docker-onlyセットアップ](setup-docker-only.md)
-- [Nova5 Model Forge](model-forge.md)
+- [host-onlyセットアップ](host-only/setup.md)
+- [host+dockerセットアップ](host-docker/setup.md)
+- [docker-onlyセットアップ](docker-only/setup.md)
+- [Nova5 Model Forge](../reference/model-forge.md)

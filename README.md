@@ -12,7 +12,7 @@
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
 
-ロボットの種類毎の設定や実行手順は[対応ロボット](docs/robots.md)を参照してください。
+ロボットの種類毎の設定や実行手順は[対応ロボット](docs/reference/robots.md)を参照してください。
 
 ## 初めての方へ
 
@@ -25,19 +25,12 @@
 
 ## ドキュメント
 
-環境別の詳細手順は、[利用ガイド](docs/README.md)を参照してください。
+ドキュメントは用途別に分けています。最初は[利用ガイド](docs/README.md)から、利用する環境の手順を選んでください。
 
-- [セットアップ手順](docs/setup.md)
-- [ビルド手順](docs/build.md)
-- [起動・動作確認手順](docs/operation.md)
-- [Nova5 Model Forge](docs/model-forge.md)
-- [設定変更と反映方法](docs/configuration-workflow.md)
-- [環境profile](docs/environment-profiles.md)
-- [手順の読み方と進行ゲート](docs/procedure-guide.md)
-- [端末ロール](docs/terminal-roles.md)
-- [ROS 2によるアーム操作](docs/ros2-arm-operations.md)
-- [対応ロボット](docs/robots.md)
-- [ライセンス情報](docs/license/README.md)
+- [実行手順](docs/procedures/README.md): setup、build、operation、ROS 2操作
+- [設計文書](docs/design/README.md): Recipe、profile、生成物、ROS 2接続
+- [参照資料](docs/reference/README.md): 対応ロボット、Model Forge
+- [ライセンス情報](docs/license/README.md): 依存OSS、Robot Model、再配布方針
 
 ## できること
 
@@ -104,12 +97,12 @@ flowchart LR
 | --- | --- | --- |
 | Asset Manifest | [`recipes/nova5/asset-manifest.json`](recipes/nova5/asset-manifest.json) | モデル、PDU、Endpoint、Runtime componentを束ねる入口 |
 | Runtime | [`recipes/nova5/config/runtime.json`](recipes/nova5/config/runtime.json) | actuator Runtimeの共通設定とcommand timeout |
-| MuJoCo actuator | [`recipes/nova5/actuator.yaml`](recipes/nova5/actuator.yaml) | position actuatorの`kp`、`dampratio`、`ctrlrange`。ゲイン変更は再Forgeが必須。調整手順は[Model Forge](docs/model-forge.md#4-kpとdampratioの調整)を参照 |
-| Actuator / Controller / State Output | [`recipes/nova5/config/`](recipes/nova5/config/) | joint binding、軌道制御、関節状態出力 |
-| PDU Definition / Types | [`recipes/nova5/config/pdu/`](recipes/nova5/config/pdu/) | Nova5が使用するPDU robot、channel、message type |
+| MuJoCo actuator | [`recipes/nova5/actuator.yaml`](recipes/nova5/actuator.yaml) | position actuatorの`kp`、`dampratio`、`ctrlrange`。ゲイン変更は再Forgeが必須。調整手順は[Model Forge](docs/reference/model-forge.md#4-kpとdampratioの調整)を参照 |
+| Actuator / Controller / State Output | [`recipes/nova5/config/`](recipes/nova5/config) | joint binding、軌道制御、関節状態出力 |
+| PDU Definition / Types | [`recipes/nova5/config/pdu/`](recipes/nova5/config/pdu) | Nova5が使用するPDU robot、channel、message type |
 | Endpoint | [`recipes/nova5/config/endpoint/nova5_endpoint.json`](recipes/nova5/config/endpoint/nova5_endpoint.json) | PDU Definitionと通信backendの選択 |
 
-`nova5.py configure`がwork側へ生成する`launcher.json`や、Forgeが生成するMJCFは直接編集しません。元となるManifest、config、Recipeを変更して再生成します。変更対象ごとのForge／configure／buildの区別、生成先、反映確認は[設定変更と反映方法](docs/configuration-workflow.md)を参照してください。
+`nova5.py configure`がwork側へ生成する`launcher.json`や、Forgeが生成するMJCFは直接編集しません。元となるManifest、config、Recipeを変更して再生成します。変更対象ごとのForge／configure／buildの区別、生成先、反映確認は[設定変更と反映方法](docs/design/configuration-workflow.md)を参照してください。
 
 ## ライセンスとRobot Model
 
@@ -158,7 +151,7 @@ Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証
 - `configure`: 依存リポジトリを準備し、必要なFoundationとPython依存を構築
 - `doctor`: FoundationとRecipe依存が実行可能な状態か検査
 
-本リポジトリの`tools/recipe/<robot>.py`は、その環境を利用して各ロボット固有のForge、configure、build、start、stopを実行します。対応するentrypointと置換方法は[対応ロボット](docs/robots.md)を参照してください。
+本リポジトリの`tools/recipe/<robot>.py`は、その環境を利用して各ロボット固有のForge、configure、build、start、stopを実行します。対応するentrypointと置換方法は[対応ロボット](docs/reference/robots.md)を参照してください。
 
 ## 動作確認環境
 
@@ -236,17 +229,17 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 
 ### Ubuntuユーザー：host-only（推奨）
 
-1. [host-onlyセットアップ](docs/setup-host-only.md)
-2. [host-onlyビルド](docs/build-host-only.md)
-3. [host-only起動・動作確認](docs/operation-host-only.md)
+1. [host-onlyセットアップ](docs/procedures/host-only/setup.md)
+2. [host-onlyビルド](docs/procedures/host-only/build.md)
+3. [host-only起動・動作確認](docs/procedures/host-only/operation.md)
 
 ### macOSユーザー：host+docker
 
 macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノードをDocker Containerで実行します。HostとDockerはTCPで接続します。
 
-1. [host+dockerセットアップ](docs/setup-host-docker.md)
-2. [host+dockerビルド](docs/build-host-docker.md)
-3. [host+docker起動・動作確認](docs/operation-host-docker.md)
+1. [host+dockerセットアップ](docs/procedures/host-docker/setup.md)
+2. [host+dockerビルド](docs/procedures/host-docker/build.md)
+3. [host+docker起動・動作確認](docs/procedures/host-docker/operation.md)
 
 人が操作する場合はHost上のMuJoCo Viewerを利用できます。CIや画面のない自動確認ではheadlessを選択します。
 
@@ -254,9 +247,9 @@ macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノード
 
 HostへCPython 3.12、CMake、ROS 2などを導入せず、GitとDockerだけで動作確認したい場合はdocker-onlyを選択します。Nova5とROS 2を同じ1つのUbuntu Container内で実行します。
 
-1. [docker-onlyセットアップ](docs/setup-docker-only.md)
-2. [docker-onlyビルド](docs/build-docker-only.md)
-3. [docker-only起動・動作確認](docs/operation-docker-only.md)
+1. [docker-onlyセットアップ](docs/procedures/docker-only/setup.md)
+2. [docker-onlyビルド](docs/procedures/docker-only/build.md)
+3. [docker-only起動・動作確認](docs/procedures/docker-only/operation.md)
 
 native Linux HostではViewerを利用できます。macOS Docker Desktopではnative architectureのheadless実行を使用します。
 
@@ -267,10 +260,14 @@ native Linux HostではViewerを利用できます。macOS Docker Desktopではn
 | `apps/` | 共通ランタイムを利用するアームシミュレータのアプリケーション |
 | `recipes/nova5/` | Nova5のManifest、PDU、制御、Forge設定 |
 | `recipes/ros2/` | ROS 2 TCP BridgeのRecipe |
-| `ros2_packages/` | 納品対象のROS 2パッケージとサンプルノード |
+| `ros2_packages/` | 標準colconでbuildするROS 2サンプルノード |
 | `sources/models/` | 上流モデルの取得情報、出典、work内での正規化手順。取得したモデル本体は含まない |
 | `tools/` | Forge、Recipe操作、環境生成、制御用ツール |
 | `docker/` | ROS 2 Humble/Jazzy用のContainer環境 |
+| `docs/procedures/` | 利用者が順番どおり実行する環境別手順 |
+| `docs/design/` | Recipe、profile、生成物、接続関係の設計説明 |
+| `docs/reference/` | 対応ロボットとModel Forgeの参照情報 |
+| `docs/license/` | 依存OSSとRobot Modelのライセンス台帳 |
 
 Forgeで取得・生成したモデルはソースツリーへ配置せず、`HAKONIWA_WORK_DIR/model-forge/`以下で管理します。ROS 2のvenv、build、install、logは`HAKONIWA_ROS2_WS`以下へ生成します。
 

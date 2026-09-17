@@ -45,3 +45,5 @@ ros2 run hakoniwa_arm_samples control \
 - `joint_names`と各pointのposition配列の長さを一致させる。
 - Robot Modelのjoint limitを尊重する。
 - 実行結果を`/pdu/joint_states`とViewerで確認する。
+
+独自packageを別のROS 2ワークスペースへbuild・実行する手順は、[独自ROS 2 nodeの作成とbuild](custom-nodes.md)を参照してください。

@@ -11,7 +11,7 @@
 | FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
 
-FR5とSO-101についても、基本的な実行手順は[Nova5の環境別手順](README.md)と共通です。ただしFR5では、初回Model Forge時に機種固有のURDF正規化が必要です。詳細は[FR5 source normalization](../sources/models/fr5/README.md)を参照してください。
+FR5とSO-101についても、基本的な実行手順は[Nova5の環境別手順](../README.md)と共通です。ただしFR5では、初回Model Forge時に機種固有のURDF正規化が必要です。詳細は[FR5 source normalization](../../sources/models/fr5/README.md)を参照してください。
 
 ## ロボット名を置き換えるポイント
 
@@ -72,4 +72,4 @@ HostとDockerを接続する場合は、このロボット固有ディレクト�
 
 機種固有のモデル取得元、固定revision、変換内容は`recipes/<robot>/`と`sources/models/<robot>/`で管理します。Robot Model本体はGit管理せず、Forgeによってworkへ取得・生成します。
 
-ライセンスと再配布条件は[Robot Modelのライセンス情報](license/robot-models.md)を参照してください。特にFR5は上流ライセンスが未確定のため、モデルや正規化済みURDFを外部へ再配布しません。Forge前に必要な正規化は[FR5 source normalization](../sources/models/fr5/README.md)に従い、利用者のwork内で行います。
+ライセンスと再配布条件は[Robot Modelのライセンス情報](../license/robot-models.md)を参照してください。特にFR5は上流ライセンスが未確定のため、モデルや正規化済みURDFを外部へ再配布しません。Forge前に必要な正規化は[FR5 source normalization](../../sources/models/fr5/README.md)に従い、利用者のwork内で行います。

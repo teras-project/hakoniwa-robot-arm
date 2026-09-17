@@ -1,6 +1,6 @@
 # host-only起動・動作確認
 
-[host-onlyビルド](build-host-only.md)で選択した構成に合わせて、AまたはBへ進みます。
+[host-onlyビルド](build.md)で選択した構成に合わせて、AまたはBへ進みます。
 
 - 単体デモ用にconfigureした場合: A
 - `configure --ros2-tcp`を実行し、ROS 2 workspaceもbuildした場合: B
@@ -81,11 +81,10 @@ doctorの全項目が`[OK]`で、start後に`Nova5 demo is running in the backgr
 
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
-source profiles/tool-env/activate.bash
 ls -l ../work-host/profiles/activate-host-ros-bridge.bash
 ```
 
-profileのファイル情報が表示されれば続けます。`No such file or directory`なら実行を止め、[ROS 2連携用configure](build-host-only.md#b-ros-2連携)へ戻ります。
+profileのファイル情報が表示されれば続けます。`No such file or directory`なら実行を止め、[ROS 2連携用configure](build.md#b-ros-2連携)へ戻ります。
 
 ```bash
 source ../work-host/profiles/activate-host-ros-bridge.bash
@@ -102,13 +101,13 @@ ros2 run hakoniwa_pdu_ros bridge \
 | --- | --- |
 | 実行端末 | 新しい通常Host terminal。profile適用後は`host-ros-monitor`。 |
 | 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
-| この作業の入力成果物 | 起動中のRuntimeとROS Bridge、`activate-host-ros-monitor.bash` |
+| この作業の入力成果物 | 起動中のRuntimeとROS Bridge、`activate-host-ros-monitor.bash`、build済みのサンプル用ROS 2ワークスペース |
 | この作業のゴール | `/pdu/joint_states`から`joint1`〜`joint6`の現在角度を継続受信する。 |
 
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
-source profiles/tool-env/activate.bash
 source ../work-host/profiles/activate-host-ros-monitor.bash
+source ../work-host/ros2-samples/install/setup.bash
 
 ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
@@ -129,13 +128,13 @@ OKの場合は、次の形式のログが繰り返し表示されます。数値
 | --- | --- |
 | 実行端末 | 新しい通常Host terminal。profile適用後は`host-ros-control`。 |
 | 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
-| この作業の入力成果物 | 起動中のRuntimeとROS Bridge、受信中のJointState monitor、`activate-host-ros-control.bash` |
+| この作業の入力成果物 | 起動中のRuntimeとROS Bridge、受信中のJointState monitor、`activate-host-ros-control.bash`、build済みのサンプル用ROS 2ワークスペース |
 | この作業のゴール | 6関節・4点のJointTrajectoryを送信し、Viewerとmonitorの両方で関節動作を確認する。 |
 
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
-source profiles/tool-env/activate.bash
 source ../work-host/profiles/activate-host-ros-control.bash
+source ../work-host/ros2-samples/install/setup.bash
 
 ros2 topic info /joint_trajectory
 ros2 run hakoniwa_arm_samples control \
@@ -148,7 +147,7 @@ ros2 run hakoniwa_arm_samples control \
 [INFO] [...] [hakoniwa_arm_trajectory_sample]: published 4 points for 6 joints to /joint_trajectory
 ```
 
-このログに加え、Viewer上でNova5が動き、`host-ros-monitor`の6関節値が変化すればOKです。`--amplitude`と`--duration`の意味は[ROS 2によるアーム操作](ros2-arm-operations.md)を参照してください。
+このログに加え、Viewer上でNova5が動き、`host-ros-monitor`の6関節値が変化すればOKです。`--amplitude`と`--duration`の意味は[ROS 2によるアーム操作](../ros2/arm-operations.md)を参照してください。
 
 ### 5. 終了する
 

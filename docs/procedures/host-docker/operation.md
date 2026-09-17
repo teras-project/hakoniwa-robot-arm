@@ -1,6 +1,6 @@
 # host+docker起動・動作確認
 
-[host+dockerビルド](build-host-docker.md)の完了が前提です。Nova5とMuJoCoはHost、ROS 2はDocker Containerで動かします。
+[host+dockerビルド](build.md)の完了が前提です。Nova5とMuJoCoはHost、ROS 2はDocker Containerで動かします。
 
 ## 1. HostのNova5を起動
 
@@ -32,6 +32,7 @@ ros2 run hakoniwa_pdu_ros bridge --config "$HAKONIWA_ROS_BINDING"
 cd "$HOME/hakoniwa-robot-arm-workspace/hakoniwa-robot-arm"
 bash docker/attach.bash jazzy
 source "$HAKONIWA_ROS2_WS/activate.bash"
+source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 
 ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
@@ -45,6 +46,7 @@ ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 cd "$HOME/hakoniwa-robot-arm-workspace/hakoniwa-robot-arm"
 bash docker/attach.bash jazzy
 source "$HAKONIWA_ROS2_WS/activate.bash"
+source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 
 ros2 topic info /joint_trajectory
 ros2 run hakoniwa_arm_samples control \
@@ -63,4 +65,3 @@ python "$ARM_PACK/tools/recipe/nova5.py" status
 ```
 
 `TERMINATED`になったことを確認し、attach shellを閉じ、最後にrun shellを`exit`します。
-

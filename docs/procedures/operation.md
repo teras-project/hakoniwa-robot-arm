@@ -4,9 +4,9 @@
 
 | 利用構成 | 動作確認手順 |
 | --- | --- |
-| host-only | [operation-host-only.md](operation-host-only.md) |
-| host+docker | [operation-host-docker.md](operation-host-docker.md) |
-| docker-only | [operation-docker-only.md](operation-docker-only.md) |
+| host-only | [operation-host-only.md](host-only/operation.md) |
+| host+docker | [operation-host-docker.md](host-docker/operation.md) |
+| docker-only | [operation-docker-only.md](docker-only/operation.md) |
 
 ## ROS 2連携の確認対象
 

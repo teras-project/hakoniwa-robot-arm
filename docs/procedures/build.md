@@ -4,9 +4,9 @@
 
 | 利用構成 | ビルド手順 |
 | --- | --- |
-| host-only | [build-host-only.md](build-host-only.md) |
-| host+docker | [build-host-docker.md](build-host-docker.md) |
-| docker-only | [build-docker-only.md](build-docker-only.md) |
+| host-only | [build-host-only.md](host-only/build.md) |
+| host+docker | [build-host-docker.md](host-docker/build.md) |
+| docker-only | [build-docker-only.md](docker-only/build.md) |
 
 ## 共通ビルド契約
 

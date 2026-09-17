@@ -4,7 +4,7 @@ Nova5 Runtime、MuJoCo、箱庭コア、TCP Bridge、ROS 2 Bridge、monitor、co
 
 ## 1. Hostの前提とclone
 
-HostにはGitとDocker EngineまたはDocker Desktopが必要です。[共通セットアップ](setup.md)に従い、空のcheckout用workspaceへBusiness Packと本リポジトリをcloneしてください。
+HostにはGitとDocker EngineまたはDocker Desktopが必要です。[共通セットアップ](../setup.md)に従い、空のcheckout用workspaceへBusiness Packと本リポジトリをcloneしてください。
 
 ```bash
 mkdir -p ~/hakoniwa-robot-arm-workspace
@@ -95,5 +95,5 @@ python "$ARM_PACK/tools/recipe/nova5.py" forge
 test -f "$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml"
 ```
 
-次は、Containerを終了せず[docker-onlyビルド](build-docker-only.md)へ進んでください。
+次は、Containerを終了せず[docker-onlyビルド](build.md)へ進んでください。
 

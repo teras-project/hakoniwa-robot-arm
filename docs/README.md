@@ -2,7 +2,7 @@
 
 このディレクトリは、対応ロボットを初めて利用する人が、環境構築からROS 2による動作確認までを再現するための詳細手順です。製品概要、アーキテクチャ、Business Packの基本概念は[トップREADME](../README.md)を先に参照してください。
 
-環境別の手順はNova5を例に記載しています。FR5またはSO-101を使用する場合は、[対応ロボット](robots.md)を参照してロボット名や関節名を置き換えてください。
+環境別の手順はNova5を例に記載しています。FR5またはSO-101を使用する場合は、[対応ロボット](reference/robots.md)を参照してロボット名や関節名を置き換えてください。
 
 ## 読み方
 
@@ -10,27 +10,42 @@
 
 | 利用構成 | 適したユーザー | シミュレータ | ROS 2 | 手順 |
 | --- | --- | --- | --- | --- |
-| host-only | Ubuntuをメイン環境として使う | Host | Ubuntu Host（任意） | [setup](setup-host-only.md) → [build](build-host-only.md) → [operation](operation-host-only.md) |
-| host+docker | macOSからROS 2を使う | Host | Docker Container | [setup](setup-host-docker.md) → [build](build-host-docker.md) → [operation](operation-host-docker.md) |
-| docker-only | Hostへ開発環境を導入せず試す | 同一Container | 同一Container | [setup](setup-docker-only.md) → [build](build-docker-only.md) → [operation](operation-docker-only.md) |
+| host-only | Ubuntuをメイン環境として使う | Host | Ubuntu Host（任意） | [setup](procedures/host-only/setup.md) → [build](procedures/host-only/build.md) → [operation](procedures/host-only/operation.md) |
+| host+docker | macOSからROS 2を使う | Host | Docker Container | [setup](procedures/host-docker/setup.md) → [build](procedures/host-docker/build.md) → [operation](procedures/host-docker/operation.md) |
+| docker-only | Hostへ開発環境を導入せず試す | 同一Container | 同一Container | [setup](procedures/docker-only/setup.md) → [build](procedures/docker-only/build.md) → [operation](procedures/docker-only/operation.md) |
 
-環境をまだ選んでいない場合は、[セットアップ手順](setup.md)の比較表を参照してください。
+環境をまだ選んでいない場合は、[セットアップ手順](procedures/setup.md)の比較表を参照してください。
 
-手順を実行する前に、各段階の入力、ゴール、成功判定、次段への出力の読み方を[手順の読み方と進行ゲート](procedure-guide.md)で確認してください。
+手順を実行する前に、各段階の入力、ゴール、成功判定、次段への出力の読み方を[手順の読み方と進行ゲート](procedures/conventions.md)で確認してください。
 
-## 共通ガイド
+## 実行手順
 
-- [セットアップ手順](setup.md): 利用構成の選択、共通前提、workの分離
-- [ビルド手順](build.md): Viewerあり／headlessの選択と生成先
-- [起動・動作確認手順](operation.md): ROSトピック、期待結果、終了方法
-- [Nova5 Model Forge](model-forge.md): 上流モデルの取得、変換、`kp`／`dampratio`の調整、生成物
-- [設定変更と反映方法](configuration-workflow.md): パラメータごとのForge／configure／buildの境界、生成先、反映確認
-- [環境profile](environment-profiles.md): checkout配置に依存しない共通環境と、環境変数の責務
-- [手順の読み方と進行ゲート](procedure-guide.md): 作業段階、`plan`／`doctor`、成功判定の共通契約
-- [端末ロール](terminal-roles.md): host-onlyの端末数、ロール、profileによる再現方法
-- [ROS 2によるアーム操作](ros2-arm-operations.md): monitorとcontrolの意味、期待挙動、パラメータ、カスタマイズ
-- [対応ロボット](robots.md): Nova5手順をFR5／SO-101へ適用する置換表と機種固有の関節名
-- [ライセンス情報](license/README.md): 依存OSS、Robot Modelの取得元、再配布方針
+[実行手順の索引](procedures/README.md)には、環境別のsetup、build、operationと、ROS 2操作手順だけを配置しています。
+
+- [利用構成を選ぶ](procedures/setup.md)
+- [手順の読み方と進行ゲート](procedures/conventions.md)
+- [ROS 2によるアーム操作](procedures/ros2/arm-operations.md)
+- [独自ROS 2 nodeの作成とbuild](procedures/ros2/custom-nodes.md)
+
+## 設計文書
+
+[設計文書の索引](design/README.md)には、手順の背景となる責務、生成物、データフローを配置しています。
+
+- [設定変更と反映方法](design/configuration-workflow.md)
+- [環境profile](design/environment-profiles.md)
+- [端末ロール](design/terminal-roles.md)
+- [ROS 2 Bridge基盤環境の成果物と接続関係](design/ros2-bridge-environment.md)
+
+## 参照資料
+
+[参照資料の索引](reference/README.md)には、対応機種とModel Forgeの情報を配置しています。
+
+- [対応ロボット](reference/robots.md)
+- [Nova5 Model Forge](reference/model-forge.md)
+
+## ライセンス
+
+[ライセンス情報](license/README.md)には、依存OSS、Robot Modelの取得元、調査結果、再配布方針を配置しています。
 
 ## 手順の前提
 

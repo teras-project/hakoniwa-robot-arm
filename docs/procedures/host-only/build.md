@@ -1,6 +1,6 @@
 # host-onlyビルド
 
-[host-onlyセットアップ](setup-host-only.md)でNova5 MJCFを生成してから実行します。このページでは、最初に「単体デモ」または「ROS 2連携」のどちらか一方を選びます。
+[host-onlyセットアップ](setup.md)でNova5 MJCFを生成してから実行します。このページでは、最初に「単体デモ」または「ROS 2連携」のどちらか一方を選びます。
 
 ## 1. 起動構成を選んでLauncherを生成する
 
@@ -70,7 +70,7 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 
 画面のないHostやCIでは、最初のコマンドだけ`build --headless`へ置き換えます。最後の`ls`で`robot-arm-hakoniwa-asset`が表示されればOK、`No such file or directory`ならNGです。
 
-単体デモを選択した場合は、[箱庭シミュレーション単体](operation-host-only.md#a-箱庭シミュレーション単体)へ進みます。ROS 2連携を選択した場合は、次の手順3を続けます。
+単体デモを選択した場合は、[箱庭シミュレーション単体](operation.md#a-箱庭シミュレーション単体)へ進みます。ROS 2連携を選択した場合は、次の手順3を続けます。
 
 ## 3. ROS 2 workspaceをbuildする
 
@@ -79,7 +79,11 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 | 実行端末 | 新しい通常Host terminal。この作業で`host-ros-build`になる。`host-hako`では実行しない。 |
 | 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
 | この作業の入力成果物 | 手順1-Bで生成した`activate-host-ros-build.bash`と、手順2でbuildしたNova5 Runtime |
-| この作業のゴール | ROS Bridge、`monitor`、`control`を含むROS 2 workspaceが`../work-host/ros2`へ生成され、doctorが成功する。 |
+| この作業のゴール | EndpointとROS Bridgeを含むROS 2基盤環境が`../work-host/ros2`へ生成され、doctorが成功する。 |
+
+手順1-BのconfigureがROS 2成果物の配置先と端末profileを生成済みです。この手順では、その配置先へEndpointとROS Bridgeをbuildします。利用者がCMake option、Python環境、共有ライブラリの検索pathを個別に設定する必要はありません。
+
+生成されるファイルの配置と、`ros2 run`からEndpoint共有ライブラリ、TCP、箱庭Runtimeまでの接続関係は、[ROS 2 Bridge基盤環境の成果物と接続関係](../../design/ros2-bridge-environment.md)を参照してください。
 
 この手順へ進む前に、手順1-Bの`ls`で`activate-host-ros-build.bash`が表示されたことを確認してください。未確認の場合は手順1-Bへ戻ります。
 
@@ -87,7 +91,6 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 
 ```bash
 cd /absolute/path/to/hakoniwa-robot-arm
-source profiles/tool-env/activate.bash
 ls -l ../work-host/profiles/activate-host-ros-build.bash
 ```
 
@@ -110,4 +113,42 @@ source /.../work-host/ros2/activate.bash
 
 `error:`または`missing installed ROS executable`が表示された場合はNGです。
 
-次は[host-only起動・動作確認](operation-host-only.md#b-ubuntu-host上のros-2連携)へ進みます。
+## 4. サンプルpackageを標準colconでbuildする
+
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `host-ros-build` |
+| 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 前段でbuildした`../work-host/ros2/activate.bash`と、`ros2_packages/hakoniwa_arm_samples` |
+| この作業のゴール | `monitor`と`control`を含むサンプル用ROS 2ワークスペースが`../work-host/ros2-samples`へ生成される。 |
+
+サンプルは箱庭基盤ではなくROS 2アプリケーションなので、標準のcolconでbuildします。最初に箱庭ROS 2基盤環境をsourceします。
+
+```bash
+source ../work-host/ros2/activate.bash
+
+colcon --log-base ../work-host/ros2-samples/log build \
+  --base-paths ros2_packages/hakoniwa_arm_samples \
+  --build-base ../work-host/ros2-samples/build \
+  --install-base ../work-host/ros2-samples/install \
+  --symlink-install \
+  --packages-select hakoniwa_arm_samples
+
+source ../work-host/ros2-samples/install/setup.bash
+ros2 pkg executables hakoniwa_arm_samples
+```
+
+正常時はcolconのsummaryに`1 package finished`が表示され、最後に次の2 executableが表示されます。
+
+```text
+hakoniwa_arm_samples control
+hakoniwa_arm_samples monitor
+```
+
+次は[host-only起動・動作確認](operation.md#b-ubuntu-host上のros-2連携)へ進みます。
+
+## 応用：独自ROS 2 nodeを追加する
+
+まず[host-only起動・動作確認](operation.md#b-ubuntu-host上のros-2連携)を最後まで実行し、付属の`monitor`と`control`でROS 2連携が成功することを確認してください。
+
+標準動作確認の完了後、この基盤環境を利用して独自packageを作成できます。手順は[独自ROS 2 nodeの作成とbuild](../ros2/custom-nodes.md)を参照してください。

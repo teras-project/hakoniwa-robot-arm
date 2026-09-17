@@ -31,7 +31,7 @@ $HAKONIWA_WORK_DIR/model-forge/<robot>/    Git管理しない取得・生成物
 | FAIRINO FR5 | [`FAIR-INNOVATION/frcobot_ros2`](https://github.com/FAIR-INNOVATION/frcobot_ros2) | `60755d44d521a5ad6bee8494cc19522f8801aa20` | 利用可能な宣言を確認できず、package metadataも未確定 | モデルと正規化済みURDFは、許諾確認まで外部再配布不可。正規化は利用者のwork内で実施 | [`LICENSE_INFO.yaml`](../../sources/models/fr5/LICENSE_INFO.yaml) |
 | SO-101 follower | [`TheRobotStudio/SO-ARM100`](https://github.com/TheRobotStudio/SO-ARM100) | `7629d2ad9853d10fb903093a33ef6114099d97e5` | Apache License 2.0 | ライセンス条件と対象資産の確認を満たす場合に限る | [`LICENSE_INFO.yaml`](../../sources/models/so101/LICENSE_INFO.yaml) |
 
-共通手順のロボットIDを置き換える方法は[対応ロボット](../robots.md)にまとめています。FR5とSO-101のソースとツールは移行済みですが、本リポジトリへの移行後の実行再検証は未実施です。また、metadataを含むことは、それらのモデル本体を本リポジトリが再配布することを意味しません。
+共通手順のロボットIDを置き換える方法は[対応ロボット](../reference/robots.md)にまとめています。FR5とSO-101のソースとツールは移行済みですが、本リポジトリへの移行後の実行再検証は未実施です。また、metadataを含むことは、それらのモデル本体を本リポジトリが再配布することを意味しません。
 
 ## Nova5の注意事項
 
@@ -42,7 +42,7 @@ Nova5の固定revisionでは、repositoryルートの`LICENSE`がMIT Licenseを�
 - Forgeが上流`LICENSE`をwork内の成果物とともに保持する。
 - 上流モデルまたは派生成果物を外部へ再配布する前に、権利者へ適用ライセンスを確認する。
 
-Nova5の取得・生成手順と配置場所は[Model Forge](../model-forge.md)、反映確認は[設定変更と反映方法](../configuration-workflow.md)を参照してください。
+Nova5の取得・生成手順と配置場所は[Model Forge](../reference/model-forge.md)、反映確認は[設定変更と反映方法](../design/configuration-workflow.md)を参照してください。
 
 ## 固定revisionを更新する場合
 

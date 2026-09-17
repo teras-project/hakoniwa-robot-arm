@@ -150,6 +150,6 @@ Nova5 output     : /.../work-host/model-forge/nova5/install
 ... /.../work-host/model-forge/nova5/install/nova5.contact.xml
 ```
 
-`nova5.contact.xml`が表示されればOK、`No such file or directory`ならNGです。変換内容は[Nova5 Model Forge](model-forge.md)を参照してください。
+`nova5.contact.xml`が表示されればOK、`No such file or directory`ならNGです。変換内容は[Nova5 Model Forge](../../reference/model-forge.md)を参照してください。
 
-次は[host-onlyビルド](build-host-only.md)へ進みます。
+次は[host-onlyビルド](build.md)へ進みます。

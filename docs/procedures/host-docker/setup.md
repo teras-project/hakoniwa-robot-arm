@@ -4,7 +4,7 @@ Nova5 RuntimeとMuJoCo ViewerはHost、ROS 2 Bridge、monitor、controlはDocker
 
 ## 1. 前提
 
-[トップREADMEの前提ソフトウェア](../README.md#前提ソフトウェア)と[共通セットアップ](setup.md)を確認し、2つのリポジトリをcloneしてください。
+[トップREADMEの前提ソフトウェア](../../../README.md#前提ソフトウェア)と[共通セットアップ](../setup.md)を確認し、2つのリポジトリをcloneしてください。
 
 macOSで必要なHostパッケージの例です。
 
@@ -56,7 +56,7 @@ python "$ARM_PACK/tools/recipe/nova5.py" forge
 test -f "$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml"
 ```
 
-詳細は[Nova5 Model Forge](model-forge.md)を参照してください。
+詳細は[Nova5 Model Forge](../../reference/model-forge.md)を参照してください。
 
 ## 5. ROS 2 Docker image
 
@@ -69,5 +69,5 @@ bash docker/create-docker-image.bash jazzy
 
 Humbleを使用する場合は`jazzy`を`humble`へ置き換えます。この構成のContainerではViewerを動かさないため、Container起動時は`HAKONIWA_DOCKER_GUI=off`を使用します。
 
-次は[host+dockerビルド](build-host-docker.md)へ進んでください。
+次は[host+dockerビルド](build.md)へ進んでください。
 
