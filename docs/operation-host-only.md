@@ -4,6 +4,8 @@
 
 ## A. 箱庭シミュレーション単体
 
+**実行場所:** activeな`host-hako`。作業ディレクトリは`$HAKONIWA_COMPOSER`です。
+
 **入力:** 単体デモ構成でconfigure・build済みのNova5 Runtimeと、activeな`host-hako`。
 
 **ゴール:** ROS 2を使わず、Runtime、Launcher、PDU、MuJoCo Viewerの経路が単体で成立することを確認する。
@@ -31,6 +33,8 @@ python "$ARM_PACK/tools/recipe/nova5.py" status
 
 ## B. Ubuntu Host上のROS 2連携
 
+**実行場所:** 下表の4端末。`host-hako`は`$HAKONIWA_COMPOSER`、残りの3端末はprofileをsourceする前に`$ARM_PACK`へ移動します。
+
 **入力:** `--ros2-tcp`でconfigure・build済みのRuntimeと、ROS 2 workspace build済みのwork。
 
 **ゴール:** `JointTrajectory`でアームを動かし、`JointState`で結果を観察する。
@@ -46,7 +50,7 @@ ROS 2連携では、最初に4端末を用意します。
 
 ### 1. RuntimeとHost TCP Bridgeを起動する
 
-`host-hako`で実行します。
+**実行場所:** activeな`host-hako`の`$HAKONIWA_COMPOSER`。
 
 ```bash
 python "$ARM_PACK/tools/recipe/nova5.py" doctor
@@ -58,7 +62,7 @@ python "$ARM_PACK/tools/recipe/nova5.py" status
 
 ### 2. ROS Bridgeを起動する
 
-新しい通常Host terminalで、Robot Arm repositoryへ移動してprofileをsourceします。
+**実行場所:** 新しい通常Host terminalの`$ARM_PACK`。profileをsource後、この端末は`host-ros-bridge`になります。
 
 ```bash
 cd /path/to/hakoniwa-robot-arm
@@ -73,7 +77,7 @@ ros2 run hakoniwa_pdu_ros bridge --config "$HAKONIWA_ROS_BINDING"
 
 ### 3. JointStateを観察する
 
-別の通常Host terminalで、次を実行します。
+**実行場所:** 別の通常Host terminalの`$ARM_PACK`。profileをsource後、この端末は`host-ros-monitor`になります。
 
 ```bash
 cd /path/to/hakoniwa-robot-arm
@@ -88,7 +92,7 @@ ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 
 ### 4. JointTrajectoryを送信する
 
-さらに別の通常Host terminalで、次を実行します。
+**実行場所:** さらに別の通常Host terminalの`$ARM_PACK`。profileをsource後、この端末は`host-ros-control`になります。
 
 ```bash
 cd /path/to/hakoniwa-robot-arm
@@ -105,6 +109,8 @@ ros2 run hakoniwa_arm_samples control \
 **次段への出力:** ROS 2からの軌道制御と状態取得が確認済みのRuntime。
 
 ### 5. 終了する
+
+**実行場所:** `host-hako`の`$HAKONIWA_COMPOSER`。ほかの3端末は先にCtrl+Cで停止します。
 
 `host-ros-control`、`host-ros-monitor`、`host-ros-bridge`をCtrl+Cで停止します。最後に`host-hako`でRuntimeを停止します。
 

@@ -6,6 +6,8 @@ Nova5 RuntimeをHost上で実行する構成です。箱庭シミュレーショ
 
 ## 1. Hostの前提
 
+**実行場所:** 通常のHost terminal。作業ディレクトリは任意です。
+
 **入力:** [トップREADME](../README.md#クイックスタート)に従ってclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm`。
 
 **ゴール:** Nova5 RuntimeをbuildできるHost環境を用意する。ROS 2連携を行う場合は、ROS 2 workspaceもbuildできる状態にする。
@@ -35,6 +37,8 @@ test -f /opt/ros/jazzy/setup.bash
 
 ## 2. `host-hako`を開く
 
+**実行場所:** 通常のHost terminalの`$ARM_PACK`（`hakoniwa-robot-arm`のrepository root）。まだ`host-hako`には入っていません。
+
 **入力:** 前段のHost環境。
 
 **ゴール:** Foundation、Forge、Runtimeを操作する`host-hako`端末を開く。
@@ -53,6 +57,8 @@ source profiles/tool-env/enter-host-hako.bash
 **次段への出力:** active Hakoniwa Workspace。以降、このページの「`host-hako`で実行」はこのshellを指します。
 
 ## 3. FoundationとRuntime Recipeを準備する
+
+**実行場所:** activeな`host-hako`。作業ディレクトリは`$HAKONIWA_COMPOSER`（`hakoniwa-business-pack`のrepository root）です。`workspace.py enter`がこの位置でchild shellを開きます。
 
 **入力:** activeな`host-hako`。
 
@@ -77,6 +83,8 @@ python3.12 tools/recipe.py doctor \
 **次段への出力:** FoundationとNova5 Runtime Recipeの依存が準備されたwork。
 
 ## 4. Nova5 Model Forgeを実行する
+
+**実行場所:** activeな`host-hako`。作業ディレクトリは`$HAKONIWA_COMPOSER`です。
 
 **入力:** FoundationとRuntime Recipeの準備が完了した`host-hako`。
 
