@@ -238,16 +238,7 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 
 Ubuntuをメイン環境とする場合は、Nova5 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードをすべてHost上で実行します。ROS 2を使わない箱庭シミュレーション単体としても実行できます。
 
-通常のHost terminalでRobot Arm repositoryへ移動し、bootstrap profileをsourceします。profileがcheckout配置を解決して`host-hako` Workspaceを開くため、利用者が環境変数を設定する必要はありません。
-
-```bash
-cd /path/to/hakoniwa-robot-arm
-source profiles/tool-env/enter-host-hako.bash
-```
-
-**成功判定:** promptが`(host-hako) (hako)`で始まる。`ARM_PACK`や旧`NOVA5_HOST_WORK`を手動で設定する必要はありません。
-
-Foundation、Forge、Nova5、ROS 2の準備と動作確認は、次の順に進めます。
+環境変数を手動設定せず、次のhost-only手順を先頭から順に実行してください。`host-hako`を開く操作と成功判定は、最初の手順内で一度だけ行います。
 
 1. [host-onlyセットアップ](docs/setup-host-only.md)
 2. [host-onlyビルド](docs/build-host-only.md)
