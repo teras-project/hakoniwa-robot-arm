@@ -7,7 +7,7 @@
 
 | Robot | ID | レシピ | ロボット定義ファイル(MJCF) | 確認状況 |
 | --- | --- | --- | --- | --- |
-| DOBOT Nova5 | `nova5` | `tools/recipe/nova5.py` | `nova5.contact.xml` | macOS／UbuntuおよびWindows native host-onlyで動作確認済み |
+| DOBOT Nova5 | `nova5` | `tools/recipe/nova5.py` | `nova5.contact.xml` | Windows 11 native host-standalone、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。native Linux Viewerは未検証。 |
 | FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
 

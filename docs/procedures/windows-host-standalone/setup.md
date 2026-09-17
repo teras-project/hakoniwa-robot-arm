@@ -12,6 +12,7 @@ Windows共通の前提とvcpkgの準備は、hakoniwa-business-packの
 
 - Git
 - CPython 3.12（`python`で起動できること）
+- Ruby 3.3（`ruby`で起動できること）
 - CMake 3.27以上
 - Visual Studio 2022の「C++によるデスクトップ開発」
 - 自分でcloneしたvcpkg
@@ -27,11 +28,12 @@ $vcpkgRoot = 'C:\hakoniwa\vcpkg'
   glfw3:x64-windows
 
 python --version
+ruby --version
 cmake --version
 git --version
 ```
 
-BoostはEndpointとBridge、GLFWはMuJoCo Viewerのbuildに必要です。Python 3.12、CMake、Gitのversionが表示され、vcpkgが正常終了すれば前提はOKです。
+BoostはEndpointとBridge、GLFWはMuJoCo Viewerのbuildに必要です。RubyはRecipe YAMLの読み込みに使用します。Python 3.12、Ruby 3.3、CMake、Gitのversionが表示され、vcpkgが正常終了すれば前提はOKです。
 
 ## 2. checkoutを準備する
 

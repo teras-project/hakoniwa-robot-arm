@@ -8,7 +8,7 @@
 
 | Robot | 状況 |
 | --- | --- |
-| DOBOT Nova5 | macOS／Ubuntuに加え、Windows native host-onlyで動作確認済み |
+| DOBOT Nova5 | Windows 11 native host-standalone、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。native Linux Viewerは未検証。 |
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
 
