@@ -236,15 +236,9 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 
 ### Ubuntuユーザー：host-only（推奨）
 
-Ubuntuをメイン環境とする場合は、Nova5 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードをすべてHost上で実行します。ROS 2を使わない箱庭シミュレーション単体としても実行できます。
-
-環境変数を手動設定せず、次のhost-only手順を先頭から順に実行してください。`host-hako`を開く操作と成功判定は、最初の手順内で一度だけ行います。
-
 1. [host-onlyセットアップ](docs/setup-host-only.md)
 2. [host-onlyビルド](docs/build-host-only.md)
 3. [host-only起動・動作確認](docs/operation-host-only.md)
-
-Ubuntu 24.04ではROS 2 Jazzy、Ubuntu 22.04ではROS 2 Humbleを使用できます。
 
 ### macOSユーザー：host+docker
 
