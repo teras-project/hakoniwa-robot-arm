@@ -275,7 +275,8 @@ def host_bridge_binary(robot_id: str) -> Path:
     configured = os.environ.get("HAKONIWA_PDU_BRIDGE_BIN")
     if configured:
         return Path(configured).expanduser().resolve()
-    return foundation_prefix() / "bin" / "hakoniwa-pdu-web-bridge"
+    suffix = ".exe" if platform.system() == "Windows" else ""
+    return foundation_prefix() / "bin" / f"hakoniwa-pdu-web-bridge{suffix}"
 
 
 def doctor(robot_id: str) -> int:

@@ -21,7 +21,11 @@ foundation_contract:
 
 foundation_requirements:
   hakoniwa-core-pro:
-    capabilities: {shared_memory: true, hako_cmd: true, python_binding: true}
+    capabilities:
+      shared_memory: true
+      hako_cmd: true
+      python_binding: true
+      callback_assets_shared: true
   hakoniwa-pdu-endpoint:
     capabilities: {hakoniwa_core: true, core_callback: true, python_binding: true}
   hakoniwa-pdu-bridge-core:
