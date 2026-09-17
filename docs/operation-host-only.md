@@ -1,96 +1,116 @@
 # host-only起動・動作確認
 
-[host-onlyビルド](build-host-only.md)の完了が前提です。箱庭シミュレーション単体と、Ubuntu Host上のROS 2連携を分けて説明します。
+[host-onlyビルド](build-host-only.md)の完了が前提です。単体デモは`host-hako`だけで確認できます。ROS 2連携では、[端末ロール](terminal-roles.md)で定義した4端末を使用します。monitorとcontrolの意味、パラメータ、カスタマイズは[ROS 2によるアーム操作](ros2-arm-operations.md)を参照してください。
 
 ## A. 箱庭シミュレーション単体
 
-Composerの`(hako)` shellで実行します。Viewerを使う場合は`--headless`を付けません。
+**入力:** 単体デモ構成でconfigure・build済みのNova5 Runtimeと、activeな`host-hako`。
+
+**ゴール:** ROS 2を使わず、Runtime、Launcher、PDU、MuJoCo Viewerの経路が単体で成立することを確認する。
+
+このモードでは、`start`がRuntimeとViewerに加えて自動デモ軌道送信を起動します。`start`直後にNova5が動くのは正常な期待挙動です。
+
+`host-hako`で実行します。
 
 ```bash
-python "$ARM_PACK/tools/recipe/nova5.py" configure \
-  --environment --realtime-sync-cycle-msec 50
 python "$ARM_PACK/tools/recipe/nova5.py" doctor
 python "$ARM_PACK/tools/recipe/nova5.py" start
 python "$ARM_PACK/tools/recipe/nova5.py" status
 ```
 
-LauncherがNova5 Runtimeとデモ軌道送信を起動します。`RUNNING`になり、Viewerありの場合はNova5が動作することを確認します。headlessでビルドした場合は、`configure`にも`--headless`を追加します。
+**成功判定:** `doctor`の必須項目がすべて`[OK]`であり、`status`が`RUNNING`となる。Viewerありの構成では、Nova5が自動デモ軌道を安全に完走する。
 
-確認後に停止します。
+**次段への出力:** 単体動作が確認済みのRuntime。ROS 2連携を行う場合は、単体モードを停止してからBへ進む。
 
 ```bash
 python "$ARM_PACK/tools/recipe/nova5.py" stop
 python "$ARM_PACK/tools/recipe/nova5.py" status
 ```
 
+停止後の成功判定は`TERMINATED`です。
+
 ## B. Ubuntu Host上のROS 2連携
 
-### 1. Nova5とHost TCP Bridge
+**入力:** `--ros2-tcp`でconfigure・build済みのRuntimeと、ROS 2 workspace build済みのwork。
 
-Composerの`(hako)` shellで実行します。先に単体モードを起動した場合は停止してから再configureしてください。
+**ゴール:** `JointTrajectory`でアームを動かし、`JointState`で結果を観察する。
+
+ROS 2連携では、最初に4端末を用意します。
+
+| 端末 | 使うprofile | 操作 |
+| --- | --- | --- |
+| `host-hako` | activeな箱庭Workspace | Runtime、Viewer、Host TCP Bridgeを起動する。 |
+| `host-ros-bridge` | `activate-host-ros-bridge.bash` | ROS Bridgeを起動したままにする。 |
+| `host-ros-monitor` | `activate-host-ros-monitor.bash` | JointStateを監視する。 |
+| `host-ros-control` | `activate-host-ros-control.bash` | JointTrajectoryを送信する。 |
+
+### 1. RuntimeとHost TCP Bridgeを起動する
+
+`host-hako`で実行します。
 
 ```bash
-export HAKONIWA_ROS2_TCP_HOST=127.0.0.1
-python "$ARM_PACK/tools/recipe/nova5.py" configure \
-  --ros2-tcp --environment --realtime-sync-cycle-msec 50
-python "$ARM_PACK/tools/recipe/ros2_tcp.py" doctor --robot nova5
 python "$ARM_PACK/tools/recipe/nova5.py" doctor
 python "$ARM_PACK/tools/recipe/nova5.py" start
 python "$ARM_PACK/tools/recipe/nova5.py" status
 ```
 
-`status`が`RUNNING`になることを確認します。LauncherがNova5 RuntimeとHost側のSHM/TCP Bridgeを一緒に起動するため、`ros2_tcp.py start-host`は実行しません。
+**成功判定:** `doctor`の必須項目がすべて`[OK]`であり、`status`が`RUNNING`となる。LauncherがRuntimeとHost側SHM/TCP Bridgeを一緒に起動するため、`ros2_tcp.py start-host`は実行しません。
 
-### 2. ROS Bridge
+### 2. ROS Bridgeを起動する
 
-箱庭Workspaceへ入っていないROS 2 shellで実行し、開いたままにします。
+新しい通常Host terminalで、Robot Arm repositoryへ移動してprofileをsourceします。
 
 ```bash
-source /opt/ros/jazzy/setup.bash
-source "$HAKONIWA_ROS2_WS/activate.bash"
-export HAKONIWA_ROS_BINDING="$HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json"
+cd /path/to/hakoniwa-robot-arm
+source profiles/tool-env/activate.bash
+source "$HAKOBASE_DIR/work-host/profiles/activate-host-ros-bridge.bash"
 
 test -f "$HAKONIWA_ROS_BINDING"
 ros2 run hakoniwa_pdu_ros bridge --config "$HAKONIWA_ROS_BINDING"
 ```
 
-### 3. monitorとcontrol
+**成功判定:** promptが`(host-ros-bridge)`で始まり、Bridgeがerrorなく起動している。このterminalは終了まで開いたままにします。
 
-さらに2つの通常ROS 2 shellを開きます。新しいROS 2 shellごとに、最初に次の共通初期化を実行します。
+### 3. JointStateを観察する
 
-```bash
-source /opt/ros/jazzy/setup.bash
-export CHECKOUT_ROOT="$HOME/hakoniwa-robot-arm-workspace"
-export ARM_PACK="$CHECKOUT_ROOT/hakoniwa-robot-arm"
-export HAKONIWA_WORK_DIR="$CHECKOUT_ROOT/work-host-nova5"
-export HAKONIWA_ROS2_WS="$CHECKOUT_ROOT/ros2-work-host-jazzy"
-source "$HAKONIWA_ROS2_WS/activate.bash"
-```
-
-monitor shell:
+別の通常Host terminalで、次を実行します。
 
 ```bash
+cd /path/to/hakoniwa-robot-arm
+source profiles/tool-env/activate.bash
+source "$HAKOBASE_DIR/work-host/profiles/activate-host-ros-monitor.bash"
+
 ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 ```
 
-control shell:
+**成功判定:** promptが`(host-ros-monitor)`で始まり、`joint1`から`joint6`の位置が表示される。このterminalは観察のため開いたままにします。
+
+### 4. JointTrajectoryを送信する
+
+さらに別の通常Host terminalで、次を実行します。
 
 ```bash
+cd /path/to/hakoniwa-robot-arm
+source profiles/tool-env/activate.bash
+source "$HAKOBASE_DIR/work-host/profiles/activate-host-ros-control.bash"
+
 ros2 topic info /joint_trajectory
 ros2 run hakoniwa_arm_samples control \
   --topic /joint_trajectory --joints 6 --amplitude 0.15 --duration 2.0
 ```
 
-Viewer上の動作と、monitorに表示される`joint1`から`joint6`の変化を確認します。
+**成功判定:** promptが`(host-ros-control)`で始まり、controlが軌道をpublishする。Viewer上でNova5が動き、`host-ros-monitor`の関節位置も変化する。
 
-### 4. 終了
+**次段への出力:** ROS 2からの軌道制御と状態取得が確認済みのRuntime。
 
-control、monitor、ROS BridgeをCtrl+Cで停止し、Composerの`(hako)` shellでNova5を停止します。
+### 5. 終了する
+
+`host-ros-control`、`host-ros-monitor`、`host-ros-bridge`をCtrl+Cで停止します。最後に`host-hako`でRuntimeを停止します。
 
 ```bash
 python "$ARM_PACK/tools/recipe/nova5.py" stop
 python "$ARM_PACK/tools/recipe/nova5.py" status
 ```
 
-`TERMINATED`になったことを確認してください。
+**成功判定:** `TERMINATED`となる。

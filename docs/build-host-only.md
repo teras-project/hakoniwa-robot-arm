@@ -1,43 +1,76 @@
 # host-onlyビルド
 
-[host-onlyセットアップ](setup-host-only.md)の完了が前提です。
+[host-onlyセットアップ](setup-host-only.md)の完了が前提です。`host-hako`でRuntimeをbuildし、ROS 2連携を使う場合だけ通常Host terminalでROS 2 workspaceをbuildします。
 
-## 1. Nova5 Runtime
+## 1. Runtime構成とrole profileを生成する
 
-セットアップで開いたComposerの`(hako)` shellで実行します。
+**入力:** Forge済みの`nova5.contact.xml`を持つ`host-hako`。
 
-Viewerを利用する場合は通常ビルドを行います。
+**ゴール:** 利用する起動構成をLauncherへ反映し、work配下のrole profileを生成する。
+
+ROS 2を使わない単体デモでは、`host-hako`で実行します。
+
+```bash
+python "$ARM_PACK/tools/recipe/nova5.py" configure \
+  --environment --realtime-sync-cycle-msec 50
+```
+
+ROS 2連携を行う場合は、次を実行します。`configure`の出力に`Profiles`として`$HAKONIWA_WORK_DIR/profiles/`配下のファイルが表示されます。
+
+```bash
+python "$ARM_PACK/tools/recipe/nova5.py" configure \
+  --ros2-tcp --environment --realtime-sync-cycle-msec 50
+```
+
+**成功判定:** `Launcher`と`Profiles`の出力先が選択した`HAKONIWA_WORK_DIR`配下である。
+
+**次段への出力:** 選択済みのLauncher設定とrole profile。
+
+## 2. Nova5 Runtimeをbuildする
+
+**入力:** 構成済みの`host-hako`。
+
+**ゴール:** MuJoCo Runtime実行ファイルをworkへ生成する。
+
+Viewerを利用する場合は通常ビルドを実行します。
 
 ```bash
 python "$ARM_PACK/tools/recipe/nova5.py" build
 ```
 
-画面のないHostや自動確認ではheadlessでビルドします。
+画面のないHostや自動確認ではheadlessを指定します。
 
 ```bash
 python "$ARM_PACK/tools/recipe/nova5.py" build --headless
 ```
 
-実行ファイルが選択したHost workへ生成されていることを確認します。
-
 ```bash
 test -x "$HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-hakoniwa-asset"
 ```
 
-`nova5.py doctor`は、Launcher設定も検査するため、この時点では実行しません。[operation-host-only.md](operation-host-only.md)で利用モードを`configure`した後に実行します。
+**成功判定:** `robot-arm-hakoniwa-asset`が存在する。
 
-## 2. ROS 2 workspace（UbuntuでROS 2連携する場合）
+**次段への出力:** 起動可能なNova5 Runtime。ROS 2を使わない場合は[host-only起動・動作確認](operation-host-only.md#A-箱庭シミュレーション単体)へ進みます。
 
-ROS 2を使わない箱庭シミュレーション単体の場合、この節はスキップします。
+## 3. ROS 2 workspaceをbuildする（ROS 2連携する場合）
 
-[setup-host-only.md](setup-host-only.md#5-ros-2側の通常shell)で準備した、箱庭WorkspaceではないROS 2 shellで実行します。
+**入力:** `--ros2-tcp`でconfigure済みのworkと、前段で生成された`activate-host-ros-build.bash`。
+
+**ゴール:** Bridge、monitor、controlを含むROS 2 workspaceをbuildする。
+
+通常のHost terminalで、Robot Arm repositoryへ移動してprofileをsourceします。
 
 ```bash
-/usr/bin/python3 "$ARM_PACK/tools/recipe/ros2_workspace.py" build
-source "$HAKONIWA_ROS2_WS/activate.bash"
+cd /path/to/hakoniwa-robot-arm
+source profiles/tool-env/activate.bash
+source "$HAKOBASE_DIR/work-host/profiles/activate-host-ros-build.bash"
+
+/usr/bin/python3 "$ARM_PACK/tools/recipe/ros2_workspace.py" build --ros-distro jazzy
 /usr/bin/python3 "$ARM_PACK/tools/recipe/ros2_workspace.py" doctor
 ```
 
-`doctor`で`hakoniwa_pdu_ros`のBridgeと、`hakoniwa_arm_samples`の`control`、`monitor`が検出されることを確認します。
+**成功判定:** `doctor`が`hakoniwa_pdu_ros`の`bridge`と、`hakoniwa_arm_samples`の`monitor`、`control`を検出する。
+
+**次段への出力:** `host-ros-bridge`、`host-ros-monitor`、`host-ros-control` profileが利用できるROS 2 workspace。
 
 次は[host-only起動・動作確認](operation-host-only.md)へ進んでください。

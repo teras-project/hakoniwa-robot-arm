@@ -1,14 +1,16 @@
 # host-onlyセットアップ
 
-Nova5 RuntimeをHost上で実行します。箱庭シミュレーション単体はmacOSまたはUbuntuで実行できます。ROS 2連携までHostだけで完結させる場合は、ROS 2 HumbleまたはJazzyを導入したUbuntuを使用します。Dockerは使用しません。
+Nova5 RuntimeをHost上で実行する構成です。箱庭シミュレーション単体はmacOSまたはUbuntuで実行できます。ROS 2連携までHostだけで完結させる場合は、ROS 2 HumbleまたはJazzyを導入したUbuntuを使用します。
 
-## 1. 前提
+各段階の読み方は[手順の読み方と進行ゲート](procedure-guide.md)、端末の使い分けは[端末ロール](terminal-roles.md)を参照してください。
 
-[トップREADMEの前提ソフトウェア](../README.md#前提ソフトウェア)と[共通セットアップ](setup.md)を確認し、2つのリポジトリをcloneしてください。
+## 1. Hostの前提
 
-このページの具体例はUbuntu 24.04／ROS 2 Jazzyを基準としています。Humbleを利用する場合はROS 2 distroに合わせて読み替えてください。Ubuntu 22.04などCPython 3.12が標準提供されない環境では、Python 3.12を別途準備する必要があります。
+**入力:** [トップREADME](../README.md#クイックスタート)に従ってclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm`。
 
-Ubuntu 24.04／ROS 2 Jazzyで必要となるHostパッケージの例です。
+**ゴール:** Nova5 RuntimeをbuildできるHost環境を用意する。ROS 2連携を行う場合は、ROS 2 workspaceもbuildできる状態にする。
+
+このページの例はUbuntu 24.04／ROS 2 Jazzyです。Humbleを使う場合は`jazzy`を`humble`へ読み替えます。
 
 ```bash
 sudo apt update
@@ -16,37 +18,47 @@ sudo apt install -y \
   git ruby python3.12 python3.12-venv \
   build-essential cmake libboost-dev libgl1-mesa-dev libglfw3-dev
 
-test -f /opt/ros/jazzy/setup.bash
 python3.12 --version
 ```
 
-ROS 2を使わず箱庭シミュレーション単体だけを実行する場合、ROS 2のインストールと`/opt/ros/...`の確認は不要です。
-ROS 2連携を利用する場合は、ROS 2のapt repositoryを設定した環境でcolconも導入し、
-ROS 2 workspaceをソースからbuildできることを確認してください。
+ROS 2連携を使う場合だけ、ROS 2とcolconを確認します。
 
 ```bash
 sudo apt install -y python3-colcon-common-extensions
+test -f /opt/ros/jazzy/setup.bash
 /usr/bin/python3 -m colcon --help >/dev/null
 ```
 
-## 2. Host workとWorkspace
+**成功判定:** 必要なコマンドが正常終了する。ROS 2を使わない単体デモでは、後半のROS 2確認は不要です。
 
-Host用の生成物を置く新しいディレクトリを選び、Business PackのWorkspaceへ入ります。
+**次段への出力:** `host-hako`を開けるHost環境。
+
+## 2. `host-hako`を開く
+
+**入力:** 前段のHost環境。
+
+**ゴール:** Foundation、Forge、Runtimeを操作する`host-hako`端末を開く。
+
+通常のHost terminalで、Robot Arm repositoryへ移動してbootstrap profileをsourceします。
 
 ```bash
-export CHECKOUT_ROOT="$HOME/hakoniwa-robot-arm-workspace"
-export ARM_PACK="$CHECKOUT_ROOT/hakoniwa-robot-arm"
-export NOVA5_HOST_WORK="$CHECKOUT_ROOT/work-host-nova5"
-
-cd "$CHECKOUT_ROOT/hakoniwa-business-pack"
-python3.12 tools/workspace.py enter --workdir "$NOVA5_HOST_WORK"
+cd /path/to/hakoniwa-robot-arm
+source profiles/tool-env/enter-host-hako.bash
 ```
 
-以降のこのページのコマンドは、プロンプトに`(hako)`が付いた箱庭Workspaceで実行します。`enter`に指定したパスは`HAKONIWA_WORK_DIR`へ設定されます。
+この操作は、checkout配置からComposerを自動解決し、`$HAKOBASE_DIR/work-host`を`HAKONIWA_WORK_DIR`として箱庭Workspaceを開きます。手動で環境変数を`export`する必要はありません。
 
-## 3. FoundationとRecipe依存
+**成功判定:** 子shellのpromptが`(host-hako) (hako)`で始まる。
 
-最初に予定を確認してから、Runtime Recipeを構築します。
+**次段への出力:** active Hakoniwa Workspace。以降、このページの「`host-hako`で実行」はこのshellを指します。
+
+## 3. FoundationとRuntime Recipeを準備する
+
+**入力:** activeな`host-hako`。
+
+**ゴール:** Nova5 Runtime Recipeが依存取得・Foundation構築を実行できる状態にする。
+
+`host-hako`で、まず変更を加えない`plan`で取得・build予定を確認します。予定が意図どおりなら`configure`を実行します。
 
 ```bash
 python3.12 tools/recipe.py plan \
@@ -60,36 +72,28 @@ python3.12 tools/recipe.py doctor \
   --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
 ```
 
-Foundationと各Recipe dependencyが`SATISFIED`になり、Workspace doctorが`[OK]`を表示することを確認します。
+**成功判定:** `plan`の対象Recipeと依存repositoryが意図どおりであり、両方の`doctor`で必須項目がすべて`[OK]`または`SATISFIED`となる。
 
-## 4. Nova5 Model Forge
+**次段への出力:** FoundationとNova5 Runtime Recipeの依存が準備されたwork。
 
-Forge用の依存とPythonパッケージを準備し、Nova5モデルを生成します。
+## 4. Nova5 Model Forgeを実行する
+
+**入力:** FoundationとRuntime Recipeの準備が完了した`host-hako`。
+
+**ゴール:** 上流モデルからNova5のMuJoCo入力を生成する。
 
 ```bash
-python tools/recipe.py plan \
+python3.12 tools/recipe.py plan \
   --recipe "$ARM_PACK/recipes/nova5/nova5-model-forge.yaml"
-python tools/recipe.py configure \
+python3.12 tools/recipe.py configure \
   --recipe "$ARM_PACK/recipes/nova5/nova5-model-forge.yaml"
 python "$ARM_PACK/tools/recipe/nova5.py" forge
 
 test -f "$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml"
 ```
 
-詳細は[Nova5 Model Forge](model-forge.md)を参照してください。
+**成功判定:** `nova5.contact.xml`が存在し、Forgeがerrorなく終了する。
 
-## 5. ROS 2側の通常shell
-
-ROS 2連携を利用する場合だけ、箱庭Workspaceへ入っていない別のHost terminalを開き、次を設定します。Jazzyの例です。
-
-```bash
-source /opt/ros/jazzy/setup.bash
-export CHECKOUT_ROOT="$HOME/hakoniwa-robot-arm-workspace"
-export ARM_PACK="$CHECKOUT_ROOT/hakoniwa-robot-arm"
-export HAKONIWA_WORK_DIR="$CHECKOUT_ROOT/work-host-nova5"
-export HAKONIWA_ROS2_WS="$CHECKOUT_ROOT/ros2-work-host-jazzy"
-```
-
-箱庭WorkspaceとROS 2 workspaceは共有しません。これらの値は、後続のROS 2用terminalでも同じ値を使用します。
+**次段への出力:** buildで使用するNova5 MJCF。詳細は[Nova5 Model Forge](model-forge.md)を参照してください。
 
 次は[host-onlyビルド](build-host-only.md)へ進んでください。

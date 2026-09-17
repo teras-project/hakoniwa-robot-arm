@@ -1,6 +1,6 @@
 # セットアップ手順
 
-この文書は利用構成を選ぶための入口です。初回のclone方法と前提ソフトウェアは[トップREADME](../README.md#クイックスタート)を参照してください。
+この文書は利用構成を選ぶための入口です。初回のclone方法と前提ソフトウェアは[トップREADME](../README.md#クイックスタート)を参照してください。環境変数の責務とprofileの仕組みは[環境profile](environment-profiles.md)を正本とします。
 
 ## 利用構成を選ぶ
 
@@ -26,8 +26,9 @@ host-onlyは、箱庭シミュレーション単体でも利用できます。Ub
 最初に空のcheckout用workspaceへ次の2リポジトリだけをcloneします。
 
 ```bash
-mkdir -p ~/hakoniwa-robot-arm-workspace
-cd ~/hakoniwa-robot-arm-workspace
+# 利用者が置きたい親ディレクトリで実行する。
+mkdir -p hakoniwa-robot-arm-workspace
+cd hakoniwa-robot-arm-workspace
 git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
 git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 ```

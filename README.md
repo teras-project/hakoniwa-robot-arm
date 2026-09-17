@@ -32,6 +32,10 @@
 - [起動・動作確認手順](docs/operation.md)
 - [Nova5 Model Forge](docs/model-forge.md)
 - [設定変更と反映方法](docs/configuration-workflow.md)
+- [環境profile](docs/environment-profiles.md)
+- [手順の読み方と進行ゲート](docs/procedure-guide.md)
+- [端末ロール](docs/terminal-roles.md)
+- [ROS 2によるアーム操作](docs/ros2-arm-operations.md)
 - [対応ロボット](docs/robots.md)
 - [ライセンス情報](docs/license/README.md)
 
@@ -240,8 +244,9 @@ export HAKONIWA_COMPOSER=/absolute/path/to/composer-repository
 空のディレクトリを作り、その直下へBusiness Packと本リポジトリをcloneします。本リポジトリはprivate repositoryであるため、アクセス権を持つGitHubアカウントまたは認証情報が必要です。
 
 ```bash
-mkdir -p ~/hakoniwa-robot-arm-workspace
-cd ~/hakoniwa-robot-arm-workspace
+# 利用者が置きたい親ディレクトリで実行する。
+mkdir -p hakoniwa-robot-arm-workspace
+cd hakoniwa-robot-arm-workspace
 git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
 git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 ```

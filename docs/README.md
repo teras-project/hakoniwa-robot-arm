@@ -16,6 +16,8 @@
 
 環境をまだ選んでいない場合は、[セットアップ手順](setup.md)の比較表を参照してください。
 
+手順を実行する前に、各段階の入力、ゴール、成功判定、次段への出力の読み方を[手順の読み方と進行ゲート](procedure-guide.md)で確認してください。
+
 ## 共通ガイド
 
 - [セットアップ手順](setup.md): 利用構成の選択、共通前提、workの分離
@@ -23,6 +25,10 @@
 - [起動・動作確認手順](operation.md): ROSトピック、期待結果、終了方法
 - [Nova5 Model Forge](model-forge.md): 上流モデルの取得、変換、`kp`／`dampratio`の調整、生成物
 - [設定変更と反映方法](configuration-workflow.md): パラメータごとのForge／configure／buildの境界、生成先、反映確認
+- [環境profile](environment-profiles.md): checkout配置に依存しない共通環境と、環境変数の責務
+- [手順の読み方と進行ゲート](procedure-guide.md): 作業段階、`plan`／`doctor`、成功判定の共通契約
+- [端末ロール](terminal-roles.md): host-onlyの端末数、ロール、profileによる再現方法
+- [ROS 2によるアーム操作](ros2-arm-operations.md): monitorとcontrolの意味、期待挙動、パラメータ、カスタマイズ
 - [対応ロボット](robots.md): Nova5手順をFR5／SO-101へ適用する置換表と機種固有の関節名
 - [ライセンス情報](license/README.md): 依存OSS、Robot Modelの取得元、再配布方針
 
