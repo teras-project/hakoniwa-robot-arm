@@ -1,99 +1,129 @@
 # docker-onlyセットアップ
 
-Nova5 Runtime、MuJoCo、箱庭コア、TCP Bridge、ROS 2 Bridge、monitor、controlを、`docker/run.bash`で起動する同じ1つのUbuntu Container内で実行します。HostのFoundationやROS 2は使用しません。
+Nova5 Runtime、MuJoCo、箱庭Core、TCP Bridge、ROS 2 Bridge、monitor、controlを同じUbuntu Container内で実行するための準備手順です。HostのFoundationやROS 2は使用しません。
 
-## 1. Hostの前提とclone
+## 1. Hostの前提とDocker imageを準備する
 
-HostにはGitとDocker EngineまたはDocker Desktopが必要です。[共通セットアップ](../setup.md)に従い、空のcheckout用workspaceへBusiness Packと本リポジトリをcloneしてください。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | 通常のHost terminal |
+| 実行ディレクトリ | 利用者が選んだcheckout用ディレクトリから開始 |
+| この作業の入力成果物 | GitとDocker Engine／Docker Desktopを使用できるHost |
+| この作業のゴール | 2リポジトリが兄弟配置され、`hakoniwa-arm-dev:jazzy` imageが生成される。 |
 
 ```bash
-mkdir -p ~/hakoniwa-robot-arm-workspace
-cd ~/hakoniwa-robot-arm-workspace
+mkdir -p hakoniwa-robot-arm-workspace
+cd hakoniwa-robot-arm-workspace
 git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
 git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 
 cd hakoniwa-robot-arm
 docker --version
 bash docker/create-docker-image.bash jazzy
+docker image inspect hakoniwa-arm-dev:jazzy --format '{{.RepoTags}}'
 ```
 
-imageとContainerはHostのnative architectureを使用します。Apple Silicon macOSではarm64となり、amd64 emulationは使用しません。
+Dockerのversionと`hakoniwa-arm-dev:jazzy`が表示されればOKです。Humbleでは`jazzy`を`humble`へ置き換えます。imageとContainerはHostのnative architectureを使用し、Apple Siliconではarm64として動作します。
 
-## 2. Viewerの選択
+## 2. Containerを起動する
 
-native Linux HostでViewerを使用する場合は、HostのX11 `DISPLAY`をContainerへ渡します。Containerがrootで動く既定構成では、必要に応じてHost側で接続を許可します。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | 前段の通常Host terminal。このコマンド後のContainer shellを維持する。 |
+| 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
+| この作業の入力成果物 | 作成済みDocker imageと、兄弟配置された2リポジトリ |
+| この作業のゴール | Hostのcheckout用ディレクトリを`/workspace`へmountしたContainerが起動する。 |
+
+macOS Docker Desktop、CI、画面のない環境ではheadless用として起動します。
 
 ```bash
-echo "$DISPLAY"
+HAKONIWA_DOCKER_GUI=off bash docker/run.bash jazzy
+```
+
+Linux HostでX11 Viewerを使用する場合だけ、Host側で接続を許可してGUIを有効にします。
+
+```bash
 xhost +si:localuser:root
-export HAKONIWA_DOCKER_GUI=on
+HAKONIWA_DOCKER_GUI=on bash docker/run.bash jazzy
 ```
 
-macOS Docker Desktop、CI、画面のない環境ではViewerを使用しません。XQuartzは不要です。
-
-```bash
-export HAKONIWA_DOCKER_GUI=off
-```
-
-## 3. 1つのContainerを起動
-
-Hostの本リポジトリルートで実行します。
-
-```bash
-cd "$HOME/hakoniwa-robot-arm-workspace/hakoniwa-robot-arm"
-export HAKONIWA_DOCKER_WORK_DIR=/workspace/work-docker-nova5-jazzy
-bash docker/run.bash jazzy
-```
-
-標準外配置または改名したComposerを使う場合は、`run.bash`より前に`HAKONIWA_COMPOSER`を設定します。
-
-ContainerとHostから見える生成先は次のとおりです。
+起動ログに次が表示され、Container shellが開けばOKです。
 
 ```text
-箱庭work:
-  Container  /workspace/work-docker-nova5-jazzy
-  Host       ~/hakoniwa-robot-arm-workspace/work-docker-nova5-jazzy
-
-ROS 2 work:
-  Container  /workspace/ros2-work-jazzy
-  Host       ~/hakoniwa-robot-arm-workspace/ros2-work-jazzy
+Mount: ... -> /workspace
+Container: hakoniwa-arm-dev-jazzy; ...
+Workdir: /workspace/work-docker-jazzy; Foundation mmap: tmpfs
 ```
 
-箱庭コアの`foundation/runtime/mmap`だけはContainer内tmpfsです。Docker Desktopのbind mountを介したmmap／file lockの不整合を避けるためで、Container終了時に破棄されます。他の生成物はHostに残ります。
+このshellを終了するとContainerが削除されるため、以後`docker-hako`端末として最後まで開いたままにします。
 
-## 4. Container内のFoundationとRecipe依存
+標準の生成先は次です。
 
-`run.bash`で開いたContainer shellで実行します。
+```text
+箱庭work:     /workspace/work-docker-jazzy
+ROS 2成果物: /workspace/ros2-work-jazzy
+```
+
+どちらもHostへmountしたcheckout用ディレクトリ内に残ります。ただし、`foundation/runtime/mmap`だけはContainer内tmpfsであり、Container終了時に破棄されます。
+
+## 3. 箱庭Workspaceへ入る
+
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `docker-hako` |
+| 実行ディレクトリ | Container内の`hakoniwa-robot-arm` repository rootから開始 |
+| この作業の入力成果物 | `run.bash`が設定した`HAKONIWA_COMPOSER`と`HAKONIWA_WORK_DIR` |
+| この作業のゴール | Container内でFoundation、Forge、Runtimeを操作する箱庭Workspaceが開く。 |
 
 ```bash
-cd "$HAKONIWA_COMPOSER"
+cd ../hakoniwa-business-pack
 python3.12 tools/workspace.py enter --workdir "$HAKONIWA_WORK_DIR"
 ```
 
-以降は、同じContainer内の`(hako)` shellで実行します。
+child shellのpromptに`(hako)`が付き、`pwd`の末尾がComposer repository名ならOKです。
+
+## 4. FoundationとRuntime Recipeを準備する
+
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `docker-hako`の`(hako)` shell |
+| 実行ディレクトリ | Container内のComposer repository root |
+| この作業の入力成果物 | 前段で開いた箱庭Workspaceと、mount済みRobot Arm repository |
+| この作業のゴール | FoundationとNova5 Runtime Recipeの依存が準備され、doctorが成功する。 |
 
 ```bash
 python3.12 tools/recipe.py plan \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 python3.12 tools/recipe.py configure \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 
 python3.12 tools/workspace.py doctor
 python3.12 tools/recipe.py doctor \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-joint-trajectory-control.yaml"
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
-## 5. Nova5 Model Forge
+`plan`に`Recipe plan:`、doctorに`[OK]`と`SATISFIED`が表示され、`[NG]`、`MISSING`、`error:`がなければOKです。
 
-同じ`(hako)` shellで実行します。
+## 5. Nova5 MJCFを生成する
+
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | `docker-hako`の`(hako)` shell |
+| 実行ディレクトリ | Container内のComposer repository rootから開始 |
+| この作業の入力成果物 | Nova5 Model Forge Recipeと、準備済みFoundation |
+| この作業のゴール | `$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml`が生成される。 |
 
 ```bash
+python tools/recipe.py plan \
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 python tools/recipe.py configure \
-  --recipe "$ARM_PACK/recipes/nova5/nova5-model-forge.yaml"
-python "$ARM_PACK/tools/recipe/nova5.py" forge
+  --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 
-test -f "$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml"
+cd ../hakoniwa-robot-arm
+python tools/recipe/nova5.py forge
+ls -l "$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml"
 ```
 
-次は、Containerを終了せず[docker-onlyビルド](build.md)へ進んでください。
+最後の`ls`で`nova5.contact.xml`が表示されればOKです。
 
+次は、Containerを終了せず[docker-onlyビルド](build.md)へ進んでください。

@@ -76,6 +76,19 @@ ROS用profileは、`ros2_workspace.py build`により`$HAKONIWA_ROS2_WS/activate
 
 `--ros2-tcp`を指定しない構成では、`activate-host-hako.bash`だけを生成します。ROS 2連携へ切り替える場合は、`--ros2-tcp`を付けて再configureしてください。
 
+## Docker環境
+
+DockerではHost用の`activate-host-*.bash`を使用しません。これらにはHostの絶対パスが記録されるため、Container内では有効な配置を表さないためです。
+
+`docker/run.bash`が、mount先に合わせて`ARM_PACK`、`HAKONIWA_COMPOSER`、`HAKONIWA_WORK_DIR`、`HAKONIWA_ROS2_WS`をContainerへ設定します。追加shellは`docker/attach.bash`で開き、必要なROS 2環境だけを次のように読み込みます。
+
+```bash
+source "$HAKONIWA_ROS2_WS/activate.bash"
+source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
+```
+
+箱庭workは構成ごとに分離します。host+dockerはHostの`../work-host`を使用し、docker-onlyは`/workspace/work-docker-<distro>`を使用します。一方、ROS 2 Bridgeとサンプルは`/workspace/ros2-work-<distro>`と`/workspace/ros2-work-<distro>-samples`へ生成し、同じROS distributionとCPU architectureのhost+docker／docker-only間で共有します。
+
 ### 利用方法
 
 通常のHost terminalで、生成されたprofileをsourceします。

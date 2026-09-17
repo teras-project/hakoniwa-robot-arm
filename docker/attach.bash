@@ -6,7 +6,8 @@ usage() {
 Usage: bash docker/attach.bash [humble|jazzy]
 Default: jazzy. Open another interactive shell in the container started by run.bash.
 Set CONTAINER_NAME if run.bash used a custom name.
-The ROS underlay is sourced; Foundation/ROS project overlays are selected manually.
+The official ROS environment is loaded automatically.
+Generated Hakoniwa ROS 2 and sample environments must be sourced explicitly.
 Exiting this shell leaves the original container running.
 EOF
 }

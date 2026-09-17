@@ -17,7 +17,7 @@
 - HostではViewerありを標準とします。CI、画面のない環境、macOS上のdocker-onlyでは`--headless`を使用します。
 - `HAKONIWA_WORK_DIR`にはFoundation、Forge、Recipe build、設定、ログ、セッションを生成します。
 - `HAKONIWA_ROS2_WS`にはROS 2専用venv、Endpoint、colcon build/install/logを生成します。
-- Host、Container、Humble、Jazzyの生成物には、それぞれ異なるworkディレクトリを使用します。
+- Foundation、Forge、Runtimeを含む箱庭workは、Host、Container、Humble、Jazzyで分離します。Docker内のROS 2成果物だけは、同じdistributionとCPU architectureのhost+docker／docker-only間で共有します。
 - workディレクトリはRecipeから再生成できる領域であり、ソースの正本ではありません。
 
 ## cloneと依存リポジトリ

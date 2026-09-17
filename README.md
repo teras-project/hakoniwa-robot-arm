@@ -312,8 +312,9 @@ hakoniwa-robot-arm-workspace/
 ├── hakoniwa-mujoco-robots/       # configureが自動取得
 ├── hakoniwa-mbody-registry/      # configureが自動取得
 ├── hakoniwa-pdu-ros/             # ROS 2 buildが自動取得
-├── work-host-nova5/              # Host生成物
-└── ros2-work-jazzy/              # ROS 2生成物
+├── work-host/                    # Host側のFoundation、Forge、Runtime生成物
+├── work-docker-jazzy/            # docker-only側のFoundation、Forge、Runtime生成物
+└── ros2-work-jazzy/              # Dockerで共有するROS 2生成物
 ```
 
 主な生成先の指定は次のとおりです。

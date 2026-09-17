@@ -26,6 +26,15 @@ EndpointのCMake option、Python環境、Python接続モジュールの生成手
 
 標準のhost-ros2構成では、すべての生成物を`../work-host`以下へ配置します。
 
+Docker構成では、Runtime側のworkとROS 2成果物を分けます。
+
+| 構成 | Runtime、接続設定 | ROS 2 Bridge | ROS 2サンプル |
+| --- | --- | --- | --- |
+| host+docker | Hostの`../work-host` | `/workspace/ros2-work-<distro>` | `/workspace/ros2-work-<distro>-samples` |
+| docker-only | `/workspace/work-docker-<distro>` | `/workspace/ros2-work-<distro>` | `/workspace/ros2-work-<distro>-samples` |
+
+host+dockerではHost側で生成した`ros2-tcp`ディレクトリをContainerへread-only mountします。docker-onlyでは同じContainer内の`HAKONIWA_WORK_DIR`から接続設定を読みます。ROS 2成果物は、ROS distributionとCPU architectureが同じ場合に2構成で共有できます。
+
 ### 2.1 configureが生成する接続設定
 
 ```text
