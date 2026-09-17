@@ -8,7 +8,7 @@
 
 | Robot | 状況 |
 | --- | --- |
-| DOBOT Nova5 | Windows 11 native host-standalone、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。native Linux Viewerは未検証。 |
+| DOBOT Nova5 | Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。native Linux Viewerは未検証。 |
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
 
@@ -21,7 +21,7 @@
 - `hakoniwa-business-pack` — Composer、Workspace、Foundationを提供します。
 - `hakoniwa-robot-arm` — ロボット固有のRecipe、設定、アプリケーションを提供します。
 
-その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-standalone、windows-host-standalone、host-ros2、host+docker、docker-onlyの手順を選んでください。
+その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-standalone、windows-host-standalone、windows-host-docker、host-ros2、host+docker、docker-onlyの手順を選んでください。
 
 ## ドキュメント
 
@@ -157,13 +157,13 @@ Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証
 
 | 項目           | 確認環境                                |
 | ------------ | ----------------------------------- |
-| Host OS      | macOS（Apple Silicon） / Ubuntu 24.04 / Windows 11（native host-only） |
+| Host OS      | macOS（Apple Silicon） / Ubuntu 24.04 / Windows 11（native host-only／host+Docker） |
 | ROS 2        | Humble / Jazzy                      |
 | MuJoCo       | 3.9.0                               |
 | 箱庭側 Python   | 3.12                                |
 | Build System | CMake / colcon                      |
 
-HostがmacOSの場合、ROS 2環境をDocker Container上で実行し、Host上の箱庭ロボットアームシミュレータとTCP Bridgeを介して接続します。Windowsでは、Nova5の箱庭単体Runtime、MuJoCo Viewer、JointTrajectory入力、JointState出力までをnative環境で確認しています。Windows host+dockerのROS 2連携は未検証です。
+HostがmacOSまたはWindowsの場合、ROS 2環境をDocker Container上で実行し、Host上の箱庭ロボットアームシミュレータとTCP Bridgeを介して接続します。Windows 11では、Nova5の箱庭単体RuntimeとMuJoCo Viewerに加えて、Docker Desktop上のROS 2 JazzyからJointTrajectoryを入力し、JointStateを取得するhost+Docker構成まで確認しています。
 
 ## 前提ソフトウェア
 
@@ -215,6 +215,10 @@ Windows 11上で箱庭RuntimeとMuJoCo Viewerをnative実行し、ROS 2を介さ
 
 Host上でシミュレータ、Docker Container上でROS 2 BridgeとROSノードを実行します。macOSでROS 2を利用する場合の基本構成です。HostとDockerの生成物は、それぞれ `HAKONIWA_WORK_DIR` と `HAKONIWA_ROS2_WS` で分離します。
 
+### windows-host-docker
+
+Windows 11上でNova5 RuntimeとMuJoCo Viewerをnative実行し、Docker Desktop上でROS 2 BridgeとROSノードを実行します。PowerShellからWorkspaceとDocker CLIを操作し、`host.docker.internal`経由でHost TCP Bridgeへ接続します。
+
 ### docker-only
 
 シミュレータとROS 2を同一のLinux Container内で実行します。HostへPython、CMake、ROS 2などの開発環境を導入せずに動作確認したい場合に適しています。ネイティブUbuntuでも同じContainer内手順を利用でき、macOS上のDockerではheadless実行を使用します。
@@ -262,6 +266,14 @@ macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノード
 3. [host+docker起動・動作確認](docs/procedures/host-docker/operation.md)
 
 人が操作する場合はHost上のMuJoCo Viewerを利用できます。CIや画面のない自動確認ではheadlessを選択します。
+
+### Windowsユーザー：host+DockerでROS 2連携
+
+Windows 11では、Nova5 RuntimeとMuJoCo Viewerをnative実行し、ROS 2 JazzyをDocker Desktop上で実行します。
+
+1. [Windows host+Dockerセットアップ](docs/procedures/windows-host-docker/setup.md)
+2. [Windows host+Dockerビルド](docs/procedures/windows-host-docker/build.md)
+3. [Windows host+Docker起動・動作確認](docs/procedures/windows-host-docker/operation.md)
 
 ### Host環境を汚さず試したいユーザー：docker-only
 

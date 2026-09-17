@@ -13,7 +13,7 @@ feasibility:
 validation:
   status: verified
   verified_at: 2026-09-17
-  summary: Foundation and Launcher reached RUNNING, accepted JointTrajectory through both SHM and the generic TCP bridge, produced JointState frames, and remained numerically stable. Windows 11 x86_64 native host-only was verified with MSVC 19.44, Python 3.12, MuJoCo 3.9.0, the Viewer-enabled Runtime, a five-point trajectory, and observed six-joint JointState motion returning to zero. The full Docker-only Humble and Jazzy flows were verified on Linux arm64, including model Forge, Runtime lifecycle, ROS 2 control, and observed JointState motion; the extracted hakoniwa-robot-runtime also passed the Release CTest suite on macOS arm64.
+  summary: Foundation and Launcher reached RUNNING, accepted JointTrajectory through both SHM and the generic TCP bridge, produced JointState frames, and remained numerically stable. Windows 11 x86_64 native host-only was verified with MSVC 19.44, Python 3.12, MuJoCo 3.9.0, the Viewer-enabled Runtime, a five-point trajectory, and observed six-joint JointState motion returning to zero. Windows 11 host+Docker was verified with the native Viewer and callback-backed TCP Bridge on the Host plus ROS 2 Jazzy control and monitoring in Docker Desktop. The full Docker-only Humble and Jazzy flows were verified on Linux arm64, including model Forge, Runtime lifecycle, ROS 2 control, and observed JointState motion; the extracted hakoniwa-robot-runtime also passed the Release CTest suite on macOS arm64.
 
 foundation_contract:
   mode: required
@@ -97,4 +97,3 @@ artifacts:
 
 missing_pieces:
   - Complete native Linux viewer-mode validation.
-  - Complete Windows host+docker ROS 2 bridge validation.
