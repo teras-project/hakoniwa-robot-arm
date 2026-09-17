@@ -14,9 +14,18 @@
 
 ロボットの種類毎の設定や実行手順は[対応ロボット](docs/robots.md)を参照してください。
 
+## 初めての方へ
+
+最初に、[クイックスタート](#クイックスタート)の「checkout用workspaceを作る」から開始してください。手動でcloneするのは、同じ親ディレクトリに置く次の2リポジトリだけです。
+
+- `hakoniwa-business-pack` — Composer、Workspace、Foundationを提供します。
+- `hakoniwa-robot-arm` — ロボット固有のRecipe、設定、アプリケーションを提供します。
+
+その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-only、host+docker、docker-onlyの手順を選んでください。
+
 ## ドキュメント
 
-初めて利用する場合は、このREADMEで全体像を確認した後、[利用ガイド](docs/README.md)を参照してください。
+環境別の詳細手順は、[利用ガイド](docs/README.md)を参照してください。
 
 - [セットアップ手順](docs/setup.md)
 - [ビルド手順](docs/build.md)
