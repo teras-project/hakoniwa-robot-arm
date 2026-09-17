@@ -70,8 +70,8 @@ def workspace_and_foundation():
     if inspection["status"] != "SATISFIED":
         foundation.print_inspection(inspection, False)
         raise RecipeError(
-            "Foundation is not reusable; run "
-            "$HAKONIWA_COMPOSER/tools/foundation.py build first"
+            "Foundation is not reusable; resolve the reported Foundation "
+            "diagnostic and rerun this command"
         )
     return foundation, workspace
 

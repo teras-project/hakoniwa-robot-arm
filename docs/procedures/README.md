@@ -7,6 +7,7 @@
 | 利用構成 | setup | build | operation |
 | --- | --- | --- | --- |
 | host-standalone | [setup](host-standalone/setup.md) | [build](host-standalone/build.md) | [operation](host-standalone/operation.md) |
+| windows-host-standalone | [setup](windows-host-standalone/setup.md) | [build](windows-host-standalone/build.md) | [operation](windows-host-standalone/operation.md) |
 | host-ros2 | [setup](host-ros2/setup.md) | [build](host-ros2/build.md) | [operation](host-ros2/operation.md) |
 | host+docker | [setup](host-docker/setup.md) | [build](host-docker/build.md) | [operation](host-docker/operation.md) |
 | docker-only | [setup](docker-only/setup.md) | [build](docker-only/build.md) | [operation](docker-only/operation.md) |

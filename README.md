@@ -8,7 +8,7 @@
 
 | Robot | 状況 |
 | --- | --- |
-| DOBOT Nova5 | 移行・host+docker動作確認済み |
+| DOBOT Nova5 | macOS／Ubuntuに加え、Windows native host-onlyで動作確認済み |
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
 
@@ -21,7 +21,7 @@
 - `hakoniwa-business-pack` — Composer、Workspace、Foundationを提供します。
 - `hakoniwa-robot-arm` — ロボット固有のRecipe、設定、アプリケーションを提供します。
 
-その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-standalone、host-ros2、host+docker、docker-onlyの手順を選んでください。
+その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-standalone、windows-host-standalone、host-ros2、host+docker、docker-onlyの手順を選んでください。
 
 ## ドキュメント
 
@@ -157,13 +157,13 @@ Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証
 
 | 項目           | 確認環境                                |
 | ------------ | ----------------------------------- |
-| Host OS      | macOS（Apple Silicon） / Ubuntu 24.04 |
+| Host OS      | macOS（Apple Silicon） / Ubuntu 24.04 / Windows 11（native host-only） |
 | ROS 2        | Humble / Jazzy                      |
 | MuJoCo       | 3.9.0                               |
 | 箱庭側 Python   | 3.12                                |
 | Build System | CMake / colcon                      |
 
-HostがmacOSの場合、ROS 2環境をDocker Container上で実行し、Host上の箱庭ロボットアームシミュレータとTCP Bridgeを介して接続します。
+HostがmacOSの場合、ROS 2環境をDocker Container上で実行し、Host上の箱庭ロボットアームシミュレータとTCP Bridgeを介して接続します。Windowsでは、Nova5の箱庭単体Runtime、MuJoCo Viewer、JointTrajectory入力、JointState出力までをnative環境で確認しています。Windows host+dockerのROS 2連携は未検証です。
 
 ## 前提ソフトウェア
 
@@ -203,6 +203,10 @@ docker --version
 
 箱庭RuntimeとMuJoCo ViewerをHost上で実行し、ROS 2を介さずに箱庭PDUレベルの動作確認を行います。
 
+### windows-host-standalone
+
+Windows 11上で箱庭RuntimeとMuJoCo Viewerをnative実行し、ROS 2を介さずに箱庭PDUレベルの動作確認を行います。PowerShellからWorkspaceの非対話`run`操作を使用します。
+
 ### host-ros2
 
 箱庭Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードを同じUbuntu Host上で実行し、`JointTrajectory`による制御と`JointState`の取得を確認します。
@@ -236,6 +240,12 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 1. [箱庭単体セットアップ](docs/procedures/host-standalone/setup.md)
 2. [箱庭単体ビルド](docs/procedures/host-standalone/build.md)
 3. [箱庭単体の起動・動作確認](docs/procedures/host-standalone/operation.md)
+
+### Windows nativeで箱庭単体を確認するユーザー
+
+1. [Windows native箱庭単体セットアップ](docs/procedures/windows-host-standalone/setup.md)
+2. [Windows native箱庭単体ビルド](docs/procedures/windows-host-standalone/build.md)
+3. [Windows native箱庭単体の起動・動作確認](docs/procedures/windows-host-standalone/operation.md)
 
 ### Ubuntu HostだけでROS 2連携するユーザー：host-ros2
 

@@ -11,6 +11,7 @@
 | 利用構成 | 適したユーザー | シミュレータ | ROS 2 | 手順 |
 | --- | --- | --- | --- | --- |
 | host-standalone | ROS 2を使わず箱庭単体で確認する | Host | 使用しない | [setup](procedures/host-standalone/setup.md) → [build](procedures/host-standalone/build.md) → [operation](procedures/host-standalone/operation.md) |
+| windows-host-standalone | Windows nativeで箱庭単体を確認する | Windows Host | 使用しない | [setup](procedures/windows-host-standalone/setup.md) → [build](procedures/windows-host-standalone/build.md) → [operation](procedures/windows-host-standalone/operation.md) |
 | host-ros2 | Ubuntu HostだけでROS 2連携まで確認する | Host | Ubuntu Host | [setup](procedures/host-ros2/setup.md) → [build](procedures/host-ros2/build.md) → [operation](procedures/host-ros2/operation.md) |
 | host+docker | macOSからROS 2を使う | Host | Docker Container | [setup](procedures/host-docker/setup.md) → [build](procedures/host-docker/build.md) → [operation](procedures/host-docker/operation.md) |
 | docker-only | Hostへ開発環境を導入せず試す | 同一Container | 同一Container | [setup](procedures/docker-only/setup.md) → [build](procedures/docker-only/build.md) → [operation](procedures/docker-only/operation.md) |
