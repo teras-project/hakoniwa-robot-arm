@@ -26,7 +26,7 @@
 
 | Component | 主な役割 | 確認したライセンス | versionの管理元 |
 | --- | --- | --- | --- |
-| [MuJoCo](https://github.com/google-deepmind/mujoco) | 物理シミュレーション | Apache License 2.0 | `hakoniwa-mujoco-robots/MUJOCO_VERSION.txt`。Nova5 Forge Python packageは`3.9.0` |
+| [MuJoCo](https://github.com/google-deepmind/mujoco) | 物理シミュレーション | Apache License 2.0 | `hakoniwa-mujoco-robots/MUJOCO_VERSION.txt`。Nova5 Forge Python packageは`3.16.0` |
 | [PyYAML](https://github.com/yaml/pyyaml) | Forge設定のYAML読込み | MIT | 各`recipes/<robot>/model-forge-requirements.txt` |
 | [trimesh](https://github.com/mikedh/trimesh) | FR5のDAE mesh変換 | MIT | `recipes/fr5/model-forge-requirements.txt` |
 | [pycollada](https://github.com/pycollada/pycollada) | trimeshのCOLLADA読込み | BSD | `recipes/fr5/model-forge-requirements.txt` |

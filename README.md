@@ -159,7 +159,7 @@ Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証
 | ------------ | ----------------------------------- |
 | Host OS      | macOS（Apple Silicon） / Ubuntu 24.04 / Windows 11（native host-only／host+Docker） |
 | ROS 2        | Humble / Jazzy                      |
-| MuJoCo       | 3.9.0                               |
+| MuJoCo       | 3.16.0                              |
 | 箱庭側 Python   | 3.12                                |
 | Build System | CMake / colcon                      |
 
