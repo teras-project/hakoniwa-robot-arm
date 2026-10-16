@@ -21,7 +21,7 @@ python tools\workspace.py run -- python `
 Test-Path .\work\recipes\nova5-joint-trajectory-control\build\bin\robot-arm-hakoniwa-asset.exe
 ```
 
-初回buildではMuJoCo 3.9.0のWindows packageを取得します。最後に`True`が表示されればOKです。
+初回buildではMuJoCo 3.16.0のWindows packageを取得します。最後に`True`が表示されればOKです。
 
 ## 3. 起動前検査を行う
 
