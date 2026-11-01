@@ -40,9 +40,9 @@ Nova5 Runtime Recipeの`configure`は、Foundation、`hakoniwa-robot-runtime`、
 
 既存checkoutは検査して再利用します。固定revisionと異なるcleanなcheckoutは指定revisionへ切り替える場合があります。未コミット変更があるcheckoutは変更せず、処理を停止します。
 
-セットアップの中で箱庭Workspaceへ入り、Composer repository rootにいる状態なら次の`plan`で予定を確認できます。まだWorkspaceに入っていない場合は選択した構成のsetupに進んでください。
+セットアップの中で箱庭Workspaceへ入り、`hakoniwa-business-pack`のリポジトリルート（`tools/`ディレクトリがある場所）にいる状態なら次の`plan`で予定を確認できます。まだWorkspaceに入っていない場合は選択した構成のsetupに進んでください。
 
-実行するコマンド（箱庭WorkspaceのComposer repository root）:
+実行するコマンド（箱庭Workspace内の`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml

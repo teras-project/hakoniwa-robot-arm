@@ -62,7 +62,7 @@ source profiles/tool-env/enter-host-hako.bash
 | この作業の入力成果物 | clone済みリポジトリと、前段で確認済みのHostコマンド |
 | この作業のゴール | FoundationとNova5 Runtime Recipeの依存が`../work-host`へ準備され、doctorが成功する。 |
 
-実行するコマンド（`host-hako`、Composer repository root）:
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
@@ -86,7 +86,7 @@ python tools/recipe.py doctor \
 | この作業の入力成果物 | Nova5 Model Forge Recipeと、前段で準備したFoundation |
 | この作業のゴール | `../work-host/model-forge/nova5/install/nova5.contact.xml`が生成される。 |
 
-実行するコマンド（`host-hako`、Composer repository root）:
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml

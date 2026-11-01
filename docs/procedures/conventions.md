@@ -10,6 +10,8 @@
 
 Foundationがまだない初回の`plan`／`configure`はCPython 3.12で起動します。構築後の`host-hako`／`docker-hako`ではFoundation管理の`python`を使用します。ROS 2のbuild端末は箱庭Workspaceとは別で、ROS 2環境の`/usr/bin/python3`から専用venvを作ります。独自のvenvを全端末で共用しないでください。
 
+`host-hako`の子シェルは`hakoniwa-business-pack`のリポジトリルート（`tools/`ディレクトリがある場所）から始まります。これはComposerの役割を担うBusiness Packのルートであり、生成物の保存先`HAKONIWA_WORK_DIR`とは別です。Robot Armのスクリプトを実行するときは、必要に応じて`cd ../hakoniwa-robot-arm`でRobot Armのリポジトリルートへ移動します。Docker内で`docker/run.bash`が開くshellもComposerのルートから始まります。
+
 ## 段階の記述形式
 
 各作業項目は、最初に次の4項目を一つの表で示します。端末の状態を入力成果物へ混ぜません。

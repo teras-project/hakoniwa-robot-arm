@@ -84,7 +84,7 @@ pwd
 echo "$HAKONIWA_ROS2_WS"
 ```
 
-Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer内のComposer repository rootを開くため、Container側のブロックでRobot Arm repositoryへ移動します。`pwd`の末尾が`hakoniwa-robot-arm`で、`echo "$HAKONIWA_ROS2_WS"`に`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`が表示されればOKです。
+Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer内の`hakoniwa-business-pack`リポジトリルートを開くため、Container側のブロックでRobot Arm repositoryへ移動します。`pwd`の末尾が`hakoniwa-robot-arm`で、`echo "$HAKONIWA_ROS2_WS"`に`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`が表示されればOKです。
 
 ## 4. ROS 2 Bridgeとサンプルをbuildする
 

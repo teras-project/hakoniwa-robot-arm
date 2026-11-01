@@ -137,7 +137,7 @@ flowchart LR
 
 ### Workspace
 
-Workspaceは、使用するFoundationと生成物を他の作業環境から分離するための実行環境です。`workspace.py enter --workdir <path>`で専用シェルへ入り、選択したパスが`HAKONIWA_WORK_DIR`に設定されます。Foundation、Forge、Recipeのビルド、設定、ログ、セッションは、このworkディレクトリ以下へ生成されます。
+Workspaceは、使用するFoundationと生成物を他の作業環境から分離するための実行環境です。`workspace.py enter --workdir <path>`で専用シェルへ入り、選択したパスが`HAKONIWA_WORK_DIR`に設定されます。子シェルの開始ディレクトリは`hakoniwa-business-pack`のリポジトリルート（`tools/`ディレクトリがある場所）です。Foundation、Forge、Recipeのビルド、設定、ログ、セッションは、作業ディレクトリではなく選択したworkディレクトリ以下へ生成されます。
 
 ### Foundation
 

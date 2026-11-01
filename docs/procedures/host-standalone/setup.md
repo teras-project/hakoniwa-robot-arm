@@ -78,7 +78,7 @@ promptが`(host-hako) (hako)`で始まり、ディレクトリ末尾が`hakoniwa
 
 `plan`はファイルを変更せず、Recipeを解決できることを事前確認します。基本手順では内容を利用者が判断する必要はなく、コマンドの成否だけを確認します。
 
-実行するコマンド（`host-hako`、Composer repository root）:
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
@@ -86,7 +86,7 @@ python3.12 tools/recipe.py plan \
 
 先頭に`Recipe plan:`が表示され、`error:`で終了しなければOKです。
 
-実行するコマンド（`host-hako`、Composer repository root）:
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python3.12 tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
@@ -118,7 +118,7 @@ Foundation: SATISFIED
 
 Forge Recipeを解決し、変換に必要なツールとPython packageを準備します。
 
-実行するコマンド（`host-hako`、Composer repository root）:
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml

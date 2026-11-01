@@ -92,7 +92,7 @@ ROS 2成果物: /workspace/ros2-work-jazzy
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | `docker-hako` |
-| 実行ディレクトリ | `run.bash`が開いたContainer内のComposer repository root |
+| 実行ディレクトリ | `run.bash`が開いたContainer内の`hakoniwa-business-pack`リポジトリルート |
 | この作業の入力成果物 | `run.bash`が設定した`HAKONIWA_COMPOSER`と`HAKONIWA_WORK_DIR` |
 | この作業のゴール | Container内でFoundation、Forge、Runtimeを操作する箱庭Workspaceが開く。 |
 
@@ -101,14 +101,14 @@ ROS 2成果物: /workspace/ros2-work-jazzy
 python3.12 tools/workspace.py enter --workdir "$HAKONIWA_WORK_DIR"
 ```
 
-child shellのpromptに`(hako)`が付いてから、別の入力として`pwd`を実行してください。ディレクトリ末尾がComposer repository名ならOKです。
+child shellのpromptに`(hako)`が付いてから、別の入力として`pwd`を実行してください。`hakoniwa-business-pack`のパスが表示されればOKです。箱庭Workspaceへ入った後も作業ディレクトリはそのリポジトリルートのままです。
 
 ## 4. FoundationとRuntime Recipeを準備する
 
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | `docker-hako`の`(hako)` shell |
-| 実行ディレクトリ | Container内のComposer repository root |
+| 実行ディレクトリ | Container内の`hakoniwa-business-pack`リポジトリルート |
 | この作業の入力成果物 | 前段で開いた箱庭Workspaceと、mount済みRobot Arm repository |
 | この作業のゴール | FoundationとNova5 Runtime Recipeの依存が準備され、doctorが成功する。 |
 
@@ -131,7 +131,7 @@ python tools/recipe.py doctor \
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | `docker-hako`の`(hako)` shell |
-| 実行ディレクトリ | Container内のComposer repository rootから開始 |
+| 実行ディレクトリ | Container内の`hakoniwa-business-pack`リポジトリルートから開始 |
 | この作業の入力成果物 | Nova5 Model Forge Recipeと、準備済みFoundation |
 | この作業のゴール | `$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml`が生成される。 |
 
