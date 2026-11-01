@@ -4,9 +4,9 @@
 
 ## コードブロックと端末の読み方
 
-`bash`／`powershell`ブロックには実行コマンドと確認コマンドを示します。各手順で指定された端末で実行してください。`text`ブロックは期待される出力例やパス・配置の説明用であり、貼り付けません。端末ロールと実行ディレクトリは各手順の冒頭と各作業項目で確認してください。
+`bash`／`powershell`ブロックには実行コマンドと確認コマンドを示します。各手順で指定された端末で実行してください。`text`ブロックは出力やパス・配置の例を示します。端末ロールと実行ディレクトリは各手順の冒頭と各作業項目で確認してください。
 
-`docker/run.bash`、`docker/attach.bash`、箱庭Workspaceの`enter`などで対話シェルが開く場合は、そのブロックだけを実行し、新しいプロンプトを確認してから次のブロックを実行します。HostのコマンドとContainer内のコマンドを一度に貼り付けないでください。
+`docker/run.bash`、`docker/attach.bash`、箱庭Workspaceの`enter`などで対話シェルが開く場合は、そのコマンドを実行して新しいプロンプトが表示されたことを確認してから、次のブロックへ進みます。HostのコマンドとContainer内のコマンドは、それぞれ指定された端末で実行してください。
 
 Foundationがまだない初回の`plan`／`configure`はCPython 3.12で起動します。構築後の`host-hako`／`docker-hako`ではFoundation管理の`python`を使用します。ROS 2のbuild端末は箱庭Workspaceとは別で、ROS 2環境の`/usr/bin/python3`から専用venvを作ります。独自のvenvを全端末で共用しないでください。
 

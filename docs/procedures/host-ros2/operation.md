@@ -79,12 +79,7 @@ ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 ```
 
-期待されるログの例（貼り付けない）。数値は実行ごとに変わります。
-
-```text
-[INFO] [...] [hakoniwa_arm_joint_state_monitor]: monitoring /pdu/joint_states
-[INFO] [...] [hakoniwa_arm_joint_state_monitor]: joint1=..., joint2=..., joint3=..., joint4=..., joint5=..., joint6=...
-```
+`[hakoniwa_arm_joint_state_monitor]: monitoring /pdu/joint_states`に続き、`joint1=...`から`joint6=...`までの関節値が繰り返し表示されればOKです。数値は実行ごとに変わります。
 
 `monitoring`だけで関節値が表示されない場合はNGです。このterminalは観察のため開いたままにします。
 
@@ -109,13 +104,7 @@ ros2 run hakoniwa_arm_samples control \
   --topic /joint_trajectory --joints 6 --amplitude 0.15 --duration 2.0
 ```
 
-期待される送信ログの例（貼り付けない）:
-
-```text
-[INFO] [...] [hakoniwa_arm_trajectory_sample]: published 4 points for 6 joints to /joint_trajectory
-```
-
-このログに加え、Viewer上でNova5が動き、`host-ros-monitor`の6関節値が変化すればOKです。`--amplitude`と`--duration`の意味は[ROS 2によるアーム操作](../ros2/arm-operations.md)を参照してください。
+`[hakoniwa_arm_trajectory_sample]: published 4 points for 6 joints to /joint_trajectory`が表示され、Viewer上でNova5が動き、`host-ros-monitor`の6関節値が変化すればOKです。`--amplitude`と`--duration`の意味は[ROS 2によるアーム操作](../ros2/arm-operations.md)を参照してください。
 
 ## 5. 終了する
 

@@ -2,7 +2,7 @@
 
 Nova5 RuntimeとMuJoCo ViewerをWindows 11 Host上でnative実行し、ROS 2 Jazzy Bridge、monitor、controlをDocker Desktop上で実行するための準備手順です。Host側はPowerShell、Container内はBashで操作します。
 
-端末: 手順1はWindows nativeセットアップに従い、手順2～3はWindows HostのPowerShell（`hakoniwa-business-pack`のrepository root）を使用します。ContainerのBashは[ビルド](build.md)から使用します。`powershell`ブロックは実行コマンドです。表示結果は確認用で、コマンドとしてコピーしません。
+端末: 手順1はWindows nativeセットアップに従い、手順2～3はWindows HostのPowerShell（`hakoniwa-business-pack`のrepository root）を使用します。ContainerのBashは[ビルド](build.md)から使用します。`powershell`ブロックは実行コマンド、表示結果は手順の成功条件を確認するためのものです。
 
 [実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
 

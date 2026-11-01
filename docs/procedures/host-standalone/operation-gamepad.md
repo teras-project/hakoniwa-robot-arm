@@ -22,11 +22,7 @@ DualSenseをHostへ接続した状態で実行します。
 python tools/recipe/nova5.py doctor
 ```
 
-期待される出力例（貼り付けない）。すべての行が`[OK]`で、次の行が表示されればOKです。
-
-```text
-[OK] Gamepad Python dependency: pygame is importable by ...
-```
+doctorの全行が`[OK]`で、`[OK] Gamepad Python dependency: pygame is importable by ...`が表示されればOKです。
 
 `doctor`はPython依存を検査します。接続したDualSenseの名前、軸数、ボタン数は次の`start`で検証されます。
 

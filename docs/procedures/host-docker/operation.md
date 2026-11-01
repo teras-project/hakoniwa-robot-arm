@@ -4,7 +4,7 @@
 
 手順: [一覧](../README.md) → [セットアップ](setup.md) → [ビルド](build.md) → **起動・動作確認**
 
-各`docker-ros-*`端末はContainer内のROS 2環境です。通常のHost terminalからattachするときは、Containerのプロンプトが出るまで次のコマンドを貼り付けないでください。
+各`docker-ros-*`端末はContainer内のROS 2環境です。通常のHost terminalからattachした後、Containerのプロンプトが表示されたことを確認してからContainer側のコマンドを実行してください。
 
 | 端末 | 実行するもの | 維持する状態 |
 | --- | --- | --- |

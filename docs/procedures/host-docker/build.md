@@ -31,14 +31,7 @@ python tools/recipe/nova5.py configure \
   --ros2-tcp --environment --realtime-sync-cycle-msec 50
 ```
 
-画面のないHostでは、選択したコマンドへ`--headless`を追加します。期待される出力例（貼り付けない）:
-
-```text
-Launcher        : /.../work-host/recipes/nova5-joint-trajectory-control/config/launcher.json
-ROS 2 TCP       : enabled
-```
-
-`ROS 2 TCP`が`enabled`ならOKです。`error:`で終了した場合はNGです。
+画面のないHostでは、選択したコマンドへ`--headless`を追加します。`Launcher`の出力先が表示され、`ROS 2 TCP`が`enabled`ならOKです。`error:`で終了した場合はNGです。
 
 ## 2. Host側Nova5 Runtimeをbuildする
 
@@ -84,7 +77,7 @@ HAKONIWA_ROS2_TCP_CONFIG=../work-host/recipes/nova5-joint-trajectory-control/con
 bash docker/run.bash jazzy
 ```
 
-Humbleでは`jazzy`を`humble`へ置き換えます。期待される起動ログの例（貼り付けない）。これが表示され、Container shellが開けばOKです。
+Humbleでは`jazzy`を`humble`へ置き換えます。起動ログに次の内容が表示され、Container shellが開けばOKです。
 
 ```text
 Mount: ... -> /workspace
@@ -121,12 +114,7 @@ source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 ros2 pkg executables hakoniwa_arm_samples
 ```
 
-`run.bash`はContainer内の`hakoniwa-business-pack`リポジトリルートを開くため、最初にRobot Arm repositoryへ移動します。doctorに`hakoniwa_pdu_ros bridge`が表示され、最後のコマンドの期待される出力例（貼り付けない）が次の2行ならOKです。
-
-```text
-hakoniwa_arm_samples control
-hakoniwa_arm_samples monitor
-```
+`run.bash`はContainer内の`hakoniwa-business-pack`リポジトリルートを開くため、最初にRobot Arm repositoryへ移動します。doctorに`hakoniwa_pdu_ros bridge`、最後のコマンドに`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されればOKです。
 
 ROS 2成果物は`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`へ保存され、同じdistributionのdocker-only構成でも再利用します。
 

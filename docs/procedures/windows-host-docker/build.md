@@ -8,7 +8,7 @@
 | 新しいHost PowerShell（`docker-ros-bridge`を起動） | `hakoniwa-robot-arm`のrepository root | 3～4 |
 | `docker-ros-bridge` | Container Bash、`/workspace/hakoniwa-robot-arm` | 5 |
 
-`powershell`・`bash`ブロックはそれぞれの端末で実行するコマンドです。表示結果は確認用で、コマンドとしてコピーしません。
+`powershell`・`bash`ブロックはそれぞれの端末で実行するコマンドです。表示結果は各段階の成功条件を確認するために使います。
 
 [実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
 

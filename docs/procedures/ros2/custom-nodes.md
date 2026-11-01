@@ -30,13 +30,7 @@ ros2 pkg create my_hakoniwa_arm \
   --dependencies rclpy sensor_msgs trajectory_msgs
 ```
 
-期待される出力例（貼り付けない）:
-
-```text
-going to create a new package
-package name: my_hakoniwa_arm
-...
-```
+`going to create a new package`に続いて`package name: my_hakoniwa_arm`と表示されれば作成できています。
 
 package名と依存message typeは用途に合わせて変更できます。Robot Armとの基本的な接続点は次です。
 

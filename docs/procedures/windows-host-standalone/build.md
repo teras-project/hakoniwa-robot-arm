@@ -2,7 +2,7 @@
 
 [Windows native箱庭単体セットアップ](setup.md)の完了後、PowerShellで実行します。実行ディレクトリは`hakoniwa-business-pack`のrepository rootです。
 
-端末: Windows HostのPowerShell（`hakoniwa-business-pack`のrepository root）。`powershell`ブロックは実行コマンドです。表示結果は確認用で、コマンドとしてコピーしません。
+端末: Windows HostのPowerShell（`hakoniwa-business-pack`のrepository root）。`powershell`ブロックは実行コマンド、表示結果は手順の成功条件を確認するためのものです。
 
 [実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
 

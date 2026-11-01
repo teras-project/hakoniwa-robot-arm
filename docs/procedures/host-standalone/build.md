@@ -24,14 +24,7 @@ python tools/recipe/nova5.py configure \
   --environment --realtime-sync-cycle-msec 50
 ```
 
-期待される出力例（貼り付けない）:
-
-```text
-Launcher        : /.../work-host/recipes/nova5-joint-trajectory-control/config/launcher.json
-ROS 2 TCP       : disabled
-```
-
-`ROS 2 TCP`が`disabled`なら単体デモ用の構成生成は完了です。`error:`で終了した場合はNGです。
+`Launcher`の出力先が表示され、`ROS 2 TCP`が`disabled`なら単体デモ用の構成生成は完了です。`error:`で終了した場合はNGです。
 
 ## 2. Nova5 Runtimeをbuildする
 

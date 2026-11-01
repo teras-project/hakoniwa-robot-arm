@@ -2,7 +2,7 @@
 
 Nova5 RuntimeとMuJoCo ViewerをWindows Host上でnative実行し、ROS 2を使わずに箱庭単体で動作確認するための準備手順です。PowerShellで実行します。
 
-端末: Windows HostのPowerShell。clone時は両repositoryの親ディレクトリ、以降は`hakoniwa-business-pack`のrepository rootを使用します。`powershell`ブロックは実行コマンドです。表示結果は確認用で、コマンドとしてコピーしません。
+端末: Windows HostのPowerShell。clone時は両repositoryの親ディレクトリ、以降は`hakoniwa-business-pack`のrepository rootを使用します。`powershell`ブロックは実行コマンド、表示結果は手順の成功条件を確認するためのものです。
 
 [実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
 

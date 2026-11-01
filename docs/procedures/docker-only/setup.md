@@ -68,7 +68,7 @@ xhost +si:localuser:root
 HAKONIWA_DOCKER_GUI=on bash docker/run.bash jazzy
 ```
 
-期待される起動ログの例（貼り付けない）。Container shellが開けばOKです。
+起動ログに次の内容が表示され、Container shellが開けばOKです。
 
 ```text
 Mount: ... -> /workspace

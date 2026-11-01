@@ -9,7 +9,7 @@
 | `docker-ros-monitor` | 追加Container Bash、`/workspace/hakoniwa-robot-arm` | JointState monitor |
 | `docker-ros-control` | 追加Container Bash、`/workspace/hakoniwa-robot-arm` | JointTrajectory control |
 
-`powershell`・`bash`ブロックはそれぞれの端末で実行するコマンドです。表示結果は確認用で、コマンドとしてコピーしません。
+`powershell`・`bash`ブロックはそれぞれの端末で実行するコマンドです。表示結果は各段階の成功条件を確認するために使います。
 
 [実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
 

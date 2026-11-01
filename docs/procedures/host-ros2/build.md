@@ -26,16 +26,7 @@ ls -l ../work-host/profiles/activate-host-ros-build.bash
 ls -l ../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
 ```
 
-期待される出力例（貼り付けない）:
-
-```text
-Profiles        : ...activate-host-ros-build.bash, ...activate-host-ros-bridge.bash, ...
-ROS 2 TCP       : enabled
-... /.../work-host/profiles/activate-host-ros-build.bash
-... /.../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
-```
-
-`ROS 2 TCP`が`enabled`で、profileとbindingの両方が表示されればOKです。`No such file or directory`なら先へ進まず、この手順の`configure --ros2-tcp`を再実行します。
+`Profiles`に`activate-host-ros-build.bash`などが表示され、`ROS 2 TCP`が`enabled`で、profileとbindingの両方の出力先が確認できればOKです。`No such file or directory`なら先へ進まず、この手順の`configure --ros2-tcp`を再実行します。
 
 ## 2. Nova5 Runtimeをbuildする
 
@@ -91,12 +82,7 @@ source ../work-host/profiles/activate-host-ros-build.bash
 /usr/bin/python3 tools/recipe/ros2_workspace.py doctor
 ```
 
-Ubuntu 22.04／Humbleでは`--ros-distro humble`を指定します。期待されるbuildログの例（貼り付けない）。続くdoctorがerrorなく終了すればOKです。
-
-```text
-ROS workspace installed: /.../work-host/ros2
-source /.../work-host/ros2/activate.bash
-```
+Ubuntu 22.04／Humbleでは`--ros-distro humble`を指定します。buildログに`ROS workspace installed:`と`source .../work-host/ros2/activate.bash`が表示され、続くdoctorがerrorなく終了すればOKです。
 
 `error:`または`missing installed ROS executable`が表示された場合はNGです。
 
@@ -126,12 +112,7 @@ source ../work-host/ros2-samples/install/setup.bash
 ros2 pkg executables hakoniwa_arm_samples
 ```
 
-期待される出力例（貼り付けない）。colconのsummaryに`1 package finished`が表示され、最後に次の2 executableが表示されます。
-
-```text
-hakoniwa_arm_samples control
-hakoniwa_arm_samples monitor
-```
+colconのsummaryに`1 package finished`が表示され、最後に`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されればOKです。
 
 次は[Host ROS 2連携の起動・動作確認](operation.md)へ進みます。
 

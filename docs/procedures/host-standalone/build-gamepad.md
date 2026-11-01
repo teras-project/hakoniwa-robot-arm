@@ -23,14 +23,7 @@ python tools/recipe/nova5.py configure \
   --realtime-sync-cycle-msec 50
 ```
 
-初回はFoundation Pythonへ`pygame==2.6.1`を導入します。期待される出力例（貼り付けない）:
-
-```text
-[OK] Gamepad Python dependency: pygame==2.6.1
-ROS 2 TCP       : disabled
-Gamepad         : enabled
-Gamepad profile : /.../profiles/gamepads/dualsense/<host>-pygame.json
-```
+初回はFoundation Pythonへ`pygame==2.6.1`を導入します。`[OK] Gamepad Python dependency: pygame==2.6.1`が表示されたら依存関係の準備は完了です。続けて`ROS 2 TCP: disabled`、`Gamepad: enabled`、Host OSに対応するprofile pathが表示されることを確認してください。
 
 macOSでは`macos-pygame.json`、native Ubuntuでは`ubuntu-pygame.json`が選択されます。`Gamepad`が`enabled`で、Host OSに対応するプロファイルが表示されればOKです。`error:`または`[NG]`で終了した場合はNGです。
 
