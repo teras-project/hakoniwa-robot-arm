@@ -91,30 +91,81 @@ GUI: off; DISPLAY: disabled
 
 | 項目 | 内容 |
 | --- | --- |
-| 実行端末 | `docker-ros-bridge` |
-| 実行ディレクトリ | Container内の`hakoniwa-robot-arm` repository root |
+| 実行端末 | 手順3の`docker/run.bash`で開いた同じContainer shell（`docker-ros-bridge`）。 |
+| 実行ディレクトリ | 最初はContainer内の`hakoniwa-business-pack`リポジトリルート。手順4.1で`hakoniwa-robot-arm`へ移動する。 |
 | この作業の入力成果物 | 起動中のContainerと、distribution単位の`HAKONIWA_ROS2_WS` |
 | この作業のゴール | ROS 2 Bridgeとサンプルの`control`、`monitor`が実行可能になる。 |
 
-実行するコマンド（Container shell `docker-ros-bridge`。先にプロンプトを確認する）:
+以下はすべて、手順3で開いた同じContainer shellで実行します。新しいHost terminalを開いたり、追加attachしたりする必要はありません。`docker-ros-bridge`はこの端末の役割名であり、ROS 2 Bridgeのプロセスはまだ起動しません。Bridgeの起動は次の[起動・動作確認](operation.md)で行います。
+
+コードブロックを1つずつ実行し、各段階の成功条件を確認してから次へ進んでください。buildに失敗した場合は、その段階で止めて原因を解消します。
+
+### 4.1 作業ディレクトリを確認する
+
+Containerのプロンプトが表示されてから、初期ディレクトリの`hakoniwa-business-pack`からRobot Arm repositoryへ移動します。
+
+実行するコマンド（`docker-ros-bridge`）:
 ```bash
 cd ../hakoniwa-robot-arm
-/usr/bin/python3 tools/recipe/ros2_workspace.py build
-source "$HAKONIWA_ROS2_WS/activate.bash"
-/usr/bin/python3 tools/recipe/ros2_workspace.py doctor
+pwd
+```
 
+`pwd`の結果が`/workspace/hakoniwa-robot-arm`ならOKです。以降は同じディレクトリで実行します。
+
+### 4.2 ROS 2 Bridge workspaceをbuildする
+
+実行するコマンド（`docker-ros-bridge`）:
+```bash
+/usr/bin/python3 tools/recipe/ros2_workspace.py build
+```
+
+buildがerrorなく終了し、`ROS workspace installed:`に`/workspace/ros2-work-jazzy`が表示されれば次へ進みます。Humbleでは`/workspace/ros2-work-humble`です。
+
+### 4.3 ROS 2環境を有効にして検査する
+
+実行するコマンド（`docker-ros-bridge`）:
+```bash
+source "$HAKONIWA_ROS2_WS/activate.bash"
+```
+
+環境の有効化がerrorなく終了したら、doctorを実行します。
+
+実行する確認コマンド（`docker-ros-bridge`）:
+```bash
+/usr/bin/python3 tools/recipe/ros2_workspace.py doctor
+```
+
+doctorに`hakoniwa_pdu_ros bridge`が表示され、errorなく終了すればOKです。
+
+### 4.4 サンプルpackageをbuildする
+
+実行するコマンド（`docker-ros-bridge`）:
+```bash
 colcon --log-base "${HAKONIWA_ROS2_WS}-samples/log" build \
   --base-paths ros2_packages/hakoniwa_arm_samples \
   --build-base "${HAKONIWA_ROS2_WS}-samples/build" \
   --install-base "${HAKONIWA_ROS2_WS}-samples/install" \
   --symlink-install \
   --packages-select hakoniwa_arm_samples
+```
 
+summaryに`1 package finished`が表示され、`packages failed`がなければ次へ進みます。
+
+### 4.5 サンプルの実行ファイルを確認する
+
+実行するコマンド（`docker-ros-bridge`）:
+```bash
 source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
+```
+
+環境の有効化がerrorなく終了したら、実行ファイルを確認します。
+
+実行する確認コマンド（`docker-ros-bridge`）:
+```bash
 ros2 pkg executables hakoniwa_arm_samples
 ```
 
-`run.bash`はContainer内の`hakoniwa-business-pack`リポジトリルートを開くため、最初にRobot Arm repositoryへ移動します。doctorに`hakoniwa_pdu_ros bridge`、最後のコマンドに`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されればOKです。
+`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されれば完了です。このContainer shellは次の起動・動作確認でも使用するので、開いたままにしてください。
 
 ROS 2成果物は`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`へ保存され、同じdistributionのdocker-only構成でも再利用します。
 
