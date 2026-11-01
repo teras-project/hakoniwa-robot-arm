@@ -229,7 +229,7 @@ Windows 11上でNova5 RuntimeとMuJoCo Viewerをnative実行し、Docker Desktop
 
 ### 共通：checkout用workspaceを作る
 
-利用者が置きたい親ディレクトリで次のコマンドを実行し、空のディレクトリを作って、その直下へBusiness Packと本リポジトリをcloneします。本リポジトリはprivate repositoryであるため、アクセス権を持つGitHubアカウントまたは認証情報が必要です。
+利用者が置きたい親ディレクトリで次のコマンドを実行し、空のディレクトリを作って、その直下へBusiness Packと本リポジトリをcloneします。
 
 ```bash
 mkdir -p hakoniwa-robot-arm-workspace
