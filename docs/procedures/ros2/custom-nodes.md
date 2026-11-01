@@ -6,7 +6,7 @@
 
 `../work-host/ros2`はツールが管理する生成領域です。利用者のsource codeをその`src`として追加したり、`install`配下を直接編集したりしないでください。
 
-[手順一覧](../README.md)に戻る。このページは[Host ROS 2連携の動作確認](../host-ros2/operation.md)を終えたUbuntu Host用です。箱庭Workspaceの`host-hako`ではなく、通常のHost terminalからROS 2環境を有効にします。コマンドと出力例の区別は[手順の読み方](../conventions.md#コードブロックと端末の読み方)を参照してください。
+[手順一覧](../README.md)に戻る。このページは、Ubuntu Hostで[Host ROS 2連携の動作確認](../host-ros2/operation.md)の手順4まで確認し、手順5で終了する前に続けてください。すでに終了した場合は、同じ動作確認手順の手順1と2に従ってRuntimeとROS Bridgeを再起動し、独自nodeの実行中は起動したままにします。箱庭Workspaceの`host-hako`ではなく、通常のHost terminalからROS 2環境を有効にします。コマンドと出力例の区別は[手順の読み方](../conventions.md#コードブロックと端末の読み方)を参照してください。
 
 ## 1. 利用者用workspaceとpackageを作る
 

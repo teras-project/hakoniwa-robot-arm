@@ -21,14 +21,22 @@ Nova5 Runtime、MuJoCo、箱庭Core、TCP Bridge、ROS 2 Bridge、monitor、cont
 | この作業の入力成果物 | GitとDocker Engine／Docker Desktopを使用できるHost |
 | この作業のゴール | 2リポジトリが兄弟配置され、`hakoniwa-arm-dev:jazzy` imageが生成される。 |
 
-実行するコマンド（通常のHost terminal。checkout用workspaceをまだ作っていない場合のみ）:
+checkout用workspaceをまだ作っていない場合だけ、利用者が選んだ親ディレクトリから次を実行します。クイックスタートでcheckout済みの場合は、このブロックを飛ばしてください。
+
+実行するコマンド（通常のHost terminal。未checkoutの場合のみ）:
 ```bash
 mkdir -p hakoniwa-robot-arm-workspace
 cd hakoniwa-robot-arm-workspace
 git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
 git clone https://github.com/teras-project/hakoniwa-robot-arm.git
-
 cd hakoniwa-robot-arm
+```
+
+新規・既存のcheckoutとも、通常のHost terminalで`hakoniwa-robot-arm`のrepository rootにいることを`pwd`で確認してから、次のimage作成コマンドを実行します。既存のcheckoutを使用する場合は、先にそのrepository rootへ移動してください。
+
+実行するコマンド（通常のHost terminal。すべての利用者が実行）:
+```bash
+pwd
 docker --version
 bash docker/create-docker-image.bash jazzy
 docker image inspect hakoniwa-arm-dev:jazzy --format '{{.RepoTags}}'
