@@ -4,6 +4,10 @@
 
 PS5コントローラー（DualSense）で操作する場合は、このページの代わりに[箱庭単体・ゲームパッドビルド](build-gamepad.md)を使用してください。
 
+手順: [一覧](../README.md) → [セットアップ](setup.md) → **ビルド** → [起動・動作確認](operation.md)
+
+このページのコマンドはすべて`host-hako`で実行し、Foundation管理の`python`を使用します。
+
 ## 1. 箱庭単体用Launcherを生成する
 
 | 項目 | 内容 |
@@ -13,20 +17,14 @@ PS5コントローラー（DualSense）で操作する場合は、このペー�
 | この作業の入力成果物 | `../work-host/model-forge/nova5/install/nova5.contact.xml` |
 | この作業のゴール | ROS 2を使用しないLauncherと`host-hako` profileが`../work-host`へ生成される。 |
 
+実行するコマンド（`host-hako`）:
 ```bash
 cd ../hakoniwa-robot-arm
 python tools/recipe/nova5.py configure \
   --environment --realtime-sync-cycle-msec 50
 ```
 
-正常時は末尾に次の形式で表示されます。
-
-```text
-Launcher        : /.../work-host/recipes/nova5-joint-trajectory-control/config/launcher.json
-ROS 2 TCP       : disabled
-```
-
-`ROS 2 TCP`が`disabled`なら単体デモ用の構成生成は完了です。`error:`で終了した場合はNGです。
+`Launcher`の出力先が表示され、`ROS 2 TCP`が`disabled`なら単体デモ用の構成生成は完了です。`error:`で終了した場合はNGです。
 
 ## 2. Nova5 Runtimeをbuildする
 
@@ -39,6 +37,7 @@ ROS 2 TCP       : disabled
 
 MuJoCo Viewerを使用する通常ビルドです。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py build
 ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-hakoniwa-asset

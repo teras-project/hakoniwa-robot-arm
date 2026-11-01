@@ -2,6 +2,10 @@
 
 Nova5 RuntimeとMuJoCo ViewerをHost上で実行し、PS5コントローラー（DualSense）から操作するための準備手順です。ROS 2は使用しません。
 
+手順: [一覧](../README.md) → **ゲームパッドセットアップ** → [ビルド](build-gamepad.md) → [起動・操作](operation-gamepad.md)
+
+通常のHost terminalで前提パッケージを準備し、[箱庭単体セットアップ](setup.md)に従って開く`host-hako`でForgeとRuntimeを操作します。Foundationの初期化にはCPython 3.12、構築後はFoundationの`python`を使用します。
+
 ## 検証状況
 
 | Host環境 | 状態 |
@@ -25,6 +29,7 @@ native Ubuntuでは[箱庭単体セットアップ](setup.md)の手順1から5�
 
 macOSでは最初に次のHost packageを準備します。
 
+実行するコマンド（通常のHost terminal）:
 ```bash
 brew install git ruby python@3.12 cmake glfw
 python3.12 --version
@@ -33,8 +38,9 @@ cmake --version
 
 両方のversionが表示されたら、[箱庭単体セットアップ](setup.md)の手順2から5までを実行します。macOSではUbuntu用の`apt`コマンドがある手順1を実行しません。
 
-最後に次のファイルが存在することを確認してください。
+`host-hako`のRobot Arm repository rootで、次のファイルが存在することを確認してください。
 
+実行する確認コマンド（`host-hako`）:
 ```bash
 ls -l ../work-host/model-forge/nova5/install/nova5.contact.xml
 ```

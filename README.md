@@ -137,7 +137,7 @@ flowchart LR
 
 ### Workspace
 
-Workspaceは、使用するFoundationと生成物を他の作業環境から分離するための実行環境です。`workspace.py enter --workdir <path>`で専用シェルへ入り、選択したパスが`HAKONIWA_WORK_DIR`に設定されます。Foundation、Forge、Recipeのビルド、設定、ログ、セッションは、このworkディレクトリ以下へ生成されます。
+Workspaceは、使用するFoundationと生成物を他の作業環境から分離するための実行環境です。`workspace.py enter --workdir <path>`で専用シェルへ入り、選択したパスが`HAKONIWA_WORK_DIR`に設定されます。子シェルの開始ディレクトリは`hakoniwa-business-pack`のリポジトリルート（`tools/`ディレクトリがある場所）です。Foundation、Forge、Recipeのビルド、設定、ログ、セッションは、作業ディレクトリではなく選択したworkディレクトリ以下へ生成されます。
 
 ### Foundation
 
@@ -229,10 +229,9 @@ Windows 11上でNova5 RuntimeとMuJoCo Viewerをnative実行し、Docker Desktop
 
 ### 共通：checkout用workspaceを作る
 
-空のディレクトリを作り、その直下へBusiness Packと本リポジトリをcloneします。本リポジトリはprivate repositoryであるため、アクセス権を持つGitHubアカウントまたは認証情報が必要です。
+利用者が置きたい親ディレクトリで次のコマンドを実行し、空のディレクトリを作って、その直下へBusiness Packと本リポジトリをcloneします。
 
 ```bash
-# 利用者が置きたい親ディレクトリで実行する。
 mkdir -p hakoniwa-robot-arm-workspace
 cd hakoniwa-robot-arm-workspace
 git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git

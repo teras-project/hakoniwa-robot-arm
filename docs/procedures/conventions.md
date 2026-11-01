@@ -2,6 +2,16 @@
 
 この文書は、セットアップ、build、起動・動作確認の各手順で共通に使う進め方を定義します。各環境別手順は、ここで定義する段階と成功判定に従います。
 
+## コードブロックと端末の読み方
+
+`bash`／`powershell`ブロックには実行コマンドと確認コマンドを示します。各手順で指定された端末で実行してください。`text`ブロックは出力やパス・配置の例を示します。端末ロールと実行ディレクトリは各手順の冒頭と各作業項目で確認してください。
+
+`docker/run.bash`、`docker/attach.bash`、箱庭Workspaceの`enter`などで対話シェルが開く場合は、そのコマンドを実行して新しいプロンプトが表示されたことを確認してから、次のブロックへ進みます。HostのコマンドとContainer内のコマンドは、それぞれ指定された端末で実行してください。
+
+Foundationがまだない初回の`plan`／`configure`はCPython 3.12で起動します。構築後の`host-hako`／`docker-hako`ではFoundation管理の`python`を使用します。ROS 2のbuild端末は箱庭Workspaceとは別で、ROS 2環境の`/usr/bin/python3`から専用venvを作ります。独自のvenvを全端末で共用しないでください。
+
+`host-hako`の子シェルは`hakoniwa-business-pack`のリポジトリルート（`tools/`ディレクトリがある場所）から始まります。これはComposerの役割を担うBusiness Packのルートであり、生成物の保存先`HAKONIWA_WORK_DIR`とは別です。Robot Armのスクリプトを実行するときは、必要に応じて`cd ../hakoniwa-robot-arm`でRobot Armのリポジトリルートへ移動します。Docker内で`docker/run.bash`が開くshellもComposerのルートから始まります。
+
 ## 段階の記述形式
 
 各作業項目は、最初に次の4項目を一つの表で示します。端末の状態を入力成果物へ混ぜません。

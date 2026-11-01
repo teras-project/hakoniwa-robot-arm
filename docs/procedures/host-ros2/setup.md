@@ -2,6 +2,16 @@
 
 Nova5 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROS 2 sample nodeを同じUbuntu Host上で実行するための準備手順です。Ubuntu 22.04／ROS 2 Humble、またはUbuntu 24.04／ROS 2 Jazzyを使用します。
 
+手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
+
+| 端末 | 実行場所・Python環境 |
+| --- | --- |
+| 通常のHost terminal | パッケージの準備。箱庭Workspaceは有効にしない。 |
+| `host-hako` | Foundation／Forge／Runtime用。初回のFoundation構築はCPython 3.12、構築後はFoundationの`python`を使用。 |
+| `host-ros-*` | ROS 2用の別端末。箱庭Workspaceには入らず、ROS 2のシステムPythonと専用venvを使用。 |
+
+コードブロックと端末切替は[手順の読み方](../conventions.md#コードブロックと端末の読み方)を参照してください。
+
 各手順の直後に正常時の出力例とNG条件を示します。実際のログを照合し、NG条件に該当した場合はその段階で止めてください。
 
 ## 1. Hostの前提を準備する
@@ -13,8 +23,9 @@ Nova5 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROS 2 sample nodeを同じUbuntu 
 | この作業の入力成果物 | 同じ親ディレクトリへclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm` |
 | この作業のゴール | Nova5 Runtimeのconfigureとbuildに必要なHostコマンドに加え、ROS 2とcolconが使用できる。 |
 
-UbuntuへHost用パッケージを導入します。
+UbuntuへHost用パッケージを導入します。FoundationにはCPython 3.12とそのvenv作成機能が必要です。
 
+実行するコマンド（通常のHost terminal）:
 ```bash
 sudo apt update
 sudo apt install -y \
@@ -29,6 +40,7 @@ cmake --version
 
 使用するROS distributionとcolconを確認します。以下はUbuntu 24.04／Jazzyの例です。
 
+実行するコマンド（通常のHost terminal）:
 ```bash
 sudo apt install -y python3-colcon-common-extensions
 ls -l /opt/ros/jazzy/setup.bash
@@ -48,24 +60,21 @@ ls -l /opt/ros/jazzy/setup.bash
 
 `/absolute/path/to/hakoniwa-robot-arm`は、実際にcloneしたディレクトリへ置き換えます。
 
+通常のHost terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してください。次のコマンドだけを実行し、新しいプロンプトを待ちます。
+
+実行するコマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 source profiles/tool-env/enter-host-hako.bash
 ```
 
-新しく開いたshellで確認します。
+新しく開いた`host-hako` shellで確認します。
 
+実行するコマンド（`host-hako`）:
 ```bash
 pwd
 ```
 
-正常時は次の形式になります。
-
-```text
-/.../hakoniwa-business-pack
-```
-
-promptが`(host-hako) (hako)`で始まり、ディレクトリ末尾が`hakoniwa-business-pack`ならOKです。
+promptが`(host-hako) (hako)`で始まり、`pwd`の結果が`.../hakoniwa-business-pack`ならOKです。
 
 ## 3. FoundationとRuntime Recipeを準備する
 
@@ -78,6 +87,7 @@ promptが`(host-hako) (hako)`で始まり、ディレクトリ末尾が`hakoniwa
 
 `plan`はファイルを変更せず、Recipeを解決できることを事前確認します。基本手順では内容を利用者が判断する必要はなく、コマンドの成否だけを確認します。
 
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
@@ -85,16 +95,17 @@ python3.12 tools/recipe.py plan \
 
 先頭に`Recipe plan:`が表示され、`error:`で終了しなければOKです。
 
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python3.12 tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 
-python3.12 tools/workspace.py doctor
-python3.12 tools/recipe.py doctor \
+python tools/workspace.py doctor
+python tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
-正常時は、doctorの末尾を含む出力が次の状態になります。
+doctorに次のような`[OK]`と`SATISFIED`が表示されれば正常です。
 
 ```text
 [OK] Foundation Python and Hakoniwa modules are workspace-owned.
@@ -116,11 +127,12 @@ Foundation: SATISFIED
 
 Forge Recipeを解決し、変換に必要なツールとPython packageを準備します。
 
+実行するコマンド（`host-hako`、`hakoniwa-business-pack`リポジトリルート）:
 ```bash
-python3.12 tools/recipe.py plan \
+python tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 
-python3.12 tools/recipe.py configure \
+python tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 ```
 
@@ -137,19 +149,13 @@ python3.12 tools/recipe.py configure \
 
 `host-hako`でRobot Arm repositoryへ移動して実行します。
 
+実行するコマンド（`host-hako`、Robot Arm repository rootへ移動する）:
 ```bash
 cd ../hakoniwa-robot-arm
 python tools/recipe/nova5.py forge
 ls -l ../work-host/model-forge/nova5/install/nova5.contact.xml
 ```
 
-正常時はForgeログに次の出力先が表示され、最後の`ls`で同じファイルの情報を確認できます。
-
-```text
-Nova5 output     : /.../work-host/model-forge/nova5/install
-... /.../work-host/model-forge/nova5/install/nova5.contact.xml
-```
-
-`nova5.contact.xml`が表示されればOK、`No such file or directory`ならNGです。変換内容は[Nova5 Model Forge](../../reference/model-forge.md)を参照してください。
+Forgeログに`Nova5 output`と`.../work-host/model-forge/nova5/install/nova5.contact.xml`が表示され、最後の`ls`で同じファイルを確認できればOKです。`No such file or directory`ならNGです。変換内容は[Nova5 Model Forge](../../reference/model-forge.md)を参照してください。
 
 次は[Host ROS 2連携ビルド](build.md)へ進みます。

@@ -2,16 +2,26 @@
 
 [Windows host+Dockerビルド](build.md)の完了後、4端末でMuJoCo Viewer、ROS 2 Bridge、JointState、JointTrajectoryを確認します。
 
-| 端末 | 環境 | 実行するもの |
+| 端末 | 環境・実行ディレクトリ | 実行するもの |
 | --- | --- | --- |
-| `host-hako` | Windows PowerShell | Nova5 Runtime、MuJoCo Viewer、Host TCP Bridge |
-| `docker-ros-bridge` | 起動済みContainer | ROS 2 Bridge |
-| `docker-ros-monitor` | 追加Container shell | JointState monitor |
-| `docker-ros-control` | 追加Container shell | JointTrajectory control |
+| `host-hako` | Windows PowerShell、`hakoniwa-business-pack`のrepository root | Nova5 Runtime、MuJoCo Viewer、Host TCP Bridge |
+| `docker-ros-bridge` | 起動済みContainer Bash、`/workspace/hakoniwa-robot-arm` | ROS 2 Bridge |
+| `docker-ros-monitor` | 追加Container Bash、`/workspace/hakoniwa-robot-arm` | JointState monitor |
+| `docker-ros-control` | 追加Container Bash、`/workspace/hakoniwa-robot-arm` | JointTrajectory control |
+
+`powershell`・`bash`ブロックはそれぞれの端末で実行するコマンドです。表示結果は各段階の成功条件を確認するために使います。
+
+[実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
 
 ## 1. Host側Nova5を起動する
 
 `hakoniwa-business-pack`のrepository rootを開いたPowerShellで実行します。
+
+```powershell
+Get-Location
+```
+
+`hakoniwa-business-pack`のrepository rootであることを確認してから実行します。
 
 ```powershell
 python tools\workspace.py run -- python `
@@ -35,7 +45,7 @@ python tools\workspace.py run -- python `
 
 ## 2. ROS 2 Bridgeを起動する
 
-build時から開いている`docker-ros-bridge`で実行し、この端末を維持します。
+build時から開いている`docker-ros-bridge`のContainer Bashで実行し、この端末を維持します。
 
 ```bash
 cd /workspace/hakoniwa-robot-arm
@@ -49,7 +59,9 @@ doctorが成功し、Bridgeが終了せずHostとの接続を維持すればOK�
 
 ## 3. JointStateを観察する
 
-新しいPowerShellで追加shellを開きます。
+新しいHost PowerShellで追加shellを開きます。
+
+Host PowerShellで実行:
 
 ```powershell
 docker exec -it `
@@ -58,7 +70,7 @@ docker exec -it `
   /ros_entrypoint.sh bash
 ```
 
-開いた`docker-ros-monitor`で実行します。
+ContainerのBash promptが表示されるまで待ってから、`docker-ros-monitor`で実行:
 
 ```bash
 source "$HAKONIWA_ROS2_WS/activate.bash"
@@ -71,7 +83,18 @@ ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 
 ## 4. JointTrajectoryを送信する
 
-さらに新しいPowerShellで、手順3と同じ`docker exec`を実行して`docker-ros-control`を開きます。
+さらに新しいHost PowerShellで`docker-ros-control`を開きます。
+
+Host PowerShellで実行:
+
+```powershell
+docker exec -it `
+  --workdir /workspace/hakoniwa-robot-arm `
+  hakoniwa-arm-dev-jazzy `
+  /ros_entrypoint.sh bash
+```
+
+ContainerのBash promptが表示されるまで待ってから、`docker-ros-control`で実行:
 
 ```bash
 source "$HAKONIWA_ROS2_WS/activate.bash"

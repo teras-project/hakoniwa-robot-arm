@@ -2,6 +2,10 @@
 
 [箱庭単体・ゲームパッドビルド](build-gamepad.md)の完了が前提です。この構成ではROS 2や自動デモ軌道を使用せず、PS5コントローラー（DualSense）からNova5を操作します。
 
+手順: [一覧](../README.md) → [ゲームパッドセットアップ](setup-gamepad.md) → [ビルド](build-gamepad.md) → **起動・操作**
+
+すべてのコマンドを`host-hako`のRobot Arm repository rootで実行し、Foundationの`python`を使用します。
+
 ## 1. DualSenseと実行環境を確認する
 
 | 項目 | 内容 |
@@ -13,20 +17,18 @@
 
 DualSenseをHostへ接続した状態で実行します。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py doctor
 ```
 
-すべての行が`[OK]`で、次の行が表示されればOKです。
-
-```text
-[OK] Gamepad Python dependency: pygame is importable by ...
-```
+doctorの全行が`[OK]`で、`[OK] Gamepad Python dependency: pygame is importable by ...`が表示されればOKです。
 
 `doctor`はPython依存を検査します。接続したDualSenseの名前、軸数、ボタン数は次の`start`で検証されます。
 
 ## 2. ゲームパッド構成を起動する
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py start
 python tools/recipe/nova5.py status
@@ -60,6 +62,7 @@ python tools/recipe/nova5.py status
 
 ## 4. 終了する
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py stop
 python tools/recipe/nova5.py status

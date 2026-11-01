@@ -60,7 +60,7 @@ PDU Definition、PDU Types、Endpoint、component bindingは、ロボットラ�
 
 ## 3. 標準の再生成手順
 
-実行中のNova5を停止し、現在使用しているものと同じ`HAKONIWA_WORK_DIR`、同じconfigure optionで実行します。
+実行中のNova5を停止し、現在使用しているものと同じ`HAKONIWA_WORK_DIR`、同じconfigure optionで実行します。以下の`--ros2-tcp --environment`はROS 2連携と周辺環境を使用する場合の例です。利用構成に合わせてconfigure optionを選んでください。
 
 ### Forge対象を変更した場合
 
@@ -68,7 +68,6 @@ PDU Definition、PDU Types、Endpoint、component bindingは、ロボットラ�
 python "$ARM_PACK/tools/recipe/nova5.py" stop
 python "$ARM_PACK/tools/recipe/nova5.py" forge
 
-# 利用構成に合わせてoptionを選ぶ
 python "$ARM_PACK/tools/recipe/nova5.py" configure \
   --ros2-tcp --environment --realtime-sync-cycle-msec 50
 python "$ARM_PACK/tools/recipe/nova5.py" doctor

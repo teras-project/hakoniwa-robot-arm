@@ -104,17 +104,28 @@ Nova5はMuJoCoのposition actuatorを使用します。サーボ応答は[`recip
 4. `--environment`を使用する場合は、同じ起動optionで`nova5.py configure`を再実行する。
 5. 軌道指令、JointState、Viewerまたはログで応答と数値安定性を確認する。
 
-Composerの`(hako)` Workspaceでのコマンド例です。
+Composerの`(hako)` Workspaceでのコマンド例です。最初の`stop`の後に`recipes/nova5/actuator.yaml`を編集し、`forge`を実行してください。`--environment`を使用している場合は、Forge後に派生モデルとLauncher設定を再生成します。以下のconfigureはROS 2連携と周辺環境を使用する場合の例です。
 
 ```bash
 python "$ARM_PACK/tools/recipe/nova5.py" stop
+```
 
-# recipes/nova5/actuator.yamlを編集した後
+`actuator.yaml`の編集を終えてから、次を実行します。
+
+```bash
 python "$ARM_PACK/tools/recipe/nova5.py" forge
+```
 
-# --environmentを使用している場合は、派生モデルとLauncher設定を再生成
+`--environment`を使用している場合は、次のようにconfigureして派生モデルとLauncher設定を再生成します。起動条件に合わせてoptionを選んでください。
+
+```bash
 python "$ARM_PACK/tools/recipe/nova5.py" configure \
   --ros2-tcp --environment --realtime-sync-cycle-msec 50
+```
+
+使用構成に必要なconfigureを済ませた後、起動前検査と起動を行います。
+
+```bash
 python "$ARM_PACK/tools/recipe/nova5.py" doctor
 python "$ARM_PACK/tools/recipe/nova5.py" start
 ```

@@ -2,6 +2,10 @@
 
 [docker-onlyセットアップ](setup.md)の完了が前提です。箱庭workは`/workspace/work-docker-<distro>`、ROS 2成果物は共有の`/workspace/ros2-work-<distro>`を使用します。
 
+手順: [一覧](../README.md) → [セットアップ](setup.md) → **ビルド** → [起動・動作確認](operation.md)
+
+`docker-hako`の`(hako)` shellではFoundationの`python`を使用し、ROS 2用の`docker-ros-build`は別のattach shellでシステムの`/usr/bin/python3`を使用します。
+
 ## 1. ROS 2連携用Launcherを生成する
 
 | 項目 | 内容 |
@@ -11,7 +15,7 @@
 | この作業の入力成果物 | Forge済み`nova5.contact.xml`と、同じContainer内で動くROS 2 Bridge |
 | この作業のゴール | ROS 2用Launcher、TCP設定、`binding.json`がContainer側workへ生成される。 |
 
-macOS Docker Desktop、CI、画面のない環境ではheadless構成を生成します。
+macOS Docker Desktop、CI、画面のない環境で実行するコマンド（`docker-hako`、headless）:
 
 ```bash
 HAKONIWA_ROS2_TCP_HOST=127.0.0.1 \
@@ -19,7 +23,7 @@ python tools/recipe/nova5.py configure \
   --headless --ros2-tcp --environment --realtime-sync-cycle-msec 50
 ```
 
-Linux HostでX11 Viewerを有効にした場合だけ、`--headless`を外します。
+Linux HostでX11 Viewerを有効にした場合だけ実行するコマンド（`docker-hako`。headlessブロックの代わり）:
 
 ```bash
 HAKONIWA_ROS2_TCP_HOST=127.0.0.1 \
@@ -38,7 +42,7 @@ python tools/recipe/nova5.py configure \
 | この作業の入力成果物 | 前段で生成したLauncherと、Forge済み`nova5.contact.xml` |
 | この作業のゴール | `robot-arm-hakoniwa-asset`がContainer側workへ生成され、doctorが成功する。 |
 
-headless構成では次を実行します。
+実行するコマンド（`docker-hako`、headless構成）:
 
 ```bash
 python tools/recipe/nova5.py build --headless
@@ -46,6 +50,7 @@ python tools/recipe/nova5.py build --headless
 
 X11 Viewerを使用する構成では`python tools/recipe/nova5.py build`へ置き換えます。続けて確認します。
 
+実行する確認コマンド（`docker-hako`）:
 ```bash
 ls -l "$HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-hakoniwa-asset"
 python tools/recipe/ros2_tcp.py doctor --robot nova5
@@ -63,13 +68,23 @@ python tools/recipe/nova5.py doctor
 | この作業の入力成果物 | 起動中のContainerと、distribution単位のROS 2成果物ディレクトリ |
 | この作業のゴール | 箱庭Workspaceへ入っていないROS 2 build用attach shellが開く。 |
 
+新しい通常のHost terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してください。次のブロックだけを実行してContainerのプロンプトを待ちます。
+
+実行するコマンド（通常のHost terminal。Containerに入る）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
-cd ../hakoniwa-robot-arm
 ```
 
-Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer内のComposer repository rootを開くため、3行目でRobot Arm repositoryへ移動します。`pwd`の末尾が`hakoniwa-robot-arm`で、`echo "$HAKONIWA_ROS2_WS"`に`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`が表示されればOKです。
+Containerのプロンプトが出てから、次を実行します。
+
+実行するコマンド（`docker-ros-build`）:
+```bash
+cd ../hakoniwa-robot-arm
+pwd
+echo "$HAKONIWA_ROS2_WS"
+```
+
+Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer内の`hakoniwa-business-pack`リポジトリルートを開くため、Container側のブロックでRobot Arm repositoryへ移動します。`pwd`の末尾が`hakoniwa-robot-arm`で、`echo "$HAKONIWA_ROS2_WS"`に`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`が表示されればOKです。
 
 ## 4. ROS 2 Bridgeとサンプルをbuildする
 
@@ -80,6 +95,7 @@ Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer�
 | この作業の入力成果物 | 起動中のContainerと、configure済みTCP設定 |
 | この作業のゴール | ROS 2 Bridgeとサンプルの`control`、`monitor`が実行可能になる。 |
 
+実行するコマンド（`docker-ros-build`）:
 ```bash
 /usr/bin/python3 tools/recipe/ros2_workspace.py build
 source "$HAKONIWA_ROS2_WS/activate.bash"

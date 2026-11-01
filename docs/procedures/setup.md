@@ -2,6 +2,8 @@
 
 この文書は利用構成を選ぶための入口です。初回のclone方法と前提ソフトウェアは[トップREADME](../../README.md#クイックスタート)を参照してください。環境変数の責務とprofileの仕組みは[環境profile](../design/environment-profiles.md)を正本とします。
 
+[手順一覧](README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)。コマンドと出力例、シェル切替の区別は[手順の読み方](conventions.md#コードブロックと端末の読み方)を参照してください。
+
 ## 利用構成を選ぶ
 
 | 利用構成 | 適した環境 | Nova5 Runtime / MuJoCo | ROS 2 | 詳細手順 |
@@ -26,8 +28,8 @@
 
 最初に空のcheckout用workspaceへ次の2リポジトリだけをcloneします。
 
+実行するコマンド（通常のHost terminal。利用者が選んだ親ディレクトリで実行）:
 ```bash
-# 利用者が置きたい親ディレクトリで実行する。
 mkdir -p hakoniwa-robot-arm-workspace
 cd hakoniwa-robot-arm-workspace
 git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
@@ -38,8 +40,9 @@ Nova5 Runtime Recipeの`configure`は、Foundation、`hakoniwa-robot-runtime`、
 
 既存checkoutは検査して再利用します。固定revisionと異なるcleanなcheckoutは指定revisionへ切り替える場合があります。未コミット変更があるcheckoutは変更せず、処理を停止します。
 
-実行前に次の`plan`で予定を確認できます。
+セットアップの中で箱庭Workspaceへ入り、`hakoniwa-business-pack`のリポジトリルート（`tools/`ディレクトリがある場所）にいる状態なら次の`plan`で予定を確認できます。まだWorkspaceに入っていない場合は選択した構成のsetupに進んでください。
 
+実行するコマンド（箱庭Workspace内の`hakoniwa-business-pack`リポジトリルート）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml

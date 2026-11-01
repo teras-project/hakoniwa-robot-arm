@@ -2,6 +2,10 @@
 
 [Host ROS 2連携セットアップ](setup.md)でNova5 MJCFを生成してから実行します。この手順では、箱庭RuntimeとROS 2をTCPで接続する構成を生成します。
 
+手順: [一覧](../README.md) → [セットアップ](setup.md) → **ビルド** → [起動・動作確認](operation.md)
+
+`host-hako`ではFoundationの`python`でRuntimeをbuildします。ROS 2のbuildは別の通常Host terminalで`host-ros-build` profileを有効にし、システムの`/usr/bin/python3`を使用します。両環境を同じ端末で有効にしないでください。
+
 ## 1. ROS 2連携用Launcherを生成する
 
 | 項目 | 内容 |
@@ -13,6 +17,7 @@
 
 `--ros2-tcp`を付けることで、ROS 2用Launcher、binding、4種類のROS端末profileを生成します。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py configure \
   --ros2-tcp --environment --realtime-sync-cycle-msec 50
@@ -21,16 +26,7 @@ ls -l ../work-host/profiles/activate-host-ros-build.bash
 ls -l ../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
 ```
 
-正常時は末尾と`ls`に次の内容が表示されます。
-
-```text
-Profiles        : ...activate-host-ros-build.bash, ...activate-host-ros-bridge.bash, ...
-ROS 2 TCP       : enabled
-... /.../work-host/profiles/activate-host-ros-build.bash
-... /.../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
-```
-
-`ROS 2 TCP`が`enabled`で、profileとbindingの両方が表示されればOKです。`No such file or directory`なら先へ進まず、この手順の`configure --ros2-tcp`を再実行します。
+`Profiles`に`activate-host-ros-build.bash`などが表示され、`ROS 2 TCP`が`enabled`で、profileとbindingの両方の出力先が確認できればOKです。`No such file or directory`なら先へ進まず、この手順の`configure --ros2-tcp`を再実行します。
 
 ## 2. Nova5 Runtimeをbuildする
 
@@ -43,6 +39,7 @@ ROS 2 TCP       : enabled
 
 MuJoCo Viewerを使用する通常ビルドです。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py build
 ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-hakoniwa-asset
@@ -67,15 +64,16 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 
 この手順へ進む前に、手順1の`ls`で`activate-host-ros-build.bash`が表示されたことを確認してください。未確認の場合は手順1へ戻ります。
 
-新しい通常Host terminalで実行します。`/absolute/path/to/hakoniwa-robot-arm`は実際のclone先へ置き換えます。
+新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
 
+実行する確認コマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 ls -l ../work-host/profiles/activate-host-ros-build.bash
 ```
 
 profileのファイル情報が表示されれば続けます。`No such file or directory`ならprofileをsourceせず、手順1へ戻ります。
 
+実行するコマンド（`host-ros-build`にする通常のHost terminal）:
 ```bash
 source ../work-host/profiles/activate-host-ros-build.bash
 
@@ -84,12 +82,7 @@ source ../work-host/profiles/activate-host-ros-build.bash
 /usr/bin/python3 tools/recipe/ros2_workspace.py doctor
 ```
 
-Ubuntu 22.04／Humbleでは`--ros-distro humble`を指定します。正常時はbuildログの末尾に次の形式で表示され、続くdoctorがerrorなく終了します。
-
-```text
-ROS workspace installed: /.../work-host/ros2
-source /.../work-host/ros2/activate.bash
-```
+Ubuntu 22.04／Humbleでは`--ros-distro humble`を指定します。buildログに`ROS workspace installed:`と`source .../work-host/ros2/activate.bash`が表示され、続くdoctorがerrorなく終了すればOKです。
 
 `error:`または`missing installed ROS executable`が表示された場合はNGです。
 
@@ -104,6 +97,7 @@ source /.../work-host/ros2/activate.bash
 
 サンプルは箱庭基盤ではなくROS 2アプリケーションなので、標準のcolconでbuildします。最初に箱庭ROS 2基盤環境をsourceします。
 
+実行するコマンド（`host-ros-build`）:
 ```bash
 source ../work-host/ros2/activate.bash
 
@@ -118,12 +112,7 @@ source ../work-host/ros2-samples/install/setup.bash
 ros2 pkg executables hakoniwa_arm_samples
 ```
 
-正常時はcolconのsummaryに`1 package finished`が表示され、最後に次の2 executableが表示されます。
-
-```text
-hakoniwa_arm_samples control
-hakoniwa_arm_samples monitor
-```
+colconのsummaryに`1 package finished`が表示され、最後に`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されればOKです。
 
 次は[Host ROS 2連携の起動・動作確認](operation.md)へ進みます。
 

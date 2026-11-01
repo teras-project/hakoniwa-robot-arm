@@ -25,10 +25,10 @@ FR5とSO-101についても、基本的な実行手順は[Nova5の環境別手�
 | `model-forge/nova5/` | `model-forge/<robot>/` |
 | `recipes/nova5-joint-trajectory-control/` | `recipes/<robot>-joint-trajectory-control/` |
 
-たとえば、対象を一度だけ選んで次のように参照できます。
+たとえば、対象を一度だけ選んで次のように参照できます。`ROBOT`には`nova5`、`fr5`、`so101`のいずれかを指定します。以下は`fr5`の例です。
 
 ```bash
-export ROBOT=fr5  # nova5 | fr5 | so101
+export ROBOT=fr5
 
 python tools/recipe.py configure \
   --recipe "$ARM_PACK/recipes/$ROBOT/$ROBOT-model-forge.yaml"
