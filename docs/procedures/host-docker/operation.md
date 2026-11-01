@@ -2,6 +2,10 @@
 
 [host+dockerビルド](build.md)の完了が前提です。動作確認では4端末を使用します。
 
+手順: [一覧](../README.md) → [セットアップ](setup.md) → [ビルド](build.md) → **起動・動作確認**
+
+各`docker-ros-*`端末はContainer内のROS 2環境です。通常のHost terminalからattachするときは、Containerのプロンプトが出るまで次のコマンドを貼り付けないでください。
+
 | 端末 | 実行するもの | 維持する状態 |
 | --- | --- | --- |
 | `host-hako` | Nova5 Runtime、MuJoCo Viewer、Host TCP Bridge | `RUNNING` |
@@ -18,6 +22,7 @@
 | この作業の入力成果物 | ROS 2用Launcher、build済みRuntime、Host TCP Bridge設定 |
 | この作業のゴール | Nova5 Runtime、Viewer、Host TCP Bridgeが`RUNNING`になる。 |
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py doctor
 python tools/recipe/nova5.py start
@@ -35,6 +40,7 @@ doctorの全項目が`[OK]`で、statusが`RUNNING`ならOKです。Viewerあり
 | この作業の入力成果物 | build済みROS 2 Bridgeと、Containerへmount済みの`binding.json` |
 | この作業のゴール | ROS 2 Bridgeが起動し、Host TCP Bridgeへの接続を維持する。 |
 
+実行するコマンド（`docker-ros-bridge`）:
 ```bash
 source "$HAKONIWA_ROS2_WS/activate.bash"
 /usr/bin/python3 tools/recipe/ros2_workspace.py doctor
@@ -53,9 +59,17 @@ doctorがerrorなく終了し、`binding.json`が表示され、Bridgeが終了�
 | この作業の入力成果物 | 起動中のContainer、Runtime、ROS 2 Bridge、build済みサンプル |
 | この作業のゴール | `/pdu/joint_states`から6関節の状態を継続受信する。 |
 
+新しい通常のHost terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認します。次のブロックだけを実行します。
+
+実行するコマンド（通常のHost terminal。Containerに入る）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+```
+
+Containerのプロンプトが出てから、次を実行します。
+
+実行するコマンド（`docker-ros-monitor`）:
+```bash
 cd ../hakoniwa-robot-arm
 source "$HAKONIWA_ROS2_WS/activate.bash"
 source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
@@ -75,9 +89,17 @@ Humbleでは`jazzy`を`humble`へ置き換えます。`monitoring /pdu/joint_sta
 | この作業の入力成果物 | 起動中のRuntimeとROS 2 Bridge、受信中のmonitor |
 | この作業のゴール | JointTrajectoryを送信し、Viewerとmonitorで関節動作を確認する。 |
 
+さらに新しい通常のHost terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認します。次のブロックだけを実行します。
+
+実行するコマンド（通常のHost terminal。Containerに入る）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/attach.bash jazzy
+```
+
+Containerのプロンプトが出てから、次を実行します。
+
+実行するコマンド（`docker-ros-control`）:
+```bash
 cd ../hakoniwa-robot-arm
 source "$HAKONIWA_ROS2_WS/activate.bash"
 source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
@@ -100,6 +122,7 @@ ros2 run hakoniwa_arm_samples control \
 
 先にcontrol、monitor、ROS 2 BridgeをCtrl+Cで停止します。`host-hako`でRuntimeを停止します。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py stop
 python tools/recipe/nova5.py status

@@ -2,6 +2,16 @@
 
 Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 Bridge、monitor、controlをDocker Containerで実行するための準備手順です。macOS＋ROS 2 Jazzyを主な対象とします。
 
+手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
+
+| 端末 | 実行場所・Python環境 |
+| --- | --- |
+| 通常のHost terminal | パッケージとDocker imageの準備。箱庭Workspaceは有効にしない。 |
+| `host-hako` | Hostの箱庭Workspace。初回のFoundation構築はCPython 3.12、構築後はFoundationの`python`を使用。 |
+| DockerのROS 2端末 | Container内のROS 2専用環境。箱庭Workspaceには入らない。 |
+
+コードブロックは[手順の読み方](../conventions.md#コードブロックと端末の読み方)に従い、シェルが切り替わるコマンドは単独で実行します。
+
 ## 1. Hostの前提を準備する
 
 | 項目 | 内容 |
@@ -11,8 +21,9 @@ Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 Bridge、monitor、controlをDocker
 | この作業の入力成果物 | 同じ親ディレクトリへclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm` |
 | この作業のゴール | HostでNova5 Runtimeをbuildでき、Dockerを実行できる。 |
 
-macOSでは次のHost packageを準備します。
+macOSでは次のHost packageを準備します。Foundationの初期化にはCPython 3.12が必要です。
 
+実行するコマンド（通常のHost terminal）:
 ```bash
 brew install git ruby python@3.12 cmake glfw
 python3.12 --version
@@ -33,12 +44,14 @@ Ubuntu HostではC/C++ build環境、CPython 3.12、CMake、OpenGL／GLFW、Dock
 | この作業の入力成果物 | 前段で確認済みのHostコマンドと、clone済みの2リポジトリ |
 | この作業のゴール | Foundation、Forge、Runtimeの操作に使用する`host-hako`端末が開く。 |
 
+通常のHost terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で場所を確認してください。そこから次のコマンドだけを実行します。
+
+実行するコマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 source profiles/tool-env/enter-host-hako.bash
 ```
 
-新しく開いたshellで`pwd`を実行します。promptが`(host-hako) (hako)`で始まり、ディレクトリ末尾が`hakoniwa-business-pack`ならOKです。
+`host-hako`のプロンプトが出てから、新しく開いたshellで`pwd`を実行します。promptが`(host-hako) (hako)`で始まり、ディレクトリ末尾が`hakoniwa-business-pack`ならOKです。
 
 ## 3. FoundationとRuntime Recipeを準備する
 
@@ -49,6 +62,7 @@ source profiles/tool-env/enter-host-hako.bash
 | この作業の入力成果物 | clone済みリポジトリと、前段で確認済みのHostコマンド |
 | この作業のゴール | FoundationとNova5 Runtime Recipeの依存が`../work-host`へ準備され、doctorが成功する。 |
 
+実行するコマンド（`host-hako`、Composer repository root）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
@@ -56,8 +70,8 @@ python3.12 tools/recipe.py plan \
 python3.12 tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 
-python3.12 tools/workspace.py doctor
-python3.12 tools/recipe.py doctor \
+python tools/workspace.py doctor
+python tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
@@ -72,10 +86,11 @@ python3.12 tools/recipe.py doctor \
 | この作業の入力成果物 | Nova5 Model Forge Recipeと、前段で準備したFoundation |
 | この作業のゴール | `../work-host/model-forge/nova5/install/nova5.contact.xml`が生成される。 |
 
+実行するコマンド（`host-hako`、Composer repository root）:
 ```bash
-python3.12 tools/recipe.py plan \
+python tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
-python3.12 tools/recipe.py configure \
+python tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 
 cd ../hakoniwa-robot-arm
@@ -94,8 +109,10 @@ ls -l ../work-host/model-forge/nova5/install/nova5.contact.xml
 | この作業の入力成果物 | 起動済みDocker Engine／Docker Desktopと、本リポジトリのDockerfile |
 | この作業のゴール | `hakoniwa-arm-dev:jazzy` imageが生成される。 |
 
+新しい通常のHost terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
+
+実行するコマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 bash docker/create-docker-image.bash jazzy
 docker image inspect hakoniwa-arm-dev:jazzy --format '{{.RepoTags}}'
 ```

@@ -2,6 +2,10 @@
 
 [Host ROS 2連携ビルド](build.md)の完了が前提です。この構成では4端末を同時に使用します。
 
+手順: [一覧](../README.md) → [セットアップ](setup.md) → [ビルド](build.md) → **起動・動作確認**
+
+`host-hako`はFoundationの`python`を使用します。各`host-ros-*`端末は別の通常Host terminalから開始し、それぞれのprofileでROS 2環境を有効にします。`host-hako`の中からROS 2 profileを読み込まないでください。
+
 | 端末 | 実行するもの | 維持する状態 |
 | --- | --- | --- |
 | `host-hako` | Nova5 Runtime、MuJoCo Viewer、Host TCP Bridge | `RUNNING` |
@@ -18,6 +22,7 @@
 | この作業の入力成果物 | ROS 2用`launcher.json`、build済み`robot-arm-hakoniwa-asset`、生成済みROS binding |
 | この作業のゴール | Nova5 Runtime、Viewer、Host TCP Bridgeが`RUNNING`になる。 |
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py doctor
 python tools/recipe/nova5.py start
@@ -35,13 +40,16 @@ doctorの全項目が`[OK]`で、start後に`Nova5 demo is running in the backgr
 | この作業の入力成果物 | build済みROS 2 workspace、`activate-host-ros-bridge.bash`、生成済み`binding.json` |
 | この作業のゴール | ROS Bridgeが起動し、箱庭PDUとROS topicの変換を継続する。 |
 
+新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
+
+実行する確認コマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 ls -l ../work-host/profiles/activate-host-ros-bridge.bash
 ```
 
 profileのファイル情報が表示されれば続けます。`No such file or directory`なら実行を止め、[ROS 2連携用configure](build.md#1-ros-2連携用launcherを生成する)へ戻ります。
 
+実行するコマンド（`host-ros-bridge`にする通常のHost terminal）:
 ```bash
 source ../work-host/profiles/activate-host-ros-bridge.bash
 ls -l ../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
@@ -60,8 +68,10 @@ ros2 run hakoniwa_pdu_ros bridge \
 | この作業の入力成果物 | 起動中のRuntimeとROS Bridge、`activate-host-ros-monitor.bash`、build済みのサンプル用ROS 2ワークスペース |
 | この作業のゴール | `/pdu/joint_states`から`joint1`〜`joint6`の現在角度を継続受信する。 |
 
+新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
+
+実行するコマンド（`host-ros-monitor`にする通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 source ../work-host/profiles/activate-host-ros-monitor.bash
 source ../work-host/ros2-samples/install/setup.bash
 
@@ -69,7 +79,7 @@ ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 ```
 
-OKの場合は、次の形式のログが繰り返し表示されます。数値は実行ごとに変わります。
+期待されるログの例（貼り付けない）。数値は実行ごとに変わります。
 
 ```text
 [INFO] [...] [hakoniwa_arm_joint_state_monitor]: monitoring /pdu/joint_states
@@ -87,8 +97,10 @@ OKの場合は、次の形式のログが繰り返し表示されます。数値
 | この作業の入力成果物 | 起動中のRuntimeとROS Bridge、受信中のJointState monitor、`activate-host-ros-control.bash`、build済みのサンプル用ROS 2ワークスペース |
 | この作業のゴール | 6関節・4点のJointTrajectoryを送信し、Viewerとmonitorの両方で関節動作を確認する。 |
 
+新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
+
+実行するコマンド（`host-ros-control`にする通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 source ../work-host/profiles/activate-host-ros-control.bash
 source ../work-host/ros2-samples/install/setup.bash
 
@@ -97,7 +109,7 @@ ros2 run hakoniwa_arm_samples control \
   --topic /joint_trajectory --joints 6 --amplitude 0.15 --duration 2.0
 ```
 
-送信に成功すると、次の形式のログが表示されます。
+期待される送信ログの例（貼り付けない）:
 
 ```text
 [INFO] [...] [hakoniwa_arm_trajectory_sample]: published 4 points for 6 joints to /joint_trajectory
@@ -116,6 +128,7 @@ ros2 run hakoniwa_arm_samples control \
 
 先に`host-ros-control`、`host-ros-monitor`、`host-ros-bridge`をCtrl+Cで停止します。最後に`host-hako`で実行します。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py stop
 python tools/recipe/nova5.py status

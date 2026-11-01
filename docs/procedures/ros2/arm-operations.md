@@ -2,6 +2,8 @@
 
 この文書は、対応するRobot Modelで共通のROS 2操作を説明します。host-ros2、host+docker、docker-onlyの各手順は、Bridgeへ接続できる端末を用意するところまでを扱い、monitorとcontrolの意味・期待結果はこの文書を正本とします。
 
+[手順一覧](../README.md)に戻る。以下のコマンドは、選択した構成のROS 2 monitor／control端末で、基盤環境とサンプルの`setup.bash`を有効にしてから実行します。
+
 ## 入力とゴール
 
 - **入力**: RuntimeとHost側Bridgeが`RUNNING`であり、ROS Bridgeが対象bindingを使って起動していること。
@@ -12,6 +14,7 @@
 
 `monitor`は`/pdu/joint_states`から`sensor_msgs/msg/JointState`を受信し、`joint1=...`から`joint6=...`の形式で関節位置を表示します。これは、Runtimeが状態をPDUへ出力し、ROS BridgeがROS topicへ変換できていることを確認する操作です。
 
+実行するコマンド（ROS 2 monitor端末）:
 ```bash
 ros2 topic info /pdu/joint_states
 ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
@@ -25,6 +28,7 @@ ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
 
 サンプルのソース配置、箱庭単体版との違い、軌道の生成方法、変更時の再build条件は[JointTrajectoryサンプル](../../design/trajectory-control-samples.md)を参照してください。
 
+実行するコマンド（ROS 2 control端末）:
 ```bash
 ros2 topic info /joint_trajectory
 ros2 run hakoniwa_arm_samples control \
@@ -41,12 +45,23 @@ ros2 run hakoniwa_arm_samples control \
 
 `--amplitude`は小さな値から試してください。Robot Modelのjoint limitを超える目標を指定しないようにし、Viewerとmonitorを同時に確認します。関節名が連番でないRobot Modelでは、`--joints`の代わりに`--joint-names`へ実際の関節名を列挙します。
 
-任意の軌道JSONを送る場合は、`--joints`、`--joint-names`、`--amplitude`、`--duration`を付けずに実行します。
+任意の軌道JSONを送る場合は、`--joints`、`--joint-names`、`--amplitude`、`--duration`を付けずに実行します。事前に送信するJSONを用意してください。
 
+実行するコマンド（ROS 2 control端末。実行後にJSONの絶対パスを入力してEnter）:
 ```bash
-ros2 run hakoniwa_arm_samples control \
-  --topic /joint_trajectory \
-  --trajectory /absolute/path/to/my-trajectory.json
+printf '軌道JSONの絶対パス: '
+IFS= read -r TRAJECTORY_JSON
+```
+
+実行するコマンド（同じROS 2 control端末。指定したファイルの存在を確認してから送信）:
+```bash
+if test -f "$TRAJECTORY_JSON"; then
+  ros2 run hakoniwa_arm_samples control \
+    --topic /joint_trajectory \
+    --trajectory "$TRAJECTORY_JSON"
+else
+  printf '軌道JSONが見つかりません: %s\n' "$TRAJECTORY_JSON" >&2
+fi
 ```
 
 JSONの配置、形式、変更方法は[JointTrajectoryサンプル](../../design/trajectory-control-samples.md)を参照してください。

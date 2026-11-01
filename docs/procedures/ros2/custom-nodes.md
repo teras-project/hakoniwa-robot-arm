@@ -6,6 +6,8 @@
 
 `../work-host/ros2`はツールが管理する生成領域です。利用者のsource codeをその`src`として追加したり、`install`配下を直接編集したりしないでください。
 
+[手順一覧](../README.md)に戻る。このページは[Host ROS 2連携の動作確認](../host-ros2/operation.md)を終えたUbuntu Host用です。箱庭Workspaceの`host-hako`ではなく、通常のHost terminalからROS 2環境を有効にします。コマンドと出力例の区別は[手順の読み方](../conventions.md#コードブロックと端末の読み方)を参照してください。
+
 ## 1. 利用者用workspaceとpackageを作る
 
 | 項目 | 内容 |
@@ -15,8 +17,9 @@
 | この作業の入力成果物 | build済みの`../work-host/ros2/activate.bash` |
 | この作業のゴール | 利用者がGit管理できる`../ros2-user-ws/src/my_hakoniwa_arm`を作成する。 |
 
-箱庭側のROS 2 workspaceを有効にしてから、通常のROS 2 packageとして作成します。
+通常のHost terminalでRobot Arm repository rootへ移動し、`pwd`で確認してください。箱庭側のROS 2 workspaceを有効にしてから、通常のROS 2 packageとして作成します。
 
+実行するコマンド（通常のHost terminal）:
 ```bash
 source ../work-host/ros2/activate.bash
 mkdir -p ../ros2-user-ws/src
@@ -27,7 +30,7 @@ ros2 pkg create my_hakoniwa_arm \
   --dependencies rclpy sensor_msgs trajectory_msgs
 ```
 
-正常時は次の形式で表示されます。
+期待される出力例（貼り付けない）:
 
 ```text
 going to create a new package
@@ -55,8 +58,11 @@ nodeの実装、`setup.py`の`console_scripts`、`package.xml`は通常のament 
 
 必ず箱庭ROS 2基盤環境を先にsourceしてからcolconを実行します。
 
+前段のコマンドを実行済みなら`ros2-user-ws/src`にいます。次のコマンドでワークスペースのrootへ移動してbuildします。
+
+実行するコマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/ros2-user-ws
+cd ..
 source ../work-host/ros2/activate.bash
 colcon build --symlink-install
 source install/setup.bash
@@ -67,6 +73,7 @@ ros2 pkg executables my_hakoniwa_arm
 
 source codeを変更した後は、同じディレクトリで対象packageだけを再buildできます。
 
+実行するコマンド（同じHost terminal、`ros2-user-ws`のroot）:
 ```bash
 source ../work-host/ros2/activate.bash
 colcon build --symlink-install --packages-select my_hakoniwa_arm
@@ -83,8 +90,10 @@ colcon build --symlink-install --packages-select my_hakoniwa_arm
 
 箱庭側のrole profileを先にsourceし、その後に利用者用ワークスペースの`setup.bash`をsourceします。次は軌道送信nodeの例です。
 
+新しい通常のHost terminalでRobot Arm repository rootへ移動し、`pwd`で確認してから実行してください。
+
+実行するコマンド（`host-ros-control`にする通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 source ../work-host/profiles/activate-host-ros-control.bash
 source ../ros2-user-ws/install/setup.bash
 
@@ -93,6 +102,7 @@ ros2 run my_hakoniwa_arm my_node
 
 JointStateを読むnodeでは`activate-host-ros-monitor.bash`を使用します。sourceの順序は、常に箱庭ROS 2基盤環境、利用者用ROS 2ワークスペースの順です。
 
+環境の読み込み順（参照用。コマンドではない）:
 ```text
 箱庭ROS 2基盤環境: ../work-host/ros2/activate.bash
         ↓

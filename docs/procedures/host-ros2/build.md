@@ -2,6 +2,10 @@
 
 [Host ROS 2連携セットアップ](setup.md)でNova5 MJCFを生成してから実行します。この手順では、箱庭RuntimeとROS 2をTCPで接続する構成を生成します。
 
+手順: [一覧](../README.md) → [セットアップ](setup.md) → **ビルド** → [起動・動作確認](operation.md)
+
+`host-hako`ではFoundationの`python`でRuntimeをbuildします。ROS 2のbuildは別の通常Host terminalで`host-ros-build` profileを有効にし、システムの`/usr/bin/python3`を使用します。両環境を同じ端末で有効にしないでください。
+
 ## 1. ROS 2連携用Launcherを生成する
 
 | 項目 | 内容 |
@@ -13,6 +17,7 @@
 
 `--ros2-tcp`を付けることで、ROS 2用Launcher、binding、4種類のROS端末profileを生成します。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py configure \
   --ros2-tcp --environment --realtime-sync-cycle-msec 50
@@ -21,7 +26,7 @@ ls -l ../work-host/profiles/activate-host-ros-build.bash
 ls -l ../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp/ros/binding.json
 ```
 
-正常時は末尾と`ls`に次の内容が表示されます。
+期待される出力例（貼り付けない）:
 
 ```text
 Profiles        : ...activate-host-ros-build.bash, ...activate-host-ros-bridge.bash, ...
@@ -43,6 +48,7 @@ ROS 2 TCP       : enabled
 
 MuJoCo Viewerを使用する通常ビルドです。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py build
 ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-hakoniwa-asset
@@ -67,15 +73,16 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 
 この手順へ進む前に、手順1の`ls`で`activate-host-ros-build.bash`が表示されたことを確認してください。未確認の場合は手順1へ戻ります。
 
-新しい通常Host terminalで実行します。`/absolute/path/to/hakoniwa-robot-arm`は実際のclone先へ置き換えます。
+新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
 
+実行する確認コマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 ls -l ../work-host/profiles/activate-host-ros-build.bash
 ```
 
 profileのファイル情報が表示されれば続けます。`No such file or directory`ならprofileをsourceせず、手順1へ戻ります。
 
+実行するコマンド（`host-ros-build`にする通常のHost terminal）:
 ```bash
 source ../work-host/profiles/activate-host-ros-build.bash
 
@@ -84,7 +91,7 @@ source ../work-host/profiles/activate-host-ros-build.bash
 /usr/bin/python3 tools/recipe/ros2_workspace.py doctor
 ```
 
-Ubuntu 22.04／Humbleでは`--ros-distro humble`を指定します。正常時はbuildログの末尾に次の形式で表示され、続くdoctorがerrorなく終了します。
+Ubuntu 22.04／Humbleでは`--ros-distro humble`を指定します。期待されるbuildログの例（貼り付けない）。続くdoctorがerrorなく終了すればOKです。
 
 ```text
 ROS workspace installed: /.../work-host/ros2
@@ -104,6 +111,7 @@ source /.../work-host/ros2/activate.bash
 
 サンプルは箱庭基盤ではなくROS 2アプリケーションなので、標準のcolconでbuildします。最初に箱庭ROS 2基盤環境をsourceします。
 
+実行するコマンド（`host-ros-build`）:
 ```bash
 source ../work-host/ros2/activate.bash
 
@@ -118,7 +126,7 @@ source ../work-host/ros2-samples/install/setup.bash
 ros2 pkg executables hakoniwa_arm_samples
 ```
 
-正常時はcolconのsummaryに`1 package finished`が表示され、最後に次の2 executableが表示されます。
+期待される出力例（貼り付けない）。colconのsummaryに`1 package finished`が表示され、最後に次の2 executableが表示されます。
 
 ```text
 hakoniwa_arm_samples control

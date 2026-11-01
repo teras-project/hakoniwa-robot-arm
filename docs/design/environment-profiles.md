@@ -91,18 +91,32 @@ source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
 
 ### 利用方法
 
-通常のHost terminalで、生成されたprofileをsourceします。
+通常のHost terminalで、生成されたprofileをsourceします。箱庭Workspaceを開く場合は次だけを実行し、子shellの`(host-hako) (hako)` promptを確認します。
 
 ```bash
-# 箱庭Workspaceを開く。子shellのpromptは (host-hako) (hako) ... となる。
 source "$HAKONIWA_WORK_DIR/profiles/activate-host-hako.bash"
+```
 
-# ROS 2 workspaceをbuildする通常Host terminalで実行する。
+ROS 2 workspaceをbuildする場合は、別の通常Host terminalで次を実行します。
+
+```bash
 source "$HAKONIWA_WORK_DIR/profiles/activate-host-ros-build.bash"
+```
 
-# ROS 2 workspace build後、用途ごとに別の通常Host terminalで実行する。
+ROS 2 workspaceのbuild後、Bridge、monitor、controlにはそれぞれ別の通常Host terminalを開き、用途に対応する次のコマンドを**一つだけ**実行します。
+
+Bridge端末:
+```bash
 source "$HAKONIWA_WORK_DIR/profiles/activate-host-ros-bridge.bash"
+```
+
+monitor端末:
+```bash
 source "$HAKONIWA_WORK_DIR/profiles/activate-host-ros-monitor.bash"
+```
+
+control端末:
+```bash
 source "$HAKONIWA_WORK_DIR/profiles/activate-host-ros-control.bash"
 ```
 

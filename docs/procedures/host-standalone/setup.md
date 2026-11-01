@@ -2,6 +2,10 @@
 
 Nova5 RuntimeとMuJoCo ViewerをHost上で実行し、ROS 2を使わずに箱庭単体で動作確認するための準備手順です。
 
+手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
+
+通常のHost terminalで前提ソフトウェアを用意し、`host-hako`でFoundation、Forge、Runtimeを操作します。初回のFoundation構築にはCPython 3.12を使用し、構築後はFoundationのvenvの`python`を使用します。ROS 2環境や別のvenvは使いません。コードブロックと端末切替は[手順の読み方](../conventions.md#コードブロックと端末の読み方)を参照してください。
+
 PS5コントローラー（DualSense）で操作する場合は、[箱庭単体・ゲームパッドセットアップ](setup-gamepad.md)へ進んでください。
 
 各手順の直後に正常時の出力例とNG条件を示します。実際のログを照合し、NG条件に該当した場合はその段階で止めてください。
@@ -15,8 +19,9 @@ PS5コントローラー（DualSense）で操作する場合は、[箱庭単体�
 | この作業の入力成果物 | 同じ親ディレクトリへclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm` |
 | この作業のゴール | Nova5 Runtimeのconfigureとbuildに必要なHostコマンドが使用できる。 |
 
-UbuntuへHost用パッケージを導入します。
+UbuntuへHost用パッケージを導入します。FoundationにはCPython 3.12とそのvenv作成機能が必要です。
 
+実行するコマンド（通常のHost terminal）:
 ```bash
 sudo apt update
 sudo apt install -y \
@@ -40,18 +45,21 @@ cmake --version
 
 `/absolute/path/to/hakoniwa-robot-arm`は、実際にcloneしたディレクトリへ置き換えます。
 
+通常のHost terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してください。次のコマンドだけを実行し、新しいプロンプトを待ちます。
+
+実行するコマンド（通常のHost terminal）:
 ```bash
-cd /absolute/path/to/hakoniwa-robot-arm
 source profiles/tool-env/enter-host-hako.bash
 ```
 
-新しく開いたshellで確認します。
+新しく開いた`host-hako` shellで確認します。
 
+実行するコマンド（`host-hako`）:
 ```bash
 pwd
 ```
 
-正常時は次の形式になります。
+期待される出力例（貼り付けない）:
 
 ```text
 /.../hakoniwa-business-pack
@@ -70,6 +78,7 @@ promptが`(host-hako) (hako)`で始まり、ディレクトリ末尾が`hakoniwa
 
 `plan`はファイルを変更せず、Recipeを解決できることを事前確認します。基本手順では内容を利用者が判断する必要はなく、コマンドの成否だけを確認します。
 
+実行するコマンド（`host-hako`、Composer repository root）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
@@ -77,16 +86,17 @@ python3.12 tools/recipe.py plan \
 
 先頭に`Recipe plan:`が表示され、`error:`で終了しなければOKです。
 
+実行するコマンド（`host-hako`、Composer repository root）:
 ```bash
 python3.12 tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 
-python3.12 tools/workspace.py doctor
-python3.12 tools/recipe.py doctor \
+python tools/workspace.py doctor
+python tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
-正常時は、doctorの末尾を含む出力が次の状態になります。
+期待されるdoctorの出力例（貼り付けない）:
 
 ```text
 [OK] Foundation Python and Hakoniwa modules are workspace-owned.
@@ -108,11 +118,12 @@ Foundation: SATISFIED
 
 Forge Recipeを解決し、変換に必要なツールとPython packageを準備します。
 
+実行するコマンド（`host-hako`、Composer repository root）:
 ```bash
-python3.12 tools/recipe.py plan \
+python tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 
-python3.12 tools/recipe.py configure \
+python tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml
 ```
 
@@ -129,13 +140,14 @@ python3.12 tools/recipe.py configure \
 
 `host-hako`でRobot Arm repositoryへ移動して実行します。
 
+実行するコマンド（`host-hako`、Robot Arm repository rootへ移動する）:
 ```bash
 cd ../hakoniwa-robot-arm
 python tools/recipe/nova5.py forge
 ls -l ../work-host/model-forge/nova5/install/nova5.contact.xml
 ```
 
-正常時はForgeログに次の出力先が表示され、最後の`ls`で同じファイルの情報を確認できます。
+期待されるForgeログの出力先の例（貼り付けない）。最後の`ls`で同じファイルの情報を確認できます。
 
 ```text
 Nova5 output     : /.../work-host/model-forge/nova5/install

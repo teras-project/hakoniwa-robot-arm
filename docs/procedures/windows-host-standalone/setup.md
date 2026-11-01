@@ -2,6 +2,10 @@
 
 Nova5 RuntimeとMuJoCo ViewerをWindows Host上でnative実行し、ROS 2を使わずに箱庭単体で動作確認するための準備手順です。PowerShellで実行します。
 
+端末: Windows HostのPowerShell。clone時は両repositoryの親ディレクトリ、以降は`hakoniwa-business-pack`のrepository rootを使用します。`powershell`ブロックは実行コマンドです。表示結果は確認用で、コマンドとしてコピーしません。
+
+[実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
+
 Windows共通の前提とvcpkgの準備は、hakoniwa-business-packの
 [Getting Started「4.2 Windows 11（x64）」](https://github.com/hakoniwalab/hakoniwa-business-pack/blob/main/docs/getting-started-ja.md#42-windows-11x64)
 を正とします。この文書では、その手順をNova5用のRecipe IDと実行順へ具体化します。
@@ -20,6 +24,8 @@ Windows共通の前提とvcpkgの準備は、hakoniwa-business-packの
 
 Visual Studioに同梱されたProgram Files配下のvcpkgではなく、書き込み可能な場所へcloneしたvcpkgを使用します。以下は`C:\hakoniwa\vcpkg`へ準備済みの場合の例です。
 
+実行するコマンド（Windows Host PowerShell。vcpkgのパスは自分の環境に合わせる）:
+
 ```powershell
 $vcpkgRoot = 'C:\hakoniwa\vcpkg'
 & "$vcpkgRoot\vcpkg.exe" install `
@@ -37,20 +43,30 @@ BoostはEndpointとBridge、GLFWはMuJoCo Viewerのbuildに必要です。Ruby�
 
 ## 2. checkoutを準備する
 
-同じ親ディレクトリへBusiness Packと本リポジトリをcloneします。以降のコマンド例では、両者の親を`C:\work\hakoniwa-robot-arm-workspace`とします。
+同じ親ディレクトリへBusiness Packと本リポジトリをcloneします。例では両者の親を`C:\work\hakoniwa-robot-arm-workspace`とします。親ディレクトリを用意し、その場所でPowerShellを開いて`Get-Location`の結果を確認してから実行してください。
 
 ```powershell
-Set-Location C:\work\hakoniwa-robot-arm-workspace
+Get-Location
+```
+
+親ディレクトリでなければ、正しい場所でPowerShellを開き直してください。確認できたら実行します。
+
+```powershell
 git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
 git clone https://github.com/teras-project/hakoniwa-robot-arm.git
-Set-Location .\hakoniwa-business-pack
 ```
 
 その他の依存リポジトリはRecipeが必要に応じて取得します。
 
 ## 3. vcpkgをFoundationへ登録する
 
-以降は`hakoniwa-business-pack`のrepository rootで実行します。`recipe.py configure`より前に、Nova5 Recipe用のFoundation toolchainとしてvcpkgを保存します。
+以降は`hakoniwa-business-pack`のrepository rootでPowerShellを開き、`Get-Location`の結果を確認してから実行します。`recipe.py configure`より前に、Nova5 Recipe用のFoundation toolchainとしてvcpkgを保存します。
+
+```powershell
+Get-Location
+```
+
+`hakoniwa-business-pack`のrepository rootであることを確認してから実行します。
 
 ```powershell
 $vcpkgRoot = 'C:\hakoniwa\vcpkg'
@@ -68,6 +84,8 @@ Get-Content .\work\foundation\config\toolchain.json
 
 PowerShellでは対話Bash profileを使用せず、Workspaceの非対話`run`操作を使用します。
 
+実行するコマンド（Windows Host PowerShell、`hakoniwa-business-pack`のrepository root）:
+
 ```powershell
 python tools\workspace.py run -- python tools\recipe.py plan `
   --recipe ..\hakoniwa-robot-arm\recipes\nova5\nova5-joint-trajectory-control.yaml
@@ -83,6 +101,8 @@ python tools\workspace.py run -- python tools\recipe.py doctor `
 Foundationと各依存が`SATISFIED`になればOKです。生成物は既定で`hakoniwa-business-pack\work\`以下へ配置されます。
 
 ## 5. Model Forge Recipeを準備する
+
+実行するコマンド（Windows Host PowerShell、`hakoniwa-business-pack`のrepository root）:
 
 ```powershell
 python tools\workspace.py run -- python tools\recipe.py configure `

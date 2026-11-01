@@ -4,6 +4,10 @@
 
 PS5コントローラー（DualSense）で操作する場合は、このページの代わりに[箱庭単体・ゲームパッドの起動・操作](operation-gamepad.md)を使用してください。
 
+手順: [一覧](../README.md) → [セットアップ](setup.md) → [ビルド](build.md) → **起動・動作確認**
+
+すべてのコマンドは`host-hako`のRobot Arm repository rootで実行し、Foundation管理の`python`を使用します。
+
 ## 1. 箱庭単体デモを起動する
 
 | 項目 | 内容 |
@@ -17,12 +21,14 @@ PS5コントローラー（DualSense）で操作する場合は、このペー�
 
 送信プログラム、軌道JSON、設定変更、任意の外部JSONを直接送信する方法は[JointTrajectoryサンプル](../../design/trajectory-control-samples.md)を参照してください。
 
+実行するコマンド（`host-hako`。全項目が`[OK]`か確認する）:
 ```bash
 python tools/recipe/nova5.py doctor
 ```
 
 すべての行が`[OK]`なら起動します。`[NG]`が一つでもあれば起動しません。
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py start
 python tools/recipe/nova5.py status
@@ -45,6 +51,7 @@ python tools/recipe/nova5.py status
 | この作業の入力成果物 | 動作確認済みで`RUNNING`のNova5 Runtime |
 | この作業のゴール | Nova5 Runtimeが停止し、状態が`TERMINATED`になる。 |
 
+実行するコマンド（`host-hako`）:
 ```bash
 python tools/recipe/nova5.py stop
 python tools/recipe/nova5.py status

@@ -2,6 +2,16 @@
 
 Nova5 Runtime、MuJoCo、箱庭Core、TCP Bridge、ROS 2 Bridge、monitor、controlを同じUbuntu Container内で実行するための準備手順です。HostのFoundationやROS 2は使用しません。
 
+手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
+
+| 端末 | 実行場所・Python環境 |
+| --- | --- |
+| 通常のHost terminal | checkout、Docker image、Containerの起動。 |
+| `docker-hako` | Container内の箱庭Workspace。初回のFoundation構築はCPython 3.12、構築後はFoundationの`python`を使用。 |
+| `docker-ros-*` | 同じContainerの別のshell。箱庭Workspaceには入らず、ROS 2専用環境を使用。 |
+
+端末が切り替わるコマンドは単独で実行します。[手順の読み方](../conventions.md#コードブロックと端末の読み方)も参照してください。
+
 ## 1. Hostの前提とDocker imageを準備する
 
 | 項目 | 内容 |
@@ -11,6 +21,7 @@ Nova5 Runtime、MuJoCo、箱庭Core、TCP Bridge、ROS 2 Bridge、monitor、cont
 | この作業の入力成果物 | GitとDocker Engine／Docker Desktopを使用できるHost |
 | この作業のゴール | 2リポジトリが兄弟配置され、`hakoniwa-arm-dev:jazzy` imageが生成される。 |
 
+実行するコマンド（通常のHost terminal。checkout用workspaceをまだ作っていない場合のみ）:
 ```bash
 mkdir -p hakoniwa-robot-arm-workspace
 cd hakoniwa-robot-arm-workspace
@@ -34,20 +45,22 @@ Dockerのversionと`hakoniwa-arm-dev:jazzy`が表示されればOKです。Humbl
 | この作業の入力成果物 | 作成済みDocker imageと、兄弟配置された2リポジトリ |
 | この作業のゴール | Hostのcheckout用ディレクトリを`/workspace`へmountしたContainerが起動する。 |
 
-macOS Docker Desktop、CI、画面のない環境ではheadless用として起動します。
+macOS Docker Desktop、CI、画面のない環境ではheadless用として起動します。いずれか一方のブロックだけを実行し、Container shellのプロンプトを待ってください。
 
+実行するコマンド（通常のHost terminal、headless）:
 ```bash
 HAKONIWA_DOCKER_GUI=off bash docker/run.bash jazzy
 ```
 
-Linux HostでX11 Viewerを使用する場合だけ、Host側で接続を許可してGUIを有効にします。
+Linux HostでX11 Viewerを使用する場合だけ、Host側で接続を許可してGUIを有効にします。このブロックはheadlessの代わりに実行します。
 
+実行するコマンド（通常のHost terminal、X11）:
 ```bash
 xhost +si:localuser:root
 HAKONIWA_DOCKER_GUI=on bash docker/run.bash jazzy
 ```
 
-起動ログに次が表示され、Container shellが開けばOKです。
+期待される起動ログの例（貼り付けない）。Container shellが開けばOKです。
 
 ```text
 Mount: ... -> /workspace
@@ -57,7 +70,7 @@ Workdir: /workspace/work-docker-jazzy; Foundation mmap: tmpfs
 
 このshellを終了するとContainerが削除されるため、以後`docker-hako`端末として最後まで開いたままにします。
 
-標準の生成先は次です。
+標準の生成先（参照用。コマンドではない）:
 
 ```text
 箱庭work:     /workspace/work-docker-jazzy
@@ -75,11 +88,12 @@ ROS 2成果物: /workspace/ros2-work-jazzy
 | この作業の入力成果物 | `run.bash`が設定した`HAKONIWA_COMPOSER`と`HAKONIWA_WORK_DIR` |
 | この作業のゴール | Container内でFoundation、Forge、Runtimeを操作する箱庭Workspaceが開く。 |
 
+実行するコマンド（Container shell `docker-hako`。新しいプロンプトを確認してから）:
 ```bash
 python3.12 tools/workspace.py enter --workdir "$HAKONIWA_WORK_DIR"
 ```
 
-child shellのpromptに`(hako)`が付き、`pwd`の末尾がComposer repository名ならOKです。
+child shellのpromptに`(hako)`が付いてから、別の入力として`pwd`を実行してください。ディレクトリ末尾がComposer repository名ならOKです。
 
 ## 4. FoundationとRuntime Recipeを準備する
 
@@ -90,14 +104,15 @@ child shellのpromptに`(hako)`が付き、`pwd`の末尾がComposer repository�
 | この作業の入力成果物 | 前段で開いた箱庭Workspaceと、mount済みRobot Arm repository |
 | この作業のゴール | FoundationとNova5 Runtime Recipeの依存が準備され、doctorが成功する。 |
 
+実行するコマンド（`docker-hako`の`(hako)` shell）:
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 python3.12 tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 
-python3.12 tools/workspace.py doctor
-python3.12 tools/recipe.py doctor \
+python tools/workspace.py doctor
+python tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
@@ -112,6 +127,7 @@ python3.12 tools/recipe.py doctor \
 | この作業の入力成果物 | Nova5 Model Forge Recipeと、準備済みFoundation |
 | この作業のゴール | `$HAKONIWA_WORK_DIR/model-forge/nova5/install/nova5.contact.xml`が生成される。 |
 
+実行するコマンド（`docker-hako`の`(hako)` shell）:
 ```bash
 python tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-model-forge.yaml

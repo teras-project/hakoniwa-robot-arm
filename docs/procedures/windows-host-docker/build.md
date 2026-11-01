@@ -2,9 +2,25 @@
 
 [Windows host+Dockerセットアップ](setup.md)の完了後に実行します。Host側はPowerShell、Container内はBashを使用します。ROS 2 distributionは動作確認済みのJazzyを使用します。
 
+| 端末 | 環境・実行ディレクトリ | 手順 |
+| --- | --- | --- |
+| Host PowerShell | `hakoniwa-business-pack`のrepository root | 1～2 |
+| 新しいHost PowerShell（`docker-ros-bridge`を起動） | `hakoniwa-robot-arm`のrepository root | 3～4 |
+| `docker-ros-bridge` | Container Bash、`/workspace/hakoniwa-robot-arm` | 5 |
+
+`powershell`・`bash`ブロックはそれぞれの端末で実行するコマンドです。表示結果は確認用で、コマンドとしてコピーしません。
+
+[実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
+
 ## 1. Host側のROS 2 TCP構成を生成する
 
-`hakoniwa-business-pack`のrepository rootで実行します。
+`hakoniwa-business-pack`のrepository rootで`Get-Location`を確認してから実行します。
+
+```powershell
+Get-Location
+```
+
+`hakoniwa-business-pack`のrepository rootであることを確認してから実行します。
 
 ```powershell
 $env:HAKONIWA_ROS2_TCP_HOST = 'host.docker.internal'
@@ -35,7 +51,13 @@ doctorの全項目が`[OK]`ならHost側は完了です。
 
 ## 3. ROS 2 Jazzy imageを作成する
 
-新しいPowerShellを開き、`hakoniwa-robot-arm`のrepository rootで実行します。Bash wrapperを介さずDocker CLIを直接使用します。
+新しいPowerShellを`hakoniwa-robot-arm`のrepository rootで開き、`Get-Location`を確認してから実行します。Bash wrapperを介さずDocker CLIを直接使用します。
+
+```powershell
+Get-Location
+```
+
+`hakoniwa-robot-arm`のrepository rootであることを確認してから実行します。
 
 ```powershell
 docker build `
@@ -51,7 +73,9 @@ docker image inspect hakoniwa-arm-dev:jazzy `
 
 ## 4. ROS 2 Containerを起動する
 
-同じPowerShellで、checkoutの親と生成済みTCP設定を絶対パスへ解決してContainerを起動します。この端末を以後`docker-ros-bridge`として使用します。
+同じHost PowerShellで、checkoutの親と生成済みTCP設定を絶対パスへ解決してContainerを起動します。この端末を以後`docker-ros-bridge`として使用します。
+
+Host PowerShellで実行:
 
 ```powershell
 $workspaceRoot = (Resolve-Path ..).Path
@@ -74,11 +98,11 @@ docker run --rm -it `
   hakoniwa-arm-dev:jazzy bash
 ```
 
-Containerのpromptが表示されればOKです。このshellを終了するとContainerは削除されるため、動作確認が終わるまで開いたままにします。
+ContainerのBash promptが表示されるまで待ってください。このshellを終了するとContainerは削除されるため、動作確認が終わるまで開いたままにします。
 
 ## 5. ROS 2 Bridgeとサンプルをbuildする
 
-`docker-ros-bridge`のContainer shellで実行します。
+promptが表示された`docker-ros-bridge`のContainer Bashで実行:
 
 ```bash
 cd /workspace/hakoniwa-robot-arm
