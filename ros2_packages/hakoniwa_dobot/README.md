@@ -26,6 +26,13 @@ MoveIt の実行試験と完全な Dobot API 互換は次段階です．
 範囲外角度/NaN/Inf/不正なパラメータも拒否します．未有効時は `res=-3`，不正値は `res=-1`．
 これらは初版の対応範囲のエラーであり，Dobot の全エラー体系の再現ではありません．
 
+正常系の結合判定では，`ServoJ` の `res=0` を指令の受理とみなし，到達完了とは区別します．
+到達は指定した `t` の経過後に `GetAngle` で別途確認します．`GetAngle` の
+`res=0` は処理時に観測した6軸の角度を返しますが，ROS応答には観測時刻が含まれません．
+`Stop` の `res=0` は物理ステップでの軌道破棄・姿勢保持を反映した応答であり，
+その後の `GetAngle` を一定時間比較して保持を確認します．通信が切れた場合の
+非常停止や実機の物理的な停止時間は，この契約には含めません．
+
 箱庭の内部角度と JointState は rad です．停止・無効時の姿勢保持はブレーキの近似で，
 実機のブレーキ・衝突安全機能や加減速制約を再現するものではありません．
 
@@ -33,10 +40,12 @@ MoveIt の実行試験と完全な Dobot API 互換は次段階です．
 
 - `hakoniwa-robot-arm`: C++ サービス処理・専用 Asset，ROS launch / 同時配送，設定生成ツール．
 - `hakoniwa-robot-runtime`: `ManifestFactoryConfig.configure_runtime` で標準
-  RuntimeFactory に Source / Controller / Publisher を追加し，指定した manifest の
+  RuntimeFactory に Source / Controller / Request Publisher を追加し，指定した manifest の
   既定制御入力のみ置き換えます．Plant，Runner，JointState 出力は共通の構成です．
-  TCP/PDU-RPC は別スレッドで受信し，CommandSource が毎ステップ一要求を取得，
-  Controller が制御を更新，Plant 更新後に Publisher が応答を送信します．
+  TCP/PDU-RPC は別スレッドで受信し，容量制限付き FIFO から CommandSource が
+  毎ステップ一要求を取得，Controller が制御を更新，Plant 更新後に
+  Request Publisher が要求 ID と選択結果を確認して応答します．
+  通常の JointState Publisher と違い，physics substep でも応答します．
 - `hakoniwa-pdu-ros`: Service / Topic Bridge の CLI が ROS remapping 引数を受け付けるための修正．
 - Dobot リポジトリは変更しません．
 
@@ -263,23 +272,45 @@ ros2 service call /hakoniwa/dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/Ge
 検証済み:
 
 - 公式 .srv から9サービスの PDU型・offset を生成．C++ converter のコンパイル．
-- 本番 `ServoController` / `RpcBoundary` と本物の MuJoCo を使う headless 試験．
+- 本番 `CommandSource` / `Controller` / `Publisher` と本物の MuJoCo を使う headless 試験．
   TCP/PDU-RPC 経由で無効時の拒否，5°移動，途中停止，姿勢保持，次の移動，無効化を確認．
 - 実測例: 途中 1.960°，Stop直後 1.963°，0.7秒後 1.965°，次指令で 5.000°．
+- macOS 上の Nova5 Native Asset と Docker 内の ROS 2 Jazzy を接続し，
+  `backend:=virtual` の9サービスを起動．公式 `dobot_msgs_v4/srv/*` から
+  有効化，`ServoJ`，`GetAngle`，`Stop`，再移動，無効化を確認．
+  途中 1.955°，Stop直後 1.982°，0.7秒後 1.969°，
+  再移動指令の受理直後 1.970°，1.3秒後 5.002°（目標5°，`t=1`）．
+  停止前後の保持判定は0.7秒で角度差0.2°未満，到達判定は目標との差0.2°以内．
+- 改修後の `tools/dobot/virtual_ros_roundtrip.py` でも全9サービス，
+  停止・再移動を確認．Core reset 後も無効モードから現在姿勢+5°を操作可能．
+- 物理ステップ停止中のサービス要求は期限切れになり，キュー上の要求に
+  cancel 通知が届くことを確認．応答がない場合は ROS client 側でも期限を設けます．
 - C++ の補間・入力検査・取消，Python の設定と配送を試験．
 - Native main と Runtime factory 変更の C++ 構文検査．
 - 既存の ROS 接続設定/軌道ファイルテスト5件．
 
 未検証:
 
-- この環境には ROS 2 と Foundation がないため，colcon，実ROS launch/CLI，
-  完成した Nova5 Asset と Foundation/Launcher の結合，Nova5 の実機同時運転．
+- macOS host には ROS 2 がないため，Ubuntu host-ros2 上での Asset・ROS の
+  同一ホスト起動，host 側 colcon と Launcher を含む結合，Nova5 の実機同時運転．
+  Docker から macOS への接続試験を host-ros2 の検証と同一視しません．
+- Core の `stop`/`start` 後に同じ headless Asset の物理ステップが再開することは
+  確認できませんでした．これは Viewer の一時停止とは異なり，継続運転の
+  検証には Asset の再起動を使用します．
 - headless 試験は独立した6軸ヒンジモデルを使っており，Nova5 のモデル精度検証ではありません．
 
 Python の試験:
 
 ```bash
 PYTHONPATH=ros2_packages/hakoniwa_dobot python3 -m pytest -q tools/dobot/test
+```
+
+`backend:=virtual` の ROS 2 Jazzy と Native Asset を起動した後，**実機 driver が
+同じ ROS domain にいないことを確認**してから結合試験を実行します．初期姿勢を読み，
+J1 のみ相対+5°を指令します．実機・`backend:=both` では実行しないでください．
+
+```bash
+python3 tools/dobot/virtual_ros_roundtrip.py --confirm-virtual
 ```
 
 `tools/dobot/native_smoke.cpp` と `test/native_roundtrip.py` は headless TCP試験の本体です．

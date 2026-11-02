@@ -1,8 +1,9 @@
 #pragma once
 #include "servo_model.hpp"
 #include "runtime/source/command_source.hpp"
+#include "runtime/source/non_lockstep_request_queue.hpp"
 #include "runtime/controller/controller.hpp"
-#include "runtime/publisher/state_publisher.hpp"
+#include "runtime/publisher/request_publisher.hpp"
 #include "hakoniwa/pdu/rpc/rpc_service_helper.hpp"
 #include <chrono>
 #include <deque>
@@ -111,8 +112,10 @@ inline void observe(ServoModel& model, const rt::RobotState& state) {
 class DobotRpcChannel final {
 public:
     struct Reply {
+        std::uint64_t token;
         rpc::RpcMuxRequest request;
         int result;
+        int transport_result_code;
     };
 
     DobotRpcChannel(const std::string& services, const std::string& endpoints,
@@ -131,10 +134,7 @@ public:
     std::optional<rpc::RpcMuxRequest> take() {
         std::lock_guard lock(mutex_);
         if (error_) std::rethrow_exception(error_);
-        if (requests_.empty()) return std::nullopt;
-        auto request = std::move(requests_.front());
-        requests_.pop_front();
-        return request;
+        return requests_.try_take();
     }
 
     void stage(std::uint64_t token, rpc::RpcMuxRequest request) {
@@ -146,8 +146,22 @@ public:
         auto request = pending_.find(token);
         if (request == pending_.end())
             throw std::runtime_error("Unknown Dobot RPC request token");
-        replies_.push_back({std::move(request->second), result});
+        replies_.push_back({token, std::move(request->second), result,
+            rpc::HAKO_SERVICE_RESULT_CODE_OK});
         pending_.erase(request);
+    }
+
+    void enqueue_rejection(std::uint64_t token, int result_code) {
+        auto request = pending_.find(token);
+        if (request == pending_.end())
+            throw std::runtime_error("Unknown Dobot RPC request token");
+        replies_.push_back({token, std::move(request->second), 0, result_code});
+        pending_.erase(request);
+    }
+
+    void enqueue_invalid(rpc::RpcMuxRequest request) {
+        replies_.push_back({0, std::move(request), 0,
+            rpc::HAKO_SERVICE_RESULT_CODE_INVALID});
     }
 
     std::deque<Reply> take_replies() {
@@ -158,30 +172,79 @@ public:
 
     rpc::RpcServicesMuxServer& server() noexcept { return server_; }
 
+    void cancel_outstanding() noexcept {
+        try {
+            std::vector<rpc::RpcMuxRequest> requests;
+            {
+                std::lock_guard lock(mutex_);
+                ++generation_;
+                requests = requests_.drain();
+            }
+            for (auto& [token, request] : pending_) {
+                (void)token;
+                requests.push_back(std::move(request));
+            }
+            pending_.clear();
+            for (auto& reply : replies_) requests.push_back(std::move(reply.request));
+            replies_.clear();
+            for (const auto& request : requests) {
+                rpc::PduData response;
+                if (!server_.create_reply_buffer(request, rpc::HAKO_SERVICE_STATUS_ERROR,
+                        rpc::HAKO_SERVICE_RESULT_CODE_CANCELED, response)
+                    || !server_.send_reply(request, response))
+                    throw std::runtime_error("Dobot RPC reset cancellation failed");
+            }
+        } catch (const std::exception& error) {
+            std::cerr << "Dobot RPC reset failed: " << error.what() << std::endl;
+            std::lock_guard lock(mutex_);
+            error_ = std::current_exception();
+        }
+    }
+
 private:
+    static bool same_request(const rpc::RpcMuxRequest& a,
+                             const rpc::RpcMuxRequest& b) {
+        return a.connection_id == b.connection_id
+            && a.request.header.request_id == b.request.header.request_id
+            && a.request.header.client_name == b.request.header.client_name
+            && a.request.header.service_name == b.request.header.service_name;
+    }
+
     void receive(std::stop_token stop) noexcept {
         try {
             while (!stop.stop_requested()) {
-                bool full;
+                std::uint64_t generation;
                 {
                     std::lock_guard lock(mutex_);
-                    full = requests_.size() >= 64;
-                }
-                if (full) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    continue;
+                    generation = generation_;
                 }
                 rpc::RpcMuxRequest incoming;
                 const auto event = server_.poll(incoming);
                 if (event == rpc::ServerEventType::REQUEST_CANCEL) {
+                    (void)requests_.remove_if([&](const auto& request) {
+                        return same_request(request, incoming);
+                    });
                     rpc::PduData reply;
                     if (!server_.create_reply_buffer(incoming, rpc::HAKO_SERVICE_STATUS_DONE,
                             rpc::HAKO_SERVICE_RESULT_CODE_CANCELED, reply)
                         || !server_.send_cancel_reply(incoming, reply))
                         throw std::runtime_error("RPC cancel reply failed");
-                } else if (event != rpc::ServerEventType::NONE) {
-                    std::lock_guard lock(mutex_);
-                    requests_.push_back(std::move(incoming));
+                } else if (event == rpc::ServerEventType::REQUEST_IN) {
+                    bool queued = false;
+                    bool stale = false;
+                    {
+                        std::lock_guard lock(mutex_);
+                        stale = generation != generation_;
+                        if (!stale) queued = requests_.try_push(incoming);
+                    }
+                    if (!queued) {
+                        rpc::PduData reply;
+                        if (!server_.create_reply_buffer(incoming, rpc::HAKO_SERVICE_STATUS_ERROR,
+                                stale ? rpc::HAKO_SERVICE_RESULT_CODE_CANCELED
+                                      : rpc::HAKO_SERVICE_RESULT_CODE_BUSY, reply)
+                            || !server_.send_reply(incoming, reply))
+                            throw std::runtime_error("RPC unavailable reply failed");
+                    }
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
@@ -195,7 +258,8 @@ private:
     rpc::RpcServicesMuxServer server_;
     std::jthread worker_;
     std::mutex mutex_;
-    std::deque<rpc::RpcMuxRequest> requests_;
+    std::uint64_t generation_ {0};
+    rt::NonLockstepRequestQueue<rpc::RpcMuxRequest> requests_ {64};
     std::unordered_map<std::uint64_t, rpc::RpcMuxRequest> pending_;
     std::deque<Reply> replies_;
     std::exception_ptr error_;
@@ -234,7 +298,13 @@ public:
         if (!request) return {nullptr, {std::string(id()), rt::ComponentState::WaitingForInput, {}}};
         if (sequence_ == std::numeric_limits<std::uint64_t>::max())
             throw std::runtime_error("Dobot RPC sequence exhausted");
-        auto command = decode(*request);
+        DobotCommand command;
+        try {
+            command = decode(*request);
+        } catch (const std::exception& error) {
+            channel_->enqueue_invalid(std::move(*request));
+            return {nullptr, {std::string(id()), rt::ComponentState::Degraded, error.what()}};
+        }
         command.token = ++sequence_;
         auto input = std::make_shared<DobotRpcInput>(
             rt::ControllerInputMetadata{std::string(id()), sequence_,
@@ -242,8 +312,8 @@ public:
         channel_->stage(sequence_, std::move(*request));
         return {std::move(input), {std::string(id()), rt::ComponentState::Ready, {}}};
     }
-    // Keep tokens unique across resets until outstanding responses are sent.
-    void reset() noexcept override {}
+    // Keep tokens unique across resets; stale queued calls must not execute afterward.
+    void reset() noexcept override { channel_->cancel_outstanding(); }
 private:
     template<class Wire, class Request>
     Request read(rpc::RpcMuxRequest& incoming) {
@@ -346,17 +416,45 @@ private:
 };
 
 // Only the Publisher sends responses, after the Plant has produced the observed state.
-class DobotRpcPublisher final : public rt::IStatePublisher {
+class DobotRpcPublisher final : public rt::IRequestPublisher {
 public:
     DobotRpcPublisher(std::shared_ptr<ServoModel> model, std::shared_ptr<DobotRpcChannel> channel)
         : model_(std::move(model)), channel_(std::move(channel)) {}
     std::string_view id() const noexcept override { return "dobot-rpc-replies"; }
     void reset() noexcept override {}
     rt::ComponentStatus publish(const rt::RobotState& state,
-                                const rt::RuntimeStepContext&) noexcept override {
+                                const rt::RuntimeStepContext&,
+                                const std::vector<rt::ProcessedInput>& inputs,
+                                const rt::ArbitrationResult& arbitration) noexcept override {
         try {
             observe(*model_, state);
-            for (auto& reply : channel_->take_replies()) send(reply);
+            for (const auto& input : inputs) {
+                if (input.metadata.source_id == "dobot-rpc"
+                    && input.delivery != rt::InputDelivery::Delivered) {
+                    channel_->enqueue_rejection(input.metadata.sequence,
+                        rpc::HAKO_SERVICE_RESULT_CODE_INVALID);
+                }
+            }
+            for (auto& reply : channel_->take_replies()) {
+                if (reply.transport_result_code != rpc::HAKO_SERVICE_RESULT_CODE_OK) {
+                    send_error(reply, reply.transport_result_code);
+                    continue;
+                }
+                const auto input = std::find_if(inputs.begin(), inputs.end(),
+                    [&](const rt::ProcessedInput& value) {
+                        return value.metadata.source_id == "dobot-rpc"
+                            && value.metadata.sequence == reply.token;
+                    });
+                if (input == inputs.end()
+                    || input->delivery != rt::InputDelivery::Delivered
+                    || input->controller_statuses.size() != 1
+                    || !input->controller_statuses[0].can_produce_commands()
+                    || arbitration.selected_control_id != "dobot-servo") {
+                    send_error(reply, rpc::HAKO_SERVICE_RESULT_CODE_ERROR);
+                    continue;
+                }
+                send(reply);
+            }
             return {std::string(id()), rt::ComponentState::Ready, {}};
         } catch (const std::exception& error) {
             model_->disable();
@@ -365,6 +463,14 @@ public:
         }
     }
 private:
+    void send_error(const DobotRpcChannel::Reply& reply, int result_code) {
+        rpc::PduData error;
+        if (!channel_->server().create_reply_buffer(reply.request,
+                rpc::HAKO_SERVICE_STATUS_ERROR, result_code, error)
+            || !channel_->server().send_reply(reply.request, error))
+            throw std::runtime_error("Dobot RPC error response failed");
+    }
+
     template<class Wire, class Response>
     void send_body(DobotRpcChannel::Reply& reply, Response response) {
         Wire wire;

@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
         extensions.sources.push_back(std::make_shared<DobotRpcSource>(channel));
         extensions.controllers.push_back(std::make_shared<ServoController>(model, channel));
         extensions.priorities.push_back({"dobot-servo", 0, {}});
-        extensions.publishers.push_back(std::make_shared<DobotRpcPublisher>(model, channel));
+        extensions.request_publishers.push_back(std::make_shared<DobotRpcPublisher>(model, channel));
     };
     return ::hakoniwa::robot_arm::apps::common::run_manifest_runtime_app(options["--manifest"], config);
 }
