@@ -68,7 +68,7 @@ artifacts:
 acceptance:
   verified_at: 2026-08-29
   platform: macOS arm64
-  automatic_command: $HAKONIWA_WORK_DIR/model-forge/excavator/tools-venv/bin/python tools/validate_excavator_bucket_collision.py $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.soil.xml --config recipes/excavator/bucket-collision.yaml
+  automatic_command: python tools/recipe/excavator.py validate-bucket
   observed:
     - the automatic one-sphere settle, side-containment, slow-curl hold, and dump stages passed
   scope: The automatic validator is a collision regression check for the accepted proxy. The full digging worksite remains experimental, and mobile-model Viewer display is not verified.

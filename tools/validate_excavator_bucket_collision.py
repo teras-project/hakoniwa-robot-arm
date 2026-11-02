@@ -62,8 +62,15 @@ def load_one_sphere_model(model_path: Path) -> mujoco.MjModel:
                 if len(values) <= trim:
                     raise RuntimeError("validation keyframe qvel is shorter than soil suffix")
                 key.set("qvel", " ".join(values[:-trim]))
+    # The installed model may be read-only (for example, a packaged workspace).
+    # Preserve relative asset lookup after moving the temporary XML to the OS
+    # temporary directory by making file references absolute first.
+    for asset in root.findall("./asset/*[@file]"):
+        file_name = asset.get("file")
+        if file_name and not Path(file_name).is_absolute():
+            asset.set("file", str((model_path.parent / file_name).resolve()))
     with tempfile.NamedTemporaryFile(
-        mode="wb", suffix=".xml", dir=model_path.parent, delete=False
+        mode="wb", suffix=".xml", delete=False
     ) as temporary:
         temporary_path = Path(temporary.name)
         tree.write(temporary, encoding="utf-8", xml_declaration=True)

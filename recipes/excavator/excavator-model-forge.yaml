@@ -61,7 +61,7 @@ source_artifacts:
 
 runtime_dependencies:
   python:
-    interpreter: $HAKONIWA_WORK_DIR/model-forge/excavator/tools-venv/bin/python
+    interpreter: Recipe-owned tools-venv (resolved by cross-platform Python helper)
     requirements: recipes/excavator/bucket-proxy-requirements.txt
     packages:
       - {name: PyYAML, version: 6.0.3, purpose: Parse the human-authored bucket collision calibration YAML.}
@@ -75,15 +75,15 @@ demo:
     - order: 0
       component: hakoniwa-robot-arm
       action: Build the Recipe-owned bucket proxy calibration environment.
-      command: bash tools/install-excavator-bucket-proxy-tools.bash
+      command: python tools/install_excavator_bucket_proxy_tools.py
     - order: 1
       component: hakoniwa-robot-arm
       action: Run the arm-local excavator forge.
-      command: PYTHON_CMD=../hakoniwa-mbody-registry/.venv/bin/python3 recipes/excavator/forge-excavator.sh
+      command: python tools/recipe/excavator.py forge
     - order: 2
       component: hakoniwa-robot-arm
       action: Validate one-sphere settle, side containment, slow curl hold, and dump.
-      command: $HAKONIWA_WORK_DIR/model-forge/excavator/tools-venv/bin/python tools/validate_excavator_bucket_collision.py $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.soil.xml --config recipes/excavator/bucket-collision.yaml
+      command: python tools/recipe/excavator.py validate-bucket
   success_signals:
     - excavator.runtime.xml is generated with four position actuators
     - bucket calibration status is accepted

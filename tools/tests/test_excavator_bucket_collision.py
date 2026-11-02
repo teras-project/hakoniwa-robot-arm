@@ -9,8 +9,12 @@ import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import sys
+
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools"))
+from _hakoniwa_composer import excavator_bucket_proxy_python  # noqa: E402
 WORK_DIR = Path(os.environ.get("HAKONIWA_WORK_DIR", ROOT.parent / "hakoniwa-business-pack/work"))
 FORGE_ROOT = WORK_DIR / "model-forge/excavator"
 FORGED_MODEL_AVAILABLE = (FORGE_ROOT / "install/excavator.soil.xml").is_file()
@@ -18,7 +22,7 @@ FORGED_MODEL_AVAILABLE = (FORGE_ROOT / "install/excavator.soil.xml").is_file()
 
 def tools_python() -> Path:
     candidates = (
-        FORGE_ROOT / "tools-venv/bin/python",
+        excavator_bucket_proxy_python(),
         ROOT.parent / "hakoniwa-mbody-registry/.venv/bin/python",
         ROOT.parent / "hakoniwa-business-pack/work/foundation/install/python/bin/python",
     )
@@ -31,7 +35,7 @@ def tools_python() -> Path:
                 return candidate
     raise RuntimeError(
         "bucket proxy Python is unavailable; run "
-        "bash tools/install-excavator-bucket-proxy-tools.bash"
+        "python tools/install_excavator_bucket_proxy_tools.py"
     )
 
 
@@ -108,7 +112,7 @@ class ExcavatorBucketCollisionTest(unittest.TestCase):
             ROOT / "recipes/excavator/excavator-model-forge.yaml"
         ).read_text(encoding="utf-8")
         self.assertIn("bucket-proxy-requirements.txt", forge_recipe)
-        self.assertIn("install-excavator-bucket-proxy-tools.bash", forge_recipe)
+        self.assertIn("install_excavator_bucket_proxy_tools.py", forge_recipe)
         recipe_cli = (ROOT / "tools/recipe/common/arm.py").read_text(encoding="utf-8")
         self.assertNotIn("launch_passive", recipe_cli)
 

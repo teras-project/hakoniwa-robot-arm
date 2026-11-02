@@ -9,6 +9,8 @@
 | host-standalone | [setup](host-standalone/setup.md) | [build](host-standalone/build.md) | [operation](host-standalone/operation.md) |
 | host-standalone + PS5 gamepad | [setup](host-standalone/setup-gamepad.md) | [build](host-standalone/build-gamepad.md) | [operation](host-standalone/operation-gamepad.md) |
 | windows-host-standalone | [setup](windows-host-standalone/setup.md) | [build](windows-host-standalone/build.md) | [operation](windows-host-standalone/operation.md) |
+| Excavator host-standalone（macOS／Ubuntu 24.04／WSL2） | [setup](excavator/host-standalone/setup.md) | [build](excavator/host-standalone/build.md) | [operation](excavator/host-standalone/operation.md) |
+| Excavator windows-host-standalone | [setup](excavator/windows-host-standalone/setup.md) | [build](excavator/windows-host-standalone/build.md) | [operation](excavator/windows-host-standalone/operation.md) |
 | windows-host-docker | [setup](windows-host-docker/setup.md) | [build](windows-host-docker/build.md) | [operation](windows-host-docker/operation.md) |
 | host-ros2 | [setup](host-ros2/setup.md) | [build](host-ros2/build.md) | [operation](host-ros2/operation.md) |
 | host+docker | [setup](host-docker/setup.md) | [build](host-docker/build.md) | [operation](host-docker/operation.md) |

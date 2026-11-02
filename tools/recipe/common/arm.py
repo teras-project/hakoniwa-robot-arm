@@ -19,6 +19,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 from _hakoniwa_composer import (  # noqa: E402
     HakoniwaComposerError,
     arm_root,
+    excavator_bucket_proxy_python,
     load_foundation_consumer_module,
     load_foundation_module,
     model_forge_root,
@@ -189,8 +190,8 @@ def materialize_excavator_worksite() -> None:
     recipe = pack / "recipes/excavator"
     robot_dir = model_install_dir("excavator")
     tools_python = required(
-        model_forge_root("excavator") / "tools-venv/bin/python",
-        "Recipe-owned bucket proxy Python; run tools/install-excavator-bucket-proxy-tools.bash",
+        excavator_bucket_proxy_python(),
+        "Recipe-owned bucket proxy Python; run python tools/install_excavator_bucket_proxy_tools.py",
     )
     steps = (
         [
@@ -620,11 +621,11 @@ def bucket_proxy(viewer: bool) -> int:
     if ROBOT_ID != "excavator":
         raise RecipeError("bucket-proxy is available only for excavator")
     pack = arm_root()
-    tools_python = model_forge_root("excavator") / "tools-venv/bin/python"
+    tools_python = excavator_bucket_proxy_python()
     if not tools_python.is_file():
         raise RecipeError(
             "Recipe-owned bucket proxy Python is missing; run: "
-            "bash tools/install-excavator-bucket-proxy-tools.bash"
+            "python tools/install_excavator_bucket_proxy_tools.py"
         )
     generator = required(
         pack / "tools/generate_excavator_bucket_collision.py",

@@ -4,6 +4,7 @@ import importlib.util
 import os
 import shutil
 import sys
+import platform
 from pathlib import Path
 
 
@@ -66,6 +67,18 @@ def model_forge_root(robot_id: str) -> Path:
     if not robot_id or not all(character.isalnum() or character in "-_" for character in robot_id):
         raise HakoniwaComposerError(f"invalid robot identifier: {robot_id!r}")
     return workspace_work_dir() / "model-forge" / robot_id
+
+
+def venv_python(venv: Path, *, system: str | None = None) -> Path:
+    """Return a virtual environment's interpreter without resolving symlinks."""
+    platform_name = platform.system() if system is None else system
+    relative = Path("Scripts/python.exe") if platform_name == "Windows" else Path("bin/python")
+    return Path(venv).absolute() / relative
+
+
+def excavator_bucket_proxy_python(*, system: str | None = None) -> Path:
+    """Return the Recipe-owned bucket-proxy interpreter on this platform."""
+    return venv_python(model_forge_root("excavator") / "tools-venv", system=system)
 
 
 def model_install_dir(robot_id: str) -> Path:
