@@ -12,8 +12,8 @@ feasibility:
 
 validation:
   status: verified
-  verified_at: 2026-08-29
-  summary: On a macOS host, the headless mobile excavator completed six-wheel differential Twist drive and stop followed by a four-joint JointTrajectory, emitted JointState, and remained numerically stable. Mobile Viewer display, Docker, Ubuntu, Windows, and ROS 2 paths are not verified. The digging worksite is experimental and requires an accepted bucket-collision calibration.
+  verified_at: 2026-11-02
+  summary: On a macOS host, WSL2 Ubuntu 24.04, and Windows 11 native, the headless mobile excavator completed six-wheel differential Twist drive and stop, and remained numerically stable; on the macOS host it also completed a four-joint JointTrajectory and emitted JointState. Mobile Viewer display, Ubuntu native, Docker, and ROS 2 paths are not verified. The digging worksite is experimental and requires an accepted bucket-collision calibration.
 
 foundation_contract:
   mode: required
@@ -21,7 +21,7 @@ foundation_contract:
 
 foundation_requirements:
   hakoniwa-core-pro:
-    capabilities: {shared_memory: true, hako_cmd: true, python_binding: true}
+    capabilities: {shared_memory: true, hako_cmd: true, python_binding: true, callback_assets_shared: true, core_shared: true}
   hakoniwa-pdu-endpoint:
     capabilities: {hakoniwa_core: true, core_callback: true, python_binding: true}
   hakoniwa-pdu-bridge-core:

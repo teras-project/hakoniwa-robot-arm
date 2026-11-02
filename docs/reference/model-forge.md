@@ -4,7 +4,7 @@
 
 本書の詳細手順はNova5を対象にしています。MathScavator9000は[`recipes/excavator/README.md`](../../recipes/excavator/README.md)と`excavator-model-forge.yaml`を入口に、固定revisionのURDF／meshから`excavator.mobile.xml`を生成します。
 
-macOS Hostで、mobile excavatorのheadless実行（6輪差動Twist走行・停止、続く4関節JointTrajectory、JointState出力、数値安定性）を確認済み。移動モデルのViewer表示は未確認。掘削worksite（bucket proxy、terrain hfield、soil）は実験的で、bucket collision calibrationの`accepted`が必要。Docker／Ubuntu／Windows／ROS 2経路は未確認。
+macOS Host、WSL2 Ubuntu 24.04、Windows 11 nativeで、mobile excavatorのheadless実行（6輪差動Twist走行・停止、数値安定性）を確認済み。macOS Hostでは続く4関節JointTrajectoryとJointState出力も確認済み。移動モデルのViewer表示は未確認。掘削worksite（bucket proxy、terrain hfield、soil）は実験的で、bucket collision calibrationの`accepted`が必要。Ubuntu native／Docker／ROS 2経路は未確認。
 
 この文書では、DOBOT Nova5の上流Xacro／meshから、MuJoCoと箱庭ロボットランタイムが使用するMJCFを再現可能に生成する手順を説明します。
 

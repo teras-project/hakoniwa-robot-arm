@@ -10,7 +10,7 @@
 | DOBOT Nova5 | `nova5` | `tools/recipe/nova5.py` | `nova5.contact.xml` | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。 |
 | FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
-| MathScavator9000 Excavator | `excavator` | `tools/recipe/excavator.py` | `excavator.mobile.xml` | macOS host（headless）で走行とJointTrajectoryを動作確認済み。Windows native／WSL2：確認中。Viewer表示は未確認、掘削は実験的。[実行手順](../procedures/excavator/host-standalone/setup.md)。 |
+| MathScavator9000 Excavator | `excavator` | `tools/recipe/excavator.py` | `excavator.mobile.xml` | macOS host、WSL2 Ubuntu 24.04、Windows 11 native（いずれもheadless）で走行を動作確認済み。Viewer表示は未確認、掘削は実験的。[実行手順](../procedures/excavator/host-standalone/setup.md)。 |
 
 FR5とSO-101についても、基本的な実行手順は[Nova5の環境別手順](../README.md)と共通です。ただしFR5では、初回Model Forge時に機種固有のURDF正規化が必要です。詳細は[FR5 source normalization](../../sources/models/fr5/README.md)を参照してください。
 

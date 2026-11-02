@@ -4,7 +4,7 @@ MathWorksの公開MathScavator9000モデルから、移動可能な6輪差動走
 
 ## 確認状況
 
-macOS Hostで、mobile excavatorのheadless実行（6輪差動Twist走行・停止、続く4関節JointTrajectory、JointState出力、数値安定性）を確認済み。移動モデルのViewer表示は未確認。掘削worksite（bucket proxy、terrain hfield、soil）は実験的で、bucket collision calibrationの`accepted`が必要。Docker／Ubuntu／Windows／ROS 2経路は未確認。
+macOS Host、WSL2 Ubuntu 24.04、Windows 11 nativeで、mobile excavatorのheadless実行（6輪差動Twist走行・停止、数値安定性）を確認済み。macOS Hostでは続く4関節JointTrajectoryとJointState出力も確認済み。移動モデルのViewer表示は未確認。掘削worksite（bucket proxy、terrain hfield、soil）は実験的で、bucket collision calibrationの`accepted`が必要。Ubuntu native／Docker／ROS 2経路は未確認。
 
 ## 実行手順
 
@@ -13,7 +13,7 @@ fresh checkoutからのFoundation、Runtime Recipe、Model Forge、headless buil
 - [macOS／Ubuntu 24.04 native／WSL2 Ubuntu 24.04](../../docs/procedures/excavator/host-standalone/setup.md)
 - [Windows native PowerShell](../../docs/procedures/excavator/windows-host-standalone/setup.md)
 
-Windows native／WSL2：確認中。Viewer実行：未確認。
+WSL2 Ubuntu 24.04、Windows 11 native：headlessで確認済み。Viewer実行：未確認。
 
 ## Recipe固有ファイルとデモ
 

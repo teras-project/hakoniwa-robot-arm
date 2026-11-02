@@ -17,7 +17,7 @@ python tools\workspace.py run -- python `
   ..\hakoniwa-robot-arm\tools\recipe\excavator.py doctor
 ```
 
-`Mode            : headless`、`True`が表示され、doctorにNGがなければ成功です。Windowsでの実buildは未確認です。
+`Mode            : headless`、`True`が表示され、doctorにNGがなければ成功です。
 
 ## 任意: Viewer build（未確認）
 

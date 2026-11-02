@@ -69,3 +69,5 @@ Test-Path .\work\model-forge\excavator\install\excavator.mobile.xml
 ```
 
 doctorにNGがなく、`Excavator forge complete.`と最後に`True`が表示されれば成功です。
+
+Excavator RecipeはWindowsで、共有callback assets runtimeと、Core本体を1つの`hako.dll`にする構成（`callback_assets_shared: true`、`core_shared: true`）を要求します。この構成を要求しないRecipeで作ったFoundationがある場合、planに`hakoniwa-core-pro`の`INCOMPATIBLE`が表示されます。これは想定どおりで、上の`recipe.py configure`がCore PROと依存するEndpoint、Bridge、Pythonを再buildします。

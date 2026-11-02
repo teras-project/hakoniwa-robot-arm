@@ -11,7 +11,7 @@
 | DOBOT Nova5 | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。 |
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
-| MathScavator9000 Excavator | macOS host（headless）で走行とJointTrajectoryを動作確認済み。Viewer表示とその他の環境は未確認、掘削は実験的。詳細は[Recipe](recipes/excavator/README.md)。 |
+| MathScavator9000 Excavator | macOS host、WSL2 Ubuntu 24.04、Windows 11 native（いずれもheadless）で走行を動作確認済み。Viewer表示とその他の環境は未確認、掘削は実験的。詳細は[Recipe](recipes/excavator/README.md)。 |
 
 ロボットの種類毎の設定や実行手順は[対応ロボット](docs/reference/robots.md)を参照してください。
 
