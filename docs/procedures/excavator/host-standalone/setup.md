@@ -38,6 +38,11 @@ source profiles/tool-env/enter-host-hako.bash
 ```bash
 python3.12 tools/recipe.py plan \
   --recipe ../hakoniwa-robot-arm/recipes/excavator/excavator-joint-trajectory-control.yaml
+```
+
+先頭に`Recipe plan:`が表示され、`error:`で終了しなければOKです。未導入の依存が`MISSING`と表示されるのは正常で、次のconfigureで準備します。
+
+```bash
 python3.12 tools/recipe.py configure \
   --recipe ../hakoniwa-robot-arm/recipes/excavator/excavator-joint-trajectory-control.yaml
 python tools/workspace.py doctor
@@ -45,7 +50,7 @@ python tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/excavator/excavator-joint-trajectory-control.yaml
 ```
 
-`Recipe plan:`、`Foundation: SATISFIED`が表示され、`[NG]`、`MISSING`、`error:`がなければ成功です。それらがあればNGです。
+doctorに`Foundation: SATISFIED`が表示され、doctorの出力に`[NG]`、`MISSING`、`error:`が一つもなければ成功です。いずれかがあればNGです。
 
 ## 3. Model Forge
 
