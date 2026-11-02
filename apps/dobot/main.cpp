@@ -1,9 +1,6 @@
 #include "backend.hpp"
 #include "manifest_runtime_app.hpp"
-#include "runner/hakoniwa/hakoniwa_runner.hpp"
-#include "runtime/arbiter/priority_command_arbiter.hpp"
-#include "runtime/publisher/joint_state_publisher.hpp"
-#include "hakoniwa/robot_runtime/adapters/endpoint/joint_state_pdu_writer.hpp"
+#include "hakoniwa/pdu/endpoint.hpp"
 #include <iostream>
 #include <map>
 
@@ -24,27 +21,23 @@ int main(int argc, char** argv) {
         if (options[key].empty()) { std::cerr << "Missing " << key << '\n'; return 2; }
     }
     using namespace hakoniwa::dobot;
-    using Resources = ::hakoniwa::robot_runtime::runner::HakoniwaRunnerResources;
     ::hakoniwa::robot_arm::apps::common::ManifestRuntimeAppConfig config;
     config.endpoint_name = "dobot_runtime_endpoint";
     config.viewer_enabled = viewer;
     config.realtime_sync_cycle_msec = 1; // Match wall-time-driven official clients approximately.
-    config.configure_resources = [options](Resources& resources) {
+    config.configure_runtime = [options](rt::RuntimeExtensions& extensions,
+                                          ::hakoniwa::pdu::Endpoint&) {
         auto model = std::make_shared<ServoModel>();
-        auto controller = std::make_shared<ServoController>(model);
-        auto boundary = std::make_shared<RpcBoundary>(model, options.at("--service-config"),
+        auto channel = std::make_shared<DobotRpcChannel>(options.at("--service-config"),
             options.at("--rpc-endpoint"), options.contains("--node-id") ? options.at("--node-id") : "dobot_virtual");
-        std::vector<rt::JointStateOutputBinding> joints;
-        for (int i = 1; i <= 6; ++i) joints.push_back({"joint" + std::to_string(i), "joint" + std::to_string(i)});
-        auto writer = std::make_shared<::hakoniwa::robot_runtime::adapters::hakoniwa::JointStatePduWriter>(
-            *resources.endpoint, "Nova5", "joint_states");
-        auto joint_states = std::make_shared<rt::JointStatePublisher>("dobot_joint_states", joints, 50., writer);
-        auto arbiter = std::make_shared<rt::PriorityCommandArbiter>(
-            std::vector<rt::ControllerPriority>{{"dobot-servo", 0, {}}});
-        resources.runtime = std::make_unique<rt::ActuatorRuntime>(
-            std::vector<std::shared_ptr<rt::ICommandSource>>{},
-            std::vector<std::shared_ptr<rt::IController>>{controller}, arbiter, resources.plant,
-            std::vector<std::shared_ptr<rt::IStatePublisher>>{boundary, joint_states});
+        for (int i = 1; i <= 6; ++i)
+            extensions.replaced_control_components.insert("joint" + std::to_string(i));
+        extensions.replaced_control_components.insert("manual_controller");
+        extensions.replaced_control_components.insert("trajectory_controller");
+        extensions.sources.push_back(std::make_shared<DobotRpcSource>(channel));
+        extensions.controllers.push_back(std::make_shared<ServoController>(model, channel));
+        extensions.priorities.push_back({"dobot-servo", 0, {}});
+        extensions.publishers.push_back(std::make_shared<DobotRpcPublisher>(model, channel));
     };
     return ::hakoniwa::robot_arm::apps::common::run_manifest_runtime_app(options["--manifest"], config);
 }

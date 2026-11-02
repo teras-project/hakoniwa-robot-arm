@@ -36,7 +36,7 @@ int run_manifest_runtime_app(
         factory_config.asset_name = config.asset_name;
         factory_config.endpoint_name = config.endpoint_name;
         factory_config.realtime_sync_cycle_msec = config.realtime_sync_cycle_msec;
-        factory_config.configure_resources = config.configure_resources;
+        factory_config.configure_runtime = config.configure_runtime;
         runtime_runner =
             ::hakoniwa::robot_runtime::factory::ManifestFactory::create(
                 manifest_path,

@@ -283,9 +283,20 @@ target_link_libraries(hako-robot-arm-manifest-factory PRIVATE
     ${HAKO_PDU_ENDPOINT_LINK_TARGET_IMPORTED}
 )
 
+include(CTest)
 # Product entry points live under apps; reusable runtime implementation comes
 # from the configured hakoniwa-robot-runtime checkout.
 add_subdirectory(
     apps
     "${CMAKE_CURRENT_BINARY_DIR}/robot-arm-apps"
 )
+
+if(BUILD_TESTING AND HAKO_ARM_ENABLE_DOBOT)
+    add_executable(test-runtime-extensions
+        "${HAKO_ROBOT_RUNTIME_SRC_DIR}/../tests/test_runtime_extensions.cpp")
+    target_compile_features(test-runtime-extensions PRIVATE cxx_std_20)
+    target_include_directories(test-runtime-extensions PRIVATE
+        "${HAKO_ROBOT_RUNTIME_SRC_DIR}")
+    target_link_libraries(test-runtime-extensions PRIVATE hako-robot-arm-runtime)
+    add_test(NAME runtime_extensions COMMAND test-runtime-extensions)
+endif()

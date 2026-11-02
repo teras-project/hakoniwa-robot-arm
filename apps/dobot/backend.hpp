@@ -1,10 +1,20 @@
 #pragma once
 #include "servo_model.hpp"
+#include "runtime/source/command_source.hpp"
 #include "runtime/controller/controller.hpp"
 #include "runtime/publisher/state_publisher.hpp"
 #include "hakoniwa/pdu/rpc/rpc_service_helper.hpp"
+#include <chrono>
+#include <deque>
+#include <exception>
 #include <iomanip>
+#include <iostream>
+#include <limits>
+#include <mutex>
+#include <optional>
 #include <sstream>
+#include <thread>
+#include <unordered_map>
 // Registry's C++ string[] template currently uses cpp-named primitive helpers
 // while the common header exports ros-named helpers with the same std::string API.
 #include "pdu_primitive_ctypes_conv.hpp"
@@ -98,122 +108,316 @@ inline void observe(ServoModel& model, const rt::RobotState& state) {
     model.observe(positions, velocities, state.sample_time_usec / 1'000'000.);
 }
 
-class ServoController final : public rt::IController {
+class DobotRpcChannel final {
 public:
-    explicit ServoController(std::shared_ptr<ServoModel> model) : model_(std::move(model)) {}
-    std::string_view id() const noexcept override { return "dobot-servo"; }
-    std::string_view source_id() const noexcept override { return {}; }
-    bool accepts(const rt::IControllerInput&) const noexcept override { return false; }
-    rt::ControllerOutput update(std::shared_ptr<const rt::IControllerInput>,
-        const rt::RobotState& state, const rt::RuntimeStepContext& context) override {
-        observe(*model_, state);
-        const auto q = model_->command();
-        std::vector<rt::ActuatorCommand> commands;
-        for (int i = 0; i < 6; ++i) commands.push_back({
-            "joint" + std::to_string(i + 1), rt::ActuatorCommandType::Position, q[i], {},
-            context.simulation_time_usec, context.simulation_time_usec + context.delta_time_usec});
-        return {std::string(id()), {std::string(id()), rt::ComponentState::Ready, {}}, std::move(commands)};
-    }
-    void reset(const rt::RobotState& state) override { model_->reset(); observe(*model_, state); }
-private:
-    std::shared_ptr<ServoModel> model_;
-};
+    struct Reply {
+        rpc::RpcMuxRequest request;
+        int result;
+    };
 
-// Called after each physics step by the Runtime. Network workers never touch mjData.
-class RpcBoundary final : public rt::IStatePublisher {
-public:
-    RpcBoundary(std::shared_ptr<ServoModel> model, const std::string& services,
-                const std::string& endpoints, const std::string& node)
-        : model_(std::move(model)), server_(node, "RpcServerEndpointImpl", services, endpoints, 1000) {
-        if (!server_.initialize() || !server_.start()) throw std::runtime_error("Dobot RPC server startup failed");
+    DobotRpcChannel(const std::string& services, const std::string& endpoints,
+                    const std::string& node)
+        : server_(node, "RpcServerEndpointImpl", services, endpoints, 1000) {
+        if (!server_.initialize() || !server_.start())
+            throw std::runtime_error("Dobot RPC server startup failed");
+        worker_ = std::jthread([this](std::stop_token stop) { receive(stop); });
     }
-    ~RpcBoundary() override { server_.stop(); }
-    std::string_view id() const noexcept override { return "dobot-rpc"; }
-    void reset() noexcept override { model_->reset(); }
-    rt::ComponentStatus publish(const rt::RobotState& state, const rt::RuntimeStepContext&) noexcept override {
+    ~DobotRpcChannel() {
+        worker_.request_stop();
+        worker_.join();
+        server_.stop();
+    }
+
+    std::optional<rpc::RpcMuxRequest> take() {
+        std::lock_guard lock(mutex_);
+        if (error_) std::rethrow_exception(error_);
+        if (requests_.empty()) return std::nullopt;
+        auto request = std::move(requests_.front());
+        requests_.pop_front();
+        return request;
+    }
+
+    void stage(std::uint64_t token, rpc::RpcMuxRequest request) {
+        if (!pending_.emplace(token, std::move(request)).second)
+            throw std::runtime_error("Duplicate Dobot RPC request token");
+    }
+
+    void enqueue_reply(std::uint64_t token, int result) {
+        auto request = pending_.find(token);
+        if (request == pending_.end())
+            throw std::runtime_error("Unknown Dobot RPC request token");
+        replies_.push_back({std::move(request->second), result});
+        pending_.erase(request);
+    }
+
+    std::deque<Reply> take_replies() {
+        std::deque<Reply> replies;
+        replies.swap(replies_);
+        return replies;
+    }
+
+    rpc::RpcServicesMuxServer& server() noexcept { return server_; }
+
+private:
+    void receive(std::stop_token stop) noexcept {
         try {
-            observe(*model_, state);
-            // Bound network work so a flood cannot starve physics.
-            for (int i = 0; i < 16; ++i) {
+            while (!stop.stop_requested()) {
+                bool full;
+                {
+                    std::lock_guard lock(mutex_);
+                    full = requests_.size() >= 64;
+                }
+                if (full) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    continue;
+                }
                 rpc::RpcMuxRequest incoming;
                 const auto event = server_.poll(incoming);
-                if (event == rpc::ServerEventType::NONE) break;
                 if (event == rpc::ServerEventType::REQUEST_CANCEL) {
                     rpc::PduData reply;
                     if (!server_.create_reply_buffer(incoming, rpc::HAKO_SERVICE_STATUS_DONE,
                             rpc::HAKO_SERVICE_RESULT_CODE_CANCELED, reply)
                         || !server_.send_cancel_reply(incoming, reply))
                         throw std::runtime_error("RPC cancel reply failed");
-                    continue;
+                } else if (event != rpc::ServerEventType::NONE) {
+                    std::lock_guard lock(mutex_);
+                    requests_.push_back(std::move(incoming));
+                } else {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
-                dispatch(incoming);
             }
+        } catch (...) {
+            std::lock_guard lock(mutex_);
+            error_ = std::current_exception();
+        }
+    }
+
+    rpc::RpcServicesMuxServer server_;
+    std::jthread worker_;
+    std::mutex mutex_;
+    std::deque<rpc::RpcMuxRequest> requests_;
+    std::unordered_map<std::uint64_t, rpc::RpcMuxRequest> pending_;
+    std::deque<Reply> replies_;
+    std::exception_ptr error_;
+};
+
+struct DobotCommand {
+    enum class Kind {
+        RequestControl, EnableRobot, DisableRobot, ServoJ, Stop,
+        GetAngle, RobotMode, ClearError, GetErrorID
+    };
+    Kind kind;
+    std::uint64_t token;
+    Joints degrees {};
+    std::vector<std::string> parameters;
+};
+
+class DobotRpcInput final : public rt::IControllerInput {
+public:
+    DobotRpcInput(rt::ControllerInputMetadata metadata, DobotCommand command)
+        : metadata_(std::move(metadata)), command_(std::move(command)) {}
+    const rt::ControllerInputMetadata& metadata() const noexcept override { return metadata_; }
+    std::string_view type_name() const noexcept override { return "Dobot/Command"; }
+    const DobotCommand& command() const noexcept { return command_; }
+private:
+    rt::ControllerInputMetadata metadata_;
+    DobotCommand command_;
+};
+
+class DobotRpcSource final : public rt::ICommandSource {
+public:
+    explicit DobotRpcSource(std::shared_ptr<DobotRpcChannel> channel)
+        : channel_(std::move(channel)) {}
+    std::string_view id() const noexcept override { return "dobot-rpc"; }
+    rt::CommandSourcePollResult poll(const rt::RuntimeStepContext& context) override {
+        auto request = channel_->take();
+        if (!request) return {nullptr, {std::string(id()), rt::ComponentState::WaitingForInput, {}}};
+        if (sequence_ == std::numeric_limits<std::uint64_t>::max())
+            throw std::runtime_error("Dobot RPC sequence exhausted");
+        auto command = decode(*request);
+        command.token = ++sequence_;
+        auto input = std::make_shared<DobotRpcInput>(
+            rt::ControllerInputMetadata{std::string(id()), sequence_,
+                context.simulation_time_usec, {}}, std::move(command));
+        channel_->stage(sequence_, std::move(*request));
+        return {std::move(input), {std::string(id()), rt::ComponentState::Ready, {}}};
+    }
+    // Keep tokens unique across resets until outstanding responses are sent.
+    void reset() noexcept override {}
+private:
+    template<class Wire, class Request>
+    Request read(rpc::RpcMuxRequest& incoming) {
+        Wire wire;
+        Request request {};
+        if (!wire.get_request_body(incoming.request, request))
+            throw std::runtime_error("Malformed Dobot RPC request");
+        return request;
+    }
+    DobotCommand decode(rpc::RpcMuxRequest& incoming) {
+        const auto& name = incoming.request.header.service_name;
+        using Kind = DobotCommand::Kind;
+        if (name == "Dobot/RequestControl") {
+            (void)read<RequestControlWire, HakoCpp_RequestControlRequest>(incoming);
+            return {Kind::RequestControl, 0};
+        }
+        if (name == "Dobot/EnableRobot") {
+            (void)read<EnableRobotWire, HakoCpp_EnableRobotRequest>(incoming);
+            return {Kind::EnableRobot, 0};
+        }
+        if (name == "Dobot/DisableRobot") {
+            (void)read<DisableRobotWire, HakoCpp_DisableRobotRequest>(incoming);
+            return {Kind::DisableRobot, 0};
+        }
+        if (name == "Dobot/ServoJ") {
+            auto request = read<ServoJWire, HakoCpp_ServoJRequest>(incoming);
+            return {Kind::ServoJ, 0, {request.a, request.b, request.c,
+                request.d, request.e, request.f}, std::move(request.param_value)};
+        }
+        if (name == "Dobot/Stop") {
+            (void)read<StopWire, HakoCpp_StopRequest>(incoming);
+            return {Kind::Stop, 0};
+        }
+        if (name == "Dobot/GetAngle") {
+            (void)read<GetAngleWire, HakoCpp_GetAngleRequest>(incoming);
+            return {Kind::GetAngle, 0};
+        }
+        if (name == "Dobot/RobotMode") {
+            (void)read<RobotModeWire, HakoCpp_RobotModeRequest>(incoming);
+            return {Kind::RobotMode, 0};
+        }
+        if (name == "Dobot/ClearError") {
+            (void)read<ClearErrorWire, HakoCpp_ClearErrorRequest>(incoming);
+            return {Kind::ClearError, 0};
+        }
+        if (name == "Dobot/GetErrorID") {
+            (void)read<GetErrorIDWire, HakoCpp_GetErrorIDRequest>(incoming);
+            return {Kind::GetErrorID, 0};
+        }
+        throw std::runtime_error("Unknown Dobot service: " + name);
+    }
+    std::shared_ptr<DobotRpcChannel> channel_;
+    std::uint64_t sequence_ {0};
+};
+
+class ServoController final : public rt::IController {
+public:
+    ServoController(std::shared_ptr<ServoModel> model, std::shared_ptr<DobotRpcChannel> channel)
+        : model_(std::move(model)), channel_(std::move(channel)) {}
+    std::string_view id() const noexcept override { return "dobot-servo"; }
+    std::string_view source_id() const noexcept override { return "dobot-rpc"; }
+    bool accepts(const rt::IControllerInput& input) const noexcept override {
+        return input.type_name() == "Dobot/Command";
+    }
+    rt::ControllerOutput update(std::shared_ptr<const rt::IControllerInput> input,
+        const rt::RobotState& state, const rt::RuntimeStepContext& context) override {
+        observe(*model_, state);
+        if (input) {
+            const auto& command = static_cast<const DobotRpcInput&>(*input).command();
+            channel_->enqueue_reply(command.token, dispatch(command));
+        }
+        const auto q = model_->command();
+        std::vector<rt::ActuatorCommand> commands;
+        for (int i = 0; i < 6; ++i) commands.push_back({
+            "joint" + std::to_string(i + 1), rt::ActuatorCommandType::Position, q[i],
+            std::string(source_id()), context.simulation_time_usec,
+            context.simulation_time_usec + context.delta_time_usec});
+        return {std::string(id()), {std::string(id()), rt::ComponentState::Ready, {}},
+            std::move(commands)};
+    }
+    void reset(const rt::RobotState& state) override { model_->reset(); observe(*model_, state); }
+private:
+    int dispatch(const DobotCommand& command) {
+        using Kind = DobotCommand::Kind;
+        switch (command.kind) {
+        case Kind::RequestControl: return 0;
+        case Kind::EnableRobot: return model_->enable();
+        case Kind::DisableRobot: return model_->disable();
+        case Kind::ServoJ: return model_->servo(command.degrees, command.parameters);
+        case Kind::Stop: return model_->stop();
+        case Kind::GetAngle:
+        case Kind::RobotMode:
+        case Kind::ClearError:
+        case Kind::GetErrorID: return 0;
+        }
+        throw std::runtime_error("Unknown Dobot command");
+    }
+    std::shared_ptr<ServoModel> model_;
+    std::shared_ptr<DobotRpcChannel> channel_;
+};
+
+// Only the Publisher sends responses, after the Plant has produced the observed state.
+class DobotRpcPublisher final : public rt::IStatePublisher {
+public:
+    DobotRpcPublisher(std::shared_ptr<ServoModel> model, std::shared_ptr<DobotRpcChannel> channel)
+        : model_(std::move(model)), channel_(std::move(channel)) {}
+    std::string_view id() const noexcept override { return "dobot-rpc-replies"; }
+    void reset() noexcept override {}
+    rt::ComponentStatus publish(const rt::RobotState& state,
+                                const rt::RuntimeStepContext&) noexcept override {
+        try {
+            observe(*model_, state);
+            for (auto& reply : channel_->take_replies()) send(reply);
             return {std::string(id()), rt::ComponentState::Ready, {}};
-        } catch (const std::exception& e) {
-            // Fail the physical command path too; never let the previous trajectory continue silently.
+        } catch (const std::exception& error) {
             model_->disable();
-            std::cerr << "Dobot RPC error: " << e.what() << std::endl;
-            return {std::string(id()), rt::ComponentState::Error, e.what()};
+            std::cerr << "Dobot RPC response error: " << error.what() << std::endl;
+            return {std::string(id()), rt::ComponentState::Error, error.what()};
         }
     }
 private:
-    template<class Wire, class Request, class Response, class Fn>
-    void handle(rpc::RpcMuxRequest& incoming, Fn fn) {
+    template<class Wire, class Response>
+    void send_body(DobotRpcChannel::Reply& reply, Response response) {
         Wire wire;
-        Request request {};
-        Response response {};
-        if (!wire.get_request_body(incoming.request, request))
-            throw std::runtime_error("Malformed Dobot RPC request");
-        fn(request, response);
-        if (!wire.reply(server_, incoming, rpc::HAKO_SERVICE_STATUS_DONE,
+        if (!wire.reply(channel_->server(), reply.request, rpc::HAKO_SERVICE_STATUS_DONE,
                         rpc::HAKO_SERVICE_RESULT_CODE_OK, response))
             throw std::runtime_error("Dobot RPC response failed");
     }
-    void dispatch(rpc::RpcMuxRequest& incoming) {
-        const auto& name = incoming.request.header.service_name;
-        if (name == "Dobot/RequestControl") {
-            handle<RequestControlWire, HakoCpp_RequestControlRequest, HakoCpp_RequestControlResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = 0; });
-        }
-        else if (name == "Dobot/EnableRobot") {
-            handle<EnableRobotWire, HakoCpp_EnableRobotRequest, HakoCpp_EnableRobotResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = model_->enable(); });
-        }
-        else if (name == "Dobot/DisableRobot") {
-            handle<DisableRobotWire, HakoCpp_DisableRobotRequest, HakoCpp_DisableRobotResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = model_->disable(); });
-        }
-        else if (name == "Dobot/ServoJ") {
-            handle<ServoJWire, HakoCpp_ServoJRequest, HakoCpp_ServoJResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = model_->servo({req.a, req.b, req.c, req.d, req.e, req.f}, req.param_value); });
-        }
-        else if (name == "Dobot/Stop") {
-            handle<StopWire, HakoCpp_StopRequest, HakoCpp_StopResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = model_->stop(); });
-        }
+    template<class Wire, class Response>
+    void send_result(DobotRpcChannel::Reply& reply) {
+        Response response {};
+        response.res = reply.result;
+        send_body<Wire>(reply, response);
+    }
+    void send(DobotRpcChannel::Reply& reply) {
+        const auto& name = reply.request.request.header.service_name;
+        if (name == "Dobot/RequestControl")
+            send_result<RequestControlWire, HakoCpp_RequestControlResponse>(reply);
+        else if (name == "Dobot/EnableRobot")
+            send_result<EnableRobotWire, HakoCpp_EnableRobotResponse>(reply);
+        else if (name == "Dobot/DisableRobot")
+            send_result<DisableRobotWire, HakoCpp_DisableRobotResponse>(reply);
+        else if (name == "Dobot/ServoJ")
+            send_result<ServoJWire, HakoCpp_ServoJResponse>(reply);
+        else if (name == "Dobot/Stop")
+            send_result<StopWire, HakoCpp_StopResponse>(reply);
         else if (name == "Dobot/GetAngle") {
-            handle<GetAngleWire, HakoCpp_GetAngleRequest, HakoCpp_GetAngleResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = 0;
-                std::ostringstream out; out << '{' << std::fixed << std::setprecision(6);
-                const auto q = model_->actual();
-                for (int i = 0; i < 6; ++i) { if (i) out << ','; out << q[i] * 180. / pi; }
-                out << '}'; res.robot_return = out.str(); });
-        }
-        else if (name == "Dobot/RobotMode") {
-            handle<RobotModeWire, HakoCpp_RobotModeRequest, HakoCpp_RobotModeResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = 0; res.robot_return = "{" + std::to_string(model_->mode()) + "}"; });
-        }
-        else if (name == "Dobot/ClearError") {
-            handle<ClearErrorWire, HakoCpp_ClearErrorRequest, HakoCpp_ClearErrorResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = 0; });
-        }
+            std::ostringstream out;
+            out << '{' << std::fixed << std::setprecision(6);
+            const auto q = model_->actual();
+            for (int i = 0; i < 6; ++i) {
+                if (i) out << ',';
+                out << q[i] * 180. / pi;
+            }
+            out << '}';
+            HakoCpp_GetAngleResponse response {};
+            response.res = reply.result;
+            response.robot_return = out.str();
+            send_body<GetAngleWire>(reply, response);
+        } else if (name == "Dobot/RobotMode") {
+            HakoCpp_RobotModeResponse response {};
+            response.res = reply.result;
+            response.robot_return = "{" + std::to_string(model_->mode()) + "}";
+            send_body<RobotModeWire>(reply, response);
+        } else if (name == "Dobot/ClearError")
+            send_result<ClearErrorWire, HakoCpp_ClearErrorResponse>(reply);
         else if (name == "Dobot/GetErrorID") {
-            handle<GetErrorIDWire, HakoCpp_GetErrorIDRequest, HakoCpp_GetErrorIDResponse>(incoming,
-                [&](const auto& req, auto& res) { (void)req; res.res = 0; res.robot_return = "{[]}"; });
-        }
-        else throw std::runtime_error("Unknown Dobot service: " + name);
+            HakoCpp_GetErrorIDResponse response {};
+            response.res = reply.result;
+            response.robot_return = "{[]}";
+            send_body<GetErrorIDWire>(reply, response);
+        } else throw std::runtime_error("Unknown Dobot service: " + name);
     }
     std::shared_ptr<ServoModel> model_;
-    rpc::RpcServicesMuxServer server_;
+    std::shared_ptr<DobotRpcChannel> channel_;
 };
 }

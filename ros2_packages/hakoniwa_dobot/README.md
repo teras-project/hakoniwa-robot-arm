@@ -21,7 +21,7 @@ MoveIt の実行試験と完全な Dobot API 互換は次段階です．
 | ClearError | この初版では受付成功（実機のアラーム全体を再現しない） |
 | GetErrorID | この初版では正常時の `{[]}` を返す |
 
-`ServoJ` は受理応答を直ちに返し，目標到達まで待ちません．
+`ServoJ` は次の物理更新後に受理応答を返し，目標到達まで待ちません．
 `t` の対応範囲は0.004..120秒，省略時0.1秒です．その他の `param_value` は拒否します．
 範囲外角度/NaN/Inf/不正なパラメータも拒否します．未有効時は `res=-3`，不正値は `res=-1`．
 これらは初版の対応範囲のエラーであり，Dobot の全エラー体系の再現ではありません．
@@ -32,9 +32,11 @@ MoveIt の実行試験と完全な Dobot API 互換は次段階です．
 ## 変更するリポジトリ
 
 - `hakoniwa-robot-arm`: C++ サービス処理・専用 Asset，ROS launch / 同時配送，設定生成ツール．
-- `hakoniwa-robot-runtime`: `ManifestFactoryConfig.configure_resources` という起動前の構成フック．
-  専用 Asset が既存 Plant/Endpoint を使って Runtime を構成できるようにします．
-  フック指定時は既定の入力購読を作らず，破棄した Controller へのコールバックを残しません．
+- `hakoniwa-robot-runtime`: `ManifestFactoryConfig.configure_runtime` で標準
+  RuntimeFactory に Source / Controller / Publisher を追加し，指定した manifest の
+  既定制御入力のみ置き換えます．Plant，Runner，JointState 出力は共通の構成です．
+  TCP/PDU-RPC は別スレッドで受信し，CommandSource が毎ステップ一要求を取得，
+  Controller が制御を更新，Plant 更新後に Publisher が応答を送信します．
 - `hakoniwa-pdu-ros`: Service / Topic Bridge の CLI が ROS remapping 引数を受け付けるための修正．
 - Dobot リポジトリは変更しません．
 
