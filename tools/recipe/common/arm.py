@@ -697,6 +697,13 @@ def build(mujoco_root: Path, headless: bool) -> int:
         "-DHAKO_USE_THIRDPARTY_HAKONIWA=OFF",
         f"-DHAKO_ARM_ENABLE_VIEWER={'OFF' if headless else 'ON'}",
     ]
+    if platform.system() == "Windows":
+        # FetchContent's MSBuild sub-builds nest about 140 characters below
+        # their base directory; keep that base short so Recipe build paths
+        # stay under the 260-character MAX_PATH.
+        configure_command.append(
+            f"-DFETCHCONTENT_BASE_DIR={workspace.work_root / 'fc' / ROBOT_ID}"
+        )
     env = environment(foundation, workspace)
     if run(configure_command, cwd=arm_root(), env=env) != 0:
         return 1

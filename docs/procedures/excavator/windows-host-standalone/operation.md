@@ -16,7 +16,15 @@ python tools\workspace.py run -- python `
   ..\hakoniwa-robot-arm\tools\recipe\excavator.py status
 ```
 
-host手順に列挙した5つの`[OK]`と`TERMINATED`が成功条件です。Windows nativeの実行は未確認です。
+smokeが次の5行をすべて表示し、stop後のstatusが`TERMINATED`なら成功です。`[NG]`または`error:`が表示された場合はNGです。
+
+```text
+[OK] MathScavator9000 Excavator accepted the Launcher-managed command input.
+[OK] MathScavator9000 Excavator completed the Launcher-managed Twist sequence.
+[OK] MathScavator9000 Excavator applied non-zero crawler wheel controls.
+[OK] MathScavator9000 Excavator moved without chassis jump or tip-over.
+[OK] No MuJoCo numerical-instability marker was observed for MathScavator9000 Excavator during the smoke window.
+```
 
 ## 任意: Viewer run（未確認）
 

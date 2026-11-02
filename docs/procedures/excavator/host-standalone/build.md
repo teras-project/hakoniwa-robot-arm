@@ -2,6 +2,8 @@
 
 [セットアップ](setup.md)の続きとして、headless Runtimeをbuildします。
 
+`host-hako`端末を閉じた場合は、通常のHost terminalで`hakoniwa-robot-arm`ルートへ移動し、`source ../work-host/profiles/activate-host-hako.bash`で開き直してから`cd ../hakoniwa-robot-arm`で戻ります。
+
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | `host-hako` |
