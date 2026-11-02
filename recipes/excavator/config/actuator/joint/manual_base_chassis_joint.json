@@ -1,0 +1,6 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": {"joint_name": "base_chassis_joint", "type": "position", "limit": {"lower": -3.1416, "upper": 3.1416}},
+  "mjcf_binding": {"actuator_name": "base_chassis_joint_motor"},
+  "pdu_config": {"update_rate_hz": 50.0}
+}

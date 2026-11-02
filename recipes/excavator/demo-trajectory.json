@@ -1,0 +1,15 @@
+{
+  "joint_names": [
+    "base_chassis_joint",
+    "chassis_boom_joint",
+    "boom_stick_joint",
+    "stick_bucket_joint"
+  ],
+  "points": [
+    {"time_from_start": 0.0, "positions": [0.0, 0.6, 0.0, -1.5]},
+    {"time_from_start": 3.0, "positions": [0.35, 0.9, -0.2, -1.5]},
+    {"time_from_start": 6.0, "positions": [-0.35, 0.7, 0.1, -1.8]},
+    {"time_from_start": 9.0, "positions": [0.0, 0.5, -0.1, -1.2]},
+    {"time_from_start": 12.0, "positions": [0.0, 0.6, 0.0, -1.5]}
+  ]
+}

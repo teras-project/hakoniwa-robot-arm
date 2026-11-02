@@ -26,9 +26,10 @@
 
 | Component | 主な役割 | 確認したライセンス | versionの管理元 |
 | --- | --- | --- | --- |
-| [MuJoCo](https://github.com/google-deepmind/mujoco) | 物理シミュレーション | Apache License 2.0 | `hakoniwa-mujoco-robots/MUJOCO_VERSION.txt`。Nova5 Forge Python packageは`3.16.0` |
+| [MuJoCo](https://github.com/google-deepmind/mujoco) | 物理シミュレーション | Apache License 2.0 | `hakoniwa-mujoco-robots/MUJOCO_VERSION.txt`。Nova5 Forge Python packageは`3.16.0`、MathScavator9000 bucket proxy環境は`3.10.0` |
 | [PyYAML](https://github.com/yaml/pyyaml) | Forge設定のYAML読込み | MIT | 各`recipes/<robot>/model-forge-requirements.txt` |
-| [trimesh](https://github.com/mikedh/trimesh) | FR5のDAE mesh変換 | MIT | `recipes/fr5/model-forge-requirements.txt` |
+| [NumPy](https://github.com/numpy/numpy) | MathScavator9000 bucket proxy解析 | BSD-3-Clause | `recipes/excavator/bucket-proxy-requirements.txt` |
+| [trimesh](https://github.com/mikedh/trimesh) | FR5のDAE mesh変換、MathScavator9000 bucket断面解析 | MIT | `recipes/fr5/model-forge-requirements.txt`、`recipes/excavator/bucket-proxy-requirements.txt` |
 | [pycollada](https://github.com/pycollada/pycollada) | trimeshのCOLLADA読込み | BSD | `recipes/fr5/model-forge-requirements.txt` |
 | [nlohmann/json](https://github.com/nlohmann/json) | C++ JSON処理 | MIT | 利用元CMake projectの解決結果 |
 | ROS 2とROS message packages | ROS 2実行環境、`JointTrajectory`、`JointState` | packageごとに異なる | Docker base imageと各ROS package metadata |

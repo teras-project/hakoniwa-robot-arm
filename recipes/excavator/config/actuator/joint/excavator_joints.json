@@ -1,0 +1,26 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-trajectory-actuator.schema.json",
+  "spec": {
+    "joints": [
+      {"type": "position", "name": "base_chassis_joint", "limit": {"lower": -3.1416, "upper": 3.1416, "effort": 0}},
+      {"type": "position", "name": "chassis_boom_joint", "limit": {"lower": -0.5585, "upper": 1.2415, "effort": 0}},
+      {"type": "position", "name": "boom_stick_joint", "limit": {"lower": -0.8179, "upper": 1.0821, "effort": 0}},
+      {"type": "position", "name": "stick_bucket_joint", "limit": {"lower": -2.2689, "upper": 0.0, "effort": 0}}
+    ]
+  },
+  "mjcf_binding": {
+    "config_style": "hakoniwa-sdf-like",
+    "runtime_source": "mjcf",
+    "actuators": [
+      {"name": "base_chassis_joint", "actuator_name": "base_chassis_joint_motor"},
+      {"name": "chassis_boom_joint", "actuator_name": "chassis_boom_joint_motor"},
+      {"name": "boom_stick_joint", "actuator_name": "boom_stick_joint_motor"},
+      {"name": "stick_bucket_joint", "actuator_name": "stick_bucket_joint_motor"}
+    ]
+  },
+  "pdu_config": {
+    "pdu_name": "joint_trajectory",
+    "update_rate_hz": 50.0,
+    "message_type": "trajectory_msgs/JointTrajectory"
+  }
+}

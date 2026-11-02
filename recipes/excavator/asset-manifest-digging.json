@@ -1,0 +1,99 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/hakoniwa-asset-manifest.schema.json",
+  "schema_version": 1,
+  "name": "MathScavator9000 Excavator Digging Worksite",
+  "description": "Explicit digging-worksite variant with a human-calibrated bucket proxy, HField, and simplified soil.",
+  "model": "excavator.soil.xml",
+  "pdu_def": "config/pdu/excavator-pdudef.json",
+  "endpoint": "config/endpoint/excavator_endpoint.json",
+  "components": [
+    {
+      "id": "joint_actuator",
+      "kind": "actuator",
+      "type": "joint_trajectory_actuator",
+      "config": "config/actuator/joint/excavator_joints.json",
+      "pdu_robot": "Excavator"
+    },
+    {
+      "id": "joint_states",
+      "kind": "state_output",
+      "type": "joint_state",
+      "config": "config/sensors/joint_state/excavator-joint-states.json",
+      "pdu_robot": "Excavator"
+    },
+    {
+      "id": "mobile_base",
+      "kind": "actuator",
+      "type": "differential_drive_twist",
+      "config": "config/actuator/mobile_base/excavator_drive.json",
+      "pdu_robot": "Excavator"
+    },
+    {
+      "id": "excavator_controller",
+      "kind": "controller",
+      "type": "auto_manual_excavator_controller",
+      "config": "config/controller/excavator_controller.json",
+      "pdu_robot": "Excavator"
+    },
+    {
+      "id": "manual_base_chassis_joint",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/manual_base_chassis_joint.json"
+    },
+    {
+      "id": "manual_chassis_boom_joint",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/manual_chassis_boom_joint.json"
+    },
+    {
+      "id": "manual_boom_stick_joint",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/manual_boom_stick_joint.json"
+    },
+    {
+      "id": "manual_stick_bucket_joint",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/manual_stick_bucket_joint.json"
+    },
+    {
+      "id": "left_track_wheel_1",
+      "kind": "actuator",
+      "type": "joint_velocity_actuator",
+      "config": "config/actuator/joint/left_track_wheel_1.json"
+    },
+    {
+      "id": "left_track_wheel_2",
+      "kind": "actuator",
+      "type": "joint_velocity_actuator",
+      "config": "config/actuator/joint/left_track_wheel_2.json"
+    },
+    {
+      "id": "left_track_wheel_3",
+      "kind": "actuator",
+      "type": "joint_velocity_actuator",
+      "config": "config/actuator/joint/left_track_wheel_3.json"
+    },
+    {
+      "id": "right_track_wheel_1",
+      "kind": "actuator",
+      "type": "joint_velocity_actuator",
+      "config": "config/actuator/joint/right_track_wheel_1.json"
+    },
+    {
+      "id": "right_track_wheel_2",
+      "kind": "actuator",
+      "type": "joint_velocity_actuator",
+      "config": "config/actuator/joint/right_track_wheel_2.json"
+    },
+    {
+      "id": "right_track_wheel_3",
+      "kind": "actuator",
+      "type": "joint_velocity_actuator",
+      "config": "config/actuator/joint/right_track_wheel_3.json"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+version: 1
+
+# This is the human-authored single source of truth. Any future value change
+# must be reviewed against the transparent visual mesh before it remains accepted.
+calibration:
+  status: accepted
+  note: Human-approved in the transparent MuJoCo Viewer on 2026-08-29; proceed to one-sphere physical validation.
+
+frame:
+  parent: stick_bucket_link
+  description: >-
+    バケット関節の子リンク座標。ここから調整用bucket_proxy_frameの原点と姿勢を定義する。
+    Viewerではマゼンタの球が親原点、長いRGB軸が親の+X/+Y/+Zを示す。
+  origin_in_parent_m: [0.0, 0.0, 0.0]
+  rpy_deg: [0.0, 0.0, 0.0]
+
+defaults:
+  contype: 1
+  conaffinity: 1
+  condim: 4
+  friction: [1.0, 0.02, 0.001]
+  density: 0
+  group: 0
+
+parts:
+  floor:
+    enabled: true
+    type: box
+    description: >-
+      バケット内部の底板。開口下端の切削刃から、奥側のbackへ土砂を受け渡す内面に対応する。
+    center_m: [0.0, -1.40, -0.7]
+    dimensions_m: [1.00, 1.20, 0.08]
+    rpy_deg: [-35.0, 0.0, 0.0]
+    rgba: [0.0, 0.85, 1.0, 0.65]
+
+  back:
+    enabled: true
+    type: box
+    description: >-
+      バケット内部の奥・ヒンジ側にある背板。開口から+Y方向へ見た最奥の内面に対応する。
+    center_m: [0.0, -0.45, -0.5]
+    dimensions_m: [1.00, 0.08, 1.3]
+    rpy_deg: [-40.0, 0.0, 0.0]
+    rgba: [0.2, 1.0, 0.2, 0.65]
+
+  side_left:
+    enabled: true
+    type: box
+    description: >-
+      開口からバケット奥（+Y）を見たときの左側板で、bucket_proxy_frameの-X側に対応する。
+    center_m: [-0.52, -1.2, -0.10]
+    dimensions_m: [0.07, 1.75, 1.05]
+    rpy_deg: [-32.0, 0.0, 0.0]
+    rgba: [0.2, 0.5, 1.0, 0.55]
+
+  side_right:
+    enabled: true
+    type: box
+    description: >-
+      開口からバケット奥（+Y）を見たときの右側板で、bucket_proxy_frameの+X側に対応する。
+    center_m: [0.52, -1.2, -0.10]
+    dimensions_m: [0.07, 1.75, 1.05]
+    rpy_deg: [-32.0, 0.0, 0.0]
+    rgba: [0.2, 0.5, 1.0, 0.55]
+
+  cutting_edge:
+    enabled: true
+    type: box
+    description: >-
+      バケット開口下端の連続した刃先。個々の爪ではなく、土砂が最初に乗る下刃全体を近似する。
+    center_m: [0.0, -1.8, 0.4]
+    dimensions_m: [1.05, 1.5, 0.05]
+    rpy_deg: [90.0, 0.0, 0.0]
+    rgba: [1.0, 0.2, 0.2, 0.75]
+
+debug:
+  enabled: true
+  visual_mesh_alpha: 0.30
+  show_proxy_frame: true
+  show_part_labels: true
+  show_collision_parts: true
+  show_parent_frame: true

@@ -1,0 +1,6 @@
+{
+  "name": "excavator_endpoint",
+  "pdu_def_path": "../pdu/excavator-pdudef.json",
+  "cache": "cache_buffer.json",
+  "comm": "comm_shm.json"
+}

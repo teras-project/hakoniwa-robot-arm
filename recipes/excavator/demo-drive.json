@@ -1,0 +1,12 @@
+{
+  "send_rate_hz": 20.0,
+  "commands": [
+    {"duration_sec": 2.0, "linear_x": 0.0, "angular_z": 0.0},
+    {"duration_sec": 4.0, "linear_x": 0.6, "angular_z": 0.0},
+    {"duration_sec": 1.0, "linear_x": 0.0, "angular_z": 0.0},
+    {"duration_sec": 4.0, "linear_x": 0.0, "angular_z": 0.28},
+    {"duration_sec": 1.0, "linear_x": 0.0, "angular_z": 0.0},
+    {"duration_sec": 4.0, "linear_x": 0.45, "angular_z": -0.12},
+    {"duration_sec": 1.0, "linear_x": 0.0, "angular_z": 0.0}
+  ]
+}

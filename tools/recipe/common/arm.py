@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
 import shlex
+import re
 import subprocess
 import sys
 import time
@@ -19,6 +21,7 @@ from _hakoniwa_composer import (  # noqa: E402
     arm_root,
     load_foundation_consumer_module,
     load_foundation_module,
+    model_forge_root,
     model_install_dir,
     workspace_work_dir,
 )
@@ -93,7 +96,11 @@ def endpoint_library(prefix: Path) -> Path:
 
 
 def runtime_target() -> str:
-    return "robot-arm-hakoniwa-asset"
+    return (
+        "robot-excavator-hakoniwa-asset"
+        if ROBOT_ID == "excavator"
+        else "robot-arm-hakoniwa-asset"
+    )
 
 
 def binary(workspace) -> Path:
@@ -136,6 +143,8 @@ def environment(foundation, workspace) -> dict[str, str]:
 
 def plant_runtime_ready(log: str) -> bool:
     """Accept the startup markers emitted by supported Robot Runtime releases."""
+    if ROBOT_ID == "excavator":
+        return "Robot excavator Hakoniwa asset started" in log
     return any(
         marker in log
         for marker in (
@@ -151,6 +160,78 @@ def write_json(path: Path, data: object) -> Path:
     temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     temporary.replace(path)
     return path
+
+
+def update_excavator_checksums(robot_dir: Path, names: tuple[str, ...]) -> None:
+    checksum_path = required(robot_dir / "SHA256SUMS", "excavator checksums")
+    replacements = {
+        name: hashlib.sha256((robot_dir / name).read_bytes()).hexdigest()
+        for name in names
+    }
+    output = []
+    seen = set()
+    for line in checksum_path.read_text(encoding="utf-8").splitlines():
+        fields = line.split(maxsplit=1)
+        if len(fields) == 2 and fields[1] in replacements:
+            name = fields[1]
+            output.append(f"{replacements[name]}  {name}")
+            seen.add(name)
+        else:
+            output.append(line)
+    missing = set(replacements) - seen
+    if missing:
+        raise RecipeError(f"SHA256SUMS is missing generated entries: {sorted(missing)}")
+    checksum_path.write_text("\n".join(output) + "\n", encoding="utf-8")
+
+
+def materialize_excavator_worksite() -> None:
+    pack = arm_root()
+    recipe = pack / "recipes/excavator"
+    robot_dir = model_install_dir("excavator")
+    tools_python = required(
+        model_forge_root("excavator") / "tools-venv/bin/python",
+        "Recipe-owned bucket proxy Python; run tools/install-excavator-bucket-proxy-tools.bash",
+    )
+    steps = (
+        [
+            str(tools_python),
+            str(pack / "tools/generate_excavator_bucket_collision.py"),
+            str(robot_dir / "excavator.mobile.xml"),
+            "--config", str(recipe / "bucket-collision.yaml"),
+            "--output", str(robot_dir / "excavator.bucket.xml"),
+            "--debug-output", str(robot_dir / "excavator.bucket-proxy-debug.xml"),
+        ],
+        [
+            sys.executable,
+            str(pack / "tools/generate_excavator_hfield.py"),
+            str(robot_dir / "excavator.bucket.xml"),
+            "--config", str(recipe / "config/environment/terrain.json"),
+            "--heightmap-output", str(robot_dir / "excavator-worksite-height.png"),
+            "--output", str(robot_dir / "excavator.terrain.xml"),
+        ],
+        [
+            sys.executable,
+            str(pack / "tools/generate_excavator_soil.py"),
+            str(robot_dir / "excavator.terrain.xml"),
+            "--config", str(recipe / "config/environment/soil.json"),
+            "--output", str(robot_dir / "excavator.soil.xml"),
+        ],
+    )
+    print("Materializing the excavator digging worksite from Recipe configuration.")
+    for command in steps:
+        if run(command, cwd=pack) != 0:
+            raise RecipeError("excavator digging-worksite materialization failed")
+    update_excavator_checksums(
+        robot_dir,
+        (
+            "excavator.bucket.xml",
+            "excavator.bucket-proxy-debug.xml",
+            "excavator.terrain.xml",
+            "excavator.soil.xml",
+            "excavator-worksite-height.png",
+        ),
+    )
+    print("Excavator digging worksite is up to date.")
 
 
 def manifest_model_path(manifest: dict) -> Path:
@@ -314,21 +395,34 @@ def materialize_role_profiles(*, ros2_tcp: bool) -> list[Path]:
 def configure(
     headless: bool,
     ros2_tcp: bool = False,
+    manual_demo: bool = False,
     gamepad_controller: bool = False,
+    digging_worksite: bool = False,
     arm_environment: bool = False,
     realtime_sync_cycle_msec: int = 0,
 ) -> int:
-    if ros2_tcp and gamepad_controller:
-        raise RecipeError("--ros2-tcp and --gamepad are exclusive")
+    if sum(bool(value) for value in (ros2_tcp, manual_demo, gamepad_controller)) > 1:
+        raise RecipeError("--ros2-tcp, --manual-demo, and --gamepad are exclusive")
     if realtime_sync_cycle_msec < 0:
         raise RecipeError("--realtime-sync-cycle-msec must be >= 0")
     foundation, workspace = workspace_and_foundation()
     foundation.prepare_workspace(workspace)
     python = foundation_python(foundation, workspace)
-    if arm_environment:
+    if digging_worksite and ROBOT_ID != "excavator":
+        raise RecipeError("--digging-worksite is available only for excavator")
+    if digging_worksite and arm_environment:
+        raise RecipeError("--digging-worksite and --environment are exclusive")
+    effective_digging_worksite = digging_worksite or (
+        arm_environment and ROBOT_ID == "excavator"
+    )
+    if effective_digging_worksite:
+        materialize_excavator_worksite()
+    if arm_environment and ROBOT_ID != "excavator":
         materialize_arm_environment()
     manifest_name = "asset-manifest.json"
-    if arm_environment:
+    if effective_digging_worksite:
+        manifest_name = "asset-manifest-digging.json"
+    elif arm_environment:
         manifest_name = "asset-manifest-environment.json"
     manifest_template = required(
         arm_root() / "recipes" / ROBOT_ID / manifest_name,
@@ -344,6 +438,10 @@ def configure(
         f"{ROBOT_LABEL} demo trajectory",
     )
     manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
+    component_ids = {
+        component.get("id") for component in manifest_data.get("components", [])
+    }
+    mobile_base_enabled = "mobile_base" in component_ids
     assets = [
         {
             "name": f"{ROBOT_ID}-plant",
@@ -385,25 +483,82 @@ def configure(
         })
     else:
         if gamepad_controller:
-            gamepad_sender = required(
-                arm_root() / "tools/control/arm_manual.py",
-                "robot-arm gamepad input adapter",
-            )
-            gamepad_args = [
-                str(gamepad_sender),
-                str(manifest),
-                "--device-profile",
-                str(required(
-                    arm_root() / "profiles/gamepads/dualsense/macos-pygame.json",
-                    "DualSense macOS pygame profile",
-                )),
-            ]
-            gamepad_asset_name = f"{ROBOT_ID}-gamepad-controller"
+            if mobile_base_enabled:
+                gamepad_sender = required(
+                    arm_root() / "tools/control/ps5_excavator_manual.py",
+                    "excavator gamepad Manual Controller",
+                )
+                gamepad_args = [
+                    str(gamepad_sender),
+                    str(manifest),
+                    "--mapping",
+                    str(required(
+                        arm_root() / "recipes" / ROBOT_ID / "ps5-controller-macos.json",
+                        "excavator gamepad mapping",
+                    )),
+                ]
+                gamepad_asset_name = f"{ROBOT_ID}-ps5-controller"
+            else:
+                gamepad_sender = required(
+                    arm_root() / "tools/control/arm_manual.py",
+                    "robot-arm gamepad input adapter",
+                )
+                gamepad_args = [
+                    str(gamepad_sender),
+                    str(manifest),
+                    "--device-profile",
+                    str(required(
+                        arm_root() / "profiles/gamepads/dualsense/macos-pygame.json",
+                        "DualSense macOS pygame profile",
+                    )),
+                ]
+                gamepad_asset_name = f"{ROBOT_ID}-gamepad-controller"
             assets.append({
                 "name": gamepad_asset_name,
                 "activation_timing": "after_start",
                 "command": str(python),
                 "args": gamepad_args,
+                "depends_on": [f"{ROBOT_ID}-plant"],
+                "delay_sec": 1,
+            })
+        elif mobile_base_enabled and manual_demo:
+            manual_sender = required(
+                arm_root() / "recipes/excavator/demos/send_excavator_manual_demo.py",
+                "excavator manual demo sender",
+            )
+            manual_sequence = required(
+                arm_root() / "recipes" / ROBOT_ID / "demo-manual.json",
+                f"{ROBOT_LABEL} manual sequence",
+            )
+            assets.append({
+                "name": f"{ROBOT_ID}-manual-demo-sender",
+                "activation_timing": "after_start",
+                "command": str(python),
+                "args": [
+                    str(manual_sender), str(manifest),
+                    "--sequence", str(manual_sequence), "--keep-alive",
+                ],
+                "depends_on": [f"{ROBOT_ID}-plant"],
+                "delay_sec": 1,
+            })
+        elif mobile_base_enabled:
+            excavator_demo = required(
+                arm_root() / "recipes/excavator/demos/send_excavator_demo.py",
+                "excavator demo sender",
+            )
+            drive_sequence = required(
+                arm_root() / "recipes" / ROBOT_ID / "demo-drive.json",
+                f"{ROBOT_LABEL} drive sequence",
+            )
+            assets.append({
+                "name": f"{ROBOT_ID}-demo-sender",
+                "activation_timing": "after_start",
+                "command": str(python),
+                "args": [
+                    str(excavator_demo), str(manifest),
+                    "--drive", str(drive_sequence),
+                    "--trajectory", str(trajectory),
+                ],
                 "depends_on": [f"{ROBOT_ID}-plant"],
                 "delay_sec": 1,
             })
@@ -446,7 +601,9 @@ def configure(
     print("Profiles        : " + ", ".join(str(path) for path in profiles))
     print(f"Mode            : {'headless' if headless else 'viewer'}")
     print(f"ROS 2 TCP       : {'enabled' if ros2_tcp else 'disabled'}")
+    print(f"Manual demo     : {'enabled' if manual_demo else 'disabled'}")
     print(f"Gamepad         : {'enabled' if gamepad_controller else 'disabled'}")
+    print(f"Digging worksite: {'enabled' if effective_digging_worksite else 'disabled'}")
     print(f"Arm environment : {'enabled' if arm_environment else 'disabled'}")
     print(
         "Realtime pacing : "
@@ -456,6 +613,67 @@ def configure(
             else "disabled"
         )
     )
+    return 0
+
+
+def bucket_proxy(viewer: bool) -> int:
+    if ROBOT_ID != "excavator":
+        raise RecipeError("bucket-proxy is available only for excavator")
+    pack = arm_root()
+    tools_python = model_forge_root("excavator") / "tools-venv/bin/python"
+    if not tools_python.is_file():
+        raise RecipeError(
+            "Recipe-owned bucket proxy Python is missing; run: "
+            "bash tools/install-excavator-bucket-proxy-tools.bash"
+        )
+    generator = required(
+        pack / "tools/generate_excavator_bucket_collision.py",
+        "bucket collision generator",
+    )
+    analyzer = required(
+        pack / "tools/analyze_excavator_bucket_collision.py",
+        "bucket collision analyzer",
+    )
+    config = required(
+        pack / "recipes/excavator/bucket-collision.yaml",
+        "bucket collision calibration YAML",
+    )
+    mobile = required(
+        model_install_dir("excavator") / "excavator.mobile.xml",
+        "excavator mobile model",
+    )
+    bucket = model_install_dir("excavator") / "excavator.bucket.xml"
+    debug_model = model_install_dir("excavator") / "excavator.bucket-proxy-debug.xml"
+    analysis_dir = workspace_work_dir() / "tools/excavator-bucket-proxy"
+    analysis_svg = analysis_dir / "bucket-proxy-sections.svg"
+    analysis_dir.mkdir(parents=True, exist_ok=True)
+    if run(
+        [
+            str(tools_python), str(analyzer),
+            "--mesh", str(model_install_dir("excavator") / "model/meshes/stick_bucket_link.STL"),
+            "--config", str(config),
+            "--output", str(analysis_svg),
+        ],
+        cwd=pack,
+    ) != 0:
+        return 1
+    command = [
+        str(tools_python), str(generator), str(mobile),
+        "--config", str(config),
+        "--output", str(bucket),
+        "--debug-output", str(debug_model),
+        *(["--viewer"] if viewer else []),
+    ]
+    if run(command, cwd=pack) != 0:
+        return 1
+    print(f"Calibration YAML: {config}")
+    print(f"Debug model     : {debug_model}")
+    print(f"Reference SVG   : {analysis_svg}")
+    status_match = re.search(
+        r"(?m)^\s*status:\s*([A-Za-z0-9_-]+)\s*$",
+        config.read_text(encoding="utf-8"),
+    )
+    print(f"Calibration     : {status_match.group(1) if status_match else 'unknown'}")
     return 0
 
 
@@ -550,6 +768,41 @@ def state(command: list[str], env: dict[str, str]) -> str | None:
         return None
 
 
+def observed_nonzero_wheel_control(log_content: str) -> bool:
+    for payload in re.findall(r"ctrl=\[([^\]]+)\]", log_content):
+        try:
+            controls = [float(value.strip()) for value in payload.split(",")]
+        except ValueError:
+            continue
+        if len(controls) >= 6 and any(abs(value) > 0.05 for value in controls[-6:]):
+            return True
+    return False
+
+
+def excavator_ground_motion_is_stable(log_content: str) -> bool:
+    samples = []
+    pattern = re.compile(
+        r"time=\s*([0-9.]+).*?base_xy=\[\s*([-0-9.]+),\s*([-0-9.]+)\]"
+        r".*?base_z=([-0-9.]+).*?up_z=([-0-9.]+)"
+    )
+    for match in pattern.finditer(log_content):
+        time_sec, x_m, y_m, z_m, up_z = map(float, match.groups())
+        if time_sec >= 1.0:
+            samples.append((x_m, y_m, z_m, up_z))
+    if len(samples) < 2:
+        return False
+    displacement_m = (
+        (samples[-1][0] - samples[0][0]) ** 2
+        + (samples[-1][1] - samples[0][1]) ** 2
+    ) ** 0.5
+    heights = [sample[2] for sample in samples]
+    return (
+        displacement_m >= 0.5
+        and max(heights) - min(heights) <= 0.08
+        and min(sample[3] for sample in samples) >= 0.98
+    )
+
+
 def start() -> int:
     foundation, workspace = workspace_and_foundation()
     required(binary(workspace), "Arm runtime")
@@ -561,14 +814,22 @@ def start() -> int:
     status_command = launcher_command(foundation, workspace, "status")
     plant_log = workspace.recipe_logs / f"{ROBOT_ID}-plant.out"
     sender_log = workspace.recipe_logs / f"{ROBOT_ID}-trajectory-sender.out"
+    demo_log = workspace.recipe_logs / f"{ROBOT_ID}-demo-sender.out"
     bridge_log = workspace.recipe_logs / f"{ROBOT_ID}-ros2-tcp-bridge.out"
     launcher = json.loads((workspace.recipe_config / "launcher.json").read_text(encoding="utf-8"))
     asset_names = {asset.get("name") for asset in launcher.get("assets", [])}
     ros2_tcp = f"{ROBOT_ID}-ros2-tcp-bridge" in asset_names
-    gamepad_asset_name = (
-        f"{ROBOT_ID}-gamepad-controller"
-        if f"{ROBOT_ID}-gamepad-controller" in asset_names
-        else None
+    excavator_demo_enabled = f"{ROBOT_ID}-demo-sender" in asset_names
+    manual_demo_enabled = f"{ROBOT_ID}-manual-demo-sender" in asset_names
+    gamepad_asset_name = next(
+        (
+            name for name in (
+                f"{ROBOT_ID}-gamepad-controller",
+                f"{ROBOT_ID}-ps5-controller",
+            )
+            if name in asset_names
+        ),
+        None,
     )
     gamepad_controller_enabled = gamepad_asset_name is not None
     current = None
@@ -576,12 +837,19 @@ def start() -> int:
         current = state(status_command, env)
         plant = plant_log.read_text(encoding="utf-8", errors="replace") if plant_log.is_file() else ""
         sender = sender_log.read_text(encoding="utf-8", errors="replace") if sender_log.is_file() else ""
+        demo = demo_log.read_text(encoding="utf-8", errors="replace") if demo_log.is_file() else ""
         bridge = bridge_log.read_text(encoding="utf-8", errors="replace") if bridge_log.is_file() else ""
         ready_peer = "initializing endpoint container" in bridge if ros2_tcp else "Successfully sent" in sender
+        if excavator_demo_enabled:
+            ready_peer = "Excavator demo phase 1/3" in demo
+        if manual_demo_enabled:
+            manual_log = workspace.recipe_logs / f"{ROBOT_ID}-manual-demo-sender.out"
+            manual = manual_log.read_text(encoding="utf-8", errors="replace") if manual_log.is_file() else ""
+            ready_peer = "Manual command[0]" in manual
         if gamepad_controller_enabled:
             gamepad_log = workspace.recipe_logs / f"{gamepad_asset_name}.out"
             gamepad = gamepad_log.read_text(encoding="utf-8", errors="replace") if gamepad_log.is_file() else ""
-            ready_peer = "pygame controller:" in gamepad
+            ready_peer = "pygame controller:" in gamepad or "PS5 controller:" in gamepad
         runtime_ready = plant_runtime_ready(plant)
         if current == "RUNNING" and runtime_ready and ready_peer:
             print(f"{ROBOT_LABEL} demo is running in the background.")
@@ -607,27 +875,53 @@ def smoke() -> int:
             return 1
         plant_log = workspace.recipe_logs / f"{ROBOT_ID}-plant.out"
         plant_error_log = workspace.recipe_logs / f"{ROBOT_ID}-plant.err"
+        demo_log = workspace.recipe_logs / f"{ROBOT_ID}-demo-sender.out"
         sender_log = workspace.recipe_logs / f"{ROBOT_ID}-trajectory-sender.out"
+        launcher = json.loads(
+            (workspace.recipe_config / "launcher.json").read_text(encoding="utf-8")
+        )
+        twist_enabled = any(
+            asset.get("name") == f"{ROBOT_ID}-demo-sender"
+            for asset in launcher.get("assets", [])
+        )
         for _ in range(40):
+            content = plant_log.read_text(encoding="utf-8", errors="replace") if plant_log.is_file() else ""
             sender = (
                 sender_log.read_text(encoding="utf-8", errors="replace")
                 if sender_log.is_file()
                 else ""
             )
-            command_observed = "Successfully sent" in sender
+            command_observed = (
+                "Accepted JointTrajectory" in content
+                if ROBOT_ID == "excavator"
+                else "Successfully sent" in sender
+            )
             if command_observed:
-                time.sleep(1.0)
-                plant_output = (
-                    plant_log.read_text(encoding="utf-8", errors="replace")
-                    if plant_log.is_file()
-                    else ""
-                )
+                if twist_enabled:
+                    for _ in range(50):
+                        twist = (
+                            demo_log.read_text(encoding="utf-8", errors="replace")
+                            if demo_log.is_file()
+                            else ""
+                        )
+                        if "Successfully completed Twist sequence" in twist:
+                            break
+                        time.sleep(0.5)
+                    else:
+                        print(
+                            f"[NG] staged excavator drive did not complete: {demo_log}",
+                            file=sys.stderr,
+                        )
+                        return 1
+                else:
+                    time.sleep(1.0)
+                content = plant_log.read_text(encoding="utf-8", errors="replace")
                 plant_error = (
                     plant_error_log.read_text(encoding="utf-8", errors="replace")
                     if plant_error_log.is_file()
                     else ""
                 )
-                combined_plant_log = f"{plant_output}\n{plant_error}".lower()
+                combined_plant_log = f"{content}\n{plant_error}".lower()
                 instability_markers = (
                     "simulation is unstable",
                     "nan, inf or huge value",
@@ -639,14 +933,34 @@ def smoke() -> int:
                         file=sys.stderr,
                     )
                     return 1
-                print(f"[OK] {ROBOT_LABEL} Launcher-managed JointTrajectory PDU send completed.")
+                if twist_enabled and not observed_nonzero_wheel_control(content):
+                    print(
+                        f"[NG] non-zero crawler wheel control was not observed: {plant_log}",
+                        file=sys.stderr,
+                    )
+                    return 1
+                if twist_enabled and not excavator_ground_motion_is_stable(content):
+                    print(
+                        f"[NG] crawler travel was not grounded and stable: {plant_log}",
+                        file=sys.stderr,
+                    )
+                    return 1
+                if ROBOT_ID == "excavator":
+                    print(f"[OK] {ROBOT_LABEL} accepted the Launcher-managed command input.")
+                else:
+                    print(f"[OK] {ROBOT_LABEL} Launcher-managed JointTrajectory PDU send completed.")
+                if twist_enabled:
+                    print(f"[OK] {ROBOT_LABEL} completed the Launcher-managed Twist sequence.")
+                    print(f"[OK] {ROBOT_LABEL} applied non-zero crawler wheel controls.")
+                    print(f"[OK] {ROBOT_LABEL} moved without chassis jump or tip-over.")
                 print(
                     f"[OK] No MuJoCo numerical-instability marker was observed for "
                     f"{ROBOT_LABEL} during the smoke window."
                 )
                 return 0
             time.sleep(0.5)
-        print(f"[NG] trajectory PDU send completion was not observed: {sender_log}", file=sys.stderr)
+        evidence_log = plant_log if ROBOT_ID == "excavator" else sender_log
+        print(f"[NG] command evidence was not observed: {evidence_log}", file=sys.stderr)
         return 1
     finally:
         run(launcher_command(foundation, workspace, "terminate"), env=environment(foundation, workspace))
@@ -655,17 +969,22 @@ def smoke() -> int:
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=f"Configure and operate the {ROBOT_LABEL} arm Recipe")
     commands = ["configure", "build", "doctor", "start", "status", "stop", "smoke"]
+    if ROBOT_ID == "excavator":
+        commands.append("bucket-proxy")
     result.add_argument("command", choices=commands)
     result.add_argument("--headless", action="store_true")
     result.add_argument("--ros2-tcp", action="store_true", help="launch the host SHM/TCP bridge instead of the demo sender")
+    result.add_argument("--manual-demo", action="store_true", help="launch the excavator Manual Controller demo instead of Auto")
     result.add_argument(
         "--gamepad", dest="gamepad_controller", action="store_true",
         help="launch the pygame gamepad input adapter instead of the Auto demo")
     result.add_argument(
         "--ps5-controller", dest="gamepad_controller", action="store_true",
         help=argparse.SUPPRESS)
+    result.add_argument("--digging-worksite", action="store_true", help="select the explicit HField, accepted bucket-proxy, and simplified-soil manifest")
     result.add_argument("--environment", action="store_true", help="select the robot-specific Recipe environment")
     result.add_argument("--realtime-sync-cycle-msec", type=int, default=0, help="reconcile simulation and wall time at this simulation-time interval; 0 disables pacing")
+    result.add_argument("--viewer", action="store_true", help="open the bucket proxy calibration Viewer")
     result.add_argument("--mujoco-root", type=Path, default=sibling("hakoniwa-mujoco-robots", "HAKONIWA_MUJOCO_ROBOTS_ROOT"))
     return result
 
@@ -679,10 +998,14 @@ def main(argv: list[str] | None = None) -> int:
             return configure(
                 args.headless,
                 args.ros2_tcp,
+                args.manual_demo,
                 args.gamepad_controller,
+                args.digging_worksite,
                 args.environment,
                 args.realtime_sync_cycle_msec,
             )
+        if args.command == "bucket-proxy":
+            return bucket_proxy(args.viewer)
         if args.command == "build":
             return build(absolute(args.mujoco_root), args.headless)
         if args.command == "doctor":

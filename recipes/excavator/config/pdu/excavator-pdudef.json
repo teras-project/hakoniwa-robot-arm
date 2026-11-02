@@ -1,0 +1,8 @@
+{
+  "paths": [
+    {"id": "excavator-pdutypes", "path": "excavator-pdutypes.json"}
+  ],
+  "robots": [
+    {"name": "Excavator", "pdutypes_id": "excavator-pdutypes"}
+  ]
+}

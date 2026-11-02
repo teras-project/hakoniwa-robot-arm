@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hakoniwa.dev/schemas/robot-arm/components/excavator-controller-v1.schema.json",
+  "title": "Excavator Auto Manual Controller Configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec"],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manual_timeout_sec",
+        "manual_joint_velocity_pdu",
+        "manual_cmd_vel_pdu",
+        "manual_joint_velocity_limits_rad_s",
+        "manual_joint_actuator_components"
+      ],
+      "properties": {
+        "manual_timeout_sec": { "type": "number", "exclusiveMinimum": 0 },
+        "manual_joint_velocity_pdu": { "type": "string", "minLength": 1 },
+        "manual_cmd_vel_pdu": { "type": "string", "minLength": 1 },
+        "manual_joint_velocity_limits_rad_s": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "number", "exclusiveMinimum": 0 }
+        },
+        "manual_joint_actuator_components": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}
