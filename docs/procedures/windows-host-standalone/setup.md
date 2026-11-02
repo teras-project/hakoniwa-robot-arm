@@ -100,6 +100,8 @@ python tools\workspace.py run -- python tools\recipe.py doctor `
 
 Foundationと各依存が`SATISFIED`になればOKです。生成物は既定で`hakoniwa-business-pack\work\`以下へ配置されます。
 
+Nova5 RecipeはCore本体を1つの`hako.dll`にする構成（`core_shared: true`）を要求します。この構成を要求する前のRecipeで作ったFoundationがある場合、planに`hakoniwa-core-pro`の`INCOMPATIBLE`が表示されます。これは想定どおりです。上の`recipe.py configure`がCore PROと依存するEndpoint、Bridge、Pythonを再buildし、Core PROのdoctorに`Windows Core library: shared hako.dll`が表示されます。
+
 ## 5. Model Forge Recipeを準備する
 
 実行するコマンド（Windows Host PowerShell、`hakoniwa-business-pack`のrepository root）:

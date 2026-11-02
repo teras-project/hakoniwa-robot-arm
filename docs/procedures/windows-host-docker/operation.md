@@ -136,7 +136,7 @@ python tools\workspace.py run -- python `
 | --- | --- |
 | `docker run`がHost pathをmountできない | Docker Desktopが起動済みか、checkoutを置いたdrive／directoryへのfile sharingが許可されているか確認する。 |
 | ROS 2 BridgeがHostへ接続できない | Hostの`status`が`RUNNING`か、設定が`host.docker.internal`か、Windows Defender Firewallで必要な通信を拒否していないか確認する。 |
-| Host TCP Bridgeが`0xc0000005`で終了する | 古いFoundation成果物が残っている可能性がある。最新revisionを取得してRecipeを再configureし、Core receiptの`callback_assets_shared: true`を確認してから再buildする。 |
+| Host TCP Bridgeが`0xc0000005`で終了する | 古いFoundation成果物が残っている可能性がある。最新revisionを取得してRecipeを再configureし、Core receiptの`callback_assets_shared: true`と`core_shared: true`を確認してから再buildする。 |
 | `ros2 topic info`にtopicがない | Host TCP Bridge、Container側ROS 2 Bridgeの順で起動しているか、`HAKONIWA_ROS_BINDING`が`/ros2-tcp/ros/binding.json`を指しているか確認する。 |
 
 調査時は、Hostの`work\recipes\nova5-joint-trajectory-control\logs\`と、各ROS 2端末の標準出力をセットで確認してください。
