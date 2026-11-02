@@ -39,6 +39,7 @@
 - 箱庭ロボットランタイムによる関節制御
 - ROS 2 `JointTrajectory` による関節軌道制御
 - ROS 2 `JointState` による関節状態の取得
+- [Dobot公式ROS 2サービスを使ったNova5操作](ros2_packages/hakoniwa_dobot/README.md)（任意構成、`real`／`virtual`／`both`）
 - Dockerを利用したROS 2実行環境
 - Host上のMuJoCo Viewerを利用したシミュレーション可視化
 
