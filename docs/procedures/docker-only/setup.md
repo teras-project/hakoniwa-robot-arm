@@ -1,6 +1,6 @@
 # docker-onlyセットアップ
 
-Nova5 Runtime、MuJoCo、箱庭Core、TCP Bridge、ROS 2 Bridge、monitor、controlを同じUbuntu Container内で実行するための準備手順です。HostのFoundationやROS 2は使用しません。
+Nova5 Runtime、MuJoCo、箱庭 Core、TCP Bridge、Dobot Service / topic Bridge、monitor、control を同じ Ubuntu Container 内で実行する準備手順です。基本経路は `backend:=virtual`、実機の `real`／`both` は発展構成です。Host の Foundation や ROS 2 は使用しません。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で準備します。
 
 手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
 
@@ -81,11 +81,11 @@ Workdir: /workspace/work-docker-jazzy; Foundation mmap: tmpfs
 標準の生成先（参照用。コマンドではない）:
 
 ```text
-箱庭work:     /workspace/work-docker-jazzy
-ROS 2成果物: /workspace/ros2-work-jazzy
+箱庭work:         /workspace/work-docker-jazzy
+Dobot / ROS成果物: /workspace/work-docker-jazzy/ros2
 ```
 
-どちらもHostへmountしたcheckout用ディレクトリ内に残ります。ただし、`foundation/runtime/mmap`だけはContainer内tmpfsであり、Container終了時に破棄されます。
+どちらもHostへmountしたcheckout用ディレクトリ内に残ります。`docker/run.bash` は従来の `HAKONIWA_ROS2_WS=/workspace/ros2-work-jazzy` も設定しますが、Dobot 手順では生成先として使用しません。ただし、`foundation/runtime/mmap`だけはContainer内tmpfsであり、Container終了時に破棄されます。
 
 ## 3. 箱庭Workspaceへ入る
 

@@ -1,6 +1,6 @@
 # Host ROS 2連携ビルド
 
-[Host ROS 2連携セットアップ](setup.md)でNova5 MJCFを生成してから実行します。この手順では、箱庭RuntimeとROS 2をTCPで接続する構成を生成します。
+[Host ROS 2連携セットアップ](setup.md)でNova5 MJCFを生成してから実行します。**基本経路は Dobot 仮想サービス**です。`real`／`both` は実機接続の発展構成です。
 
 手順: [一覧](../README.md) → [セットアップ](setup.md) → **ビルド** → [起動・動作確認](operation.md)
 
@@ -49,16 +49,16 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 
 続けてROS 2基盤環境をbuildします。
 
-## 3. ROS 2 workspaceをbuildする
+## 3. Dobot の ROS / Native 環境をビルドする
 
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | 新しい通常Host terminal。この作業で`host-ros-build`になる。`host-hako`では実行しない。 |
 | 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
 | この作業の入力成果物 | 手順1で生成した`activate-host-ros-build.bash`と、手順2でbuildしたNova5 Runtime |
-| この作業のゴール | EndpointとROS Bridgeを含むROS 2基盤環境が`../work-host/ros2`へ生成され、doctorが成功する。 |
+| この作業のゴール | 公式 `.srv`、Dobot driver / demo、Service Bridge / PDU-RPC、Dobot 型・サービス binding が `../work-host` に生成される。 |
 
-手順1のconfigureがROS 2成果物の配置先と端末profileを生成済みです。この手順では、その配置先へEndpointとROS Bridgeをbuildします。利用者がCMake option、Python環境、共有ライブラリの検索pathを個別に設定する必要はありません。
+手順1の configure が端末 profile を生成済みです。この手順では ROS 端末と箱庭 Native 端末を**分離**します。[Dobot 共通ビルド手順](../ros2/dobot-build.md)の1・2を以下の環境で実行してください。
 
 生成されるファイルの配置と、`ros2 run`からEndpoint共有ライブラリ、TCP、箱庭Runtimeまでの接続関係は、[ROS 2 Bridge基盤環境の成果物と接続関係](../../design/ros2-bridge-environment.md)を参照してください。
 
@@ -77,47 +77,40 @@ profileのファイル情報が表示されれば続けます。`No such file or
 ```bash
 source ../work-host/profiles/activate-host-ros-build.bash
 
-/usr/bin/python3 tools/recipe/ros2_workspace.py build \
-  --ros-distro jazzy
-/usr/bin/python3 tools/recipe/ros2_workspace.py doctor
+export DOBOT_WORK="$(realpath ../work-host)"
+export ROS_DISTRO=jazzy
+export DOBOT_RPC_ADDRESS=127.0.0.1
 ```
 
-Ubuntu 22.04／Humbleでは`--ros-distro humble`を指定します。buildログに`ROS workspace installed:`と`source .../work-host/ros2/activate.bash`が表示され、続くdoctorがerrorなく終了すればOKです。
+Ubuntu 22.04／Humble では `ROS_DISTRO=humble` に置き換えます。ROS profile による `ROS_DOMAIN_ID` は既定 73 です。共通手順1・2の実行後、次を確認します。
 
-`error:`または`missing installed ROS executable`が表示された場合はNGです。
+```bash
+/usr/bin/python3 tools/recipe/ros2_workspace.py doctor --workdir "$DOBOT_WORK/ros2"
+```
 
-## 4. サンプルpackageを標準colconでbuildする
+## 4. Native PDU-RPC と Dobot Asset をビルドし Launcher を切り替える
 
 | 項目 | 内容 |
 | --- | --- |
-| 実行端末 | `host-ros-build` |
+| 実行端末 | `host-hako`（ROS 端末ではない） |
 | 実行ディレクトリ | `hakoniwa-robot-arm`のrepository root |
-| この作業の入力成果物 | 前段でbuildした`../work-host/ros2/activate.bash`と、`ros2_packages/hakoniwa_arm_samples` |
-| この作業のゴール | `monitor`と`control`を含むサンプル用ROS 2ワークスペースが`../work-host/ros2-samples`へ生成される。 |
+| この作業の入力成果物 | 前段の生成型・Native サービス設定と、Nova5 Runtime の既存 CMake build |
+| この作業のゴール | `robot-arm-dobot-asset` が生成され、Launcher が公式サービスを受ける専用 Asset に切り替わる。 |
 
-サンプルは箱庭基盤ではなくROS 2アプリケーションなので、標準のcolconでbuildします。最初に箱庭ROS 2基盤環境をsourceします。
+`host-hako` で Robot Arm ルートへ移動し、[Dobot 共通ビルド手順](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)の3を実行します。
 
-実行するコマンド（`host-ros-build`）:
+実行する設定コマンド（`host-hako`）:
 ```bash
-source ../work-host/ros2/activate.bash
-
-colcon --log-base ../work-host/ros2-samples/log build \
-  --base-paths ros2_packages/hakoniwa_arm_samples \
-  --build-base ../work-host/ros2-samples/build \
-  --install-base ../work-host/ros2-samples/install \
-  --symlink-install \
-  --packages-select hakoniwa_arm_samples
-
-source ../work-host/ros2-samples/install/setup.bash
-ros2 pkg executables hakoniwa_arm_samples
+export DOBOT_WORK="$(realpath ../work-host)"
+test -d "$DOBOT_WORK/foundation/install/include"
 ```
 
-colconのsummaryに`1 package finished`が表示され、最後に`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されればOKです。
+共通手順3の CMake と `adapt_launcher.py` の成功、`launcher.pre-dobot.json` の生成を確認してください。`nova5.py configure` を再実行した場合は Launcher 適用をやり直します。
 
 次は[Host ROS 2連携の起動・動作確認](operation.md)へ進みます。
 
 ## 応用：独自ROS 2 nodeを追加する
 
-まず[Host ROS 2連携の起動・動作確認](operation.md)を最後まで実行し、付属の`monitor`と`control`でROS 2連携が成功することを確認してください。
+まず[Host ROS 2連携の起動・動作確認](operation.md)で virtual の状態と安全な小動作を確認してください。
 
 標準動作確認の完了後、この基盤環境を利用して独自packageを作成できます。手順は[独自ROS 2 nodeの作成とbuild](../ros2/custom-nodes.md)を参照してください。

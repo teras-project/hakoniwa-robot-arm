@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import math
+import time
 
 import rclpy
 from rclpy.node import Node
@@ -15,17 +17,26 @@ except ImportError:  # ROS 2 Humble does not export RCLError from rclpy.exceptio
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Monitor Hakoniwa arm joint states")
-    parser.add_argument("--topic", default="/pdu/joint_states")
+    parser.add_argument("--topic", default="/joint_states_robot")
+    parser.add_argument("--interval", type=float, default=1.0, help="minimum seconds between log lines")
     parser.add_argument(
         "--once",
         action="store_true",
         help="exit after receiving the first JointState message",
     )
     args = parser.parse_args()
+    if not math.isfinite(args.interval) or args.interval <= 0:
+        parser.error("--interval must be a positive finite number")
     rclpy.init()
     node = Node("hakoniwa_arm_joint_state_monitor")
+    last_log = -math.inf
 
     def receive(message: JointState) -> None:
+        nonlocal last_log
+        now = time.monotonic()
+        if not args.once and now - last_log < args.interval:
+            return
+        last_log = now
         values = ", ".join(
             f"{name}={position:.3f}" for name, position in zip(message.name, message.position)
         )

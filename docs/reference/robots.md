@@ -44,10 +44,11 @@ python "$ARM_PACK/tools/recipe/$ROBOT.py" doctor
 その他のオプションもNova5と共通です。
 生成されるファイルは、ロボット名ごとに `HAKONIWA_WORK_DIR`配下のディレクトリ内に作成されます。
 
-## ROS 2の関節名
+## Robot Model の関節名
 
-ROS 2の`control` sampleプログラムでは、ジョイント名はNova5を基準に構成されています。
-他のロボットの場合は、`--joint-names`を指定することで、Nova5以外のジョイント名を明示的に設定できます。
+関節名は各モデルの軌道JSONや JointState に使用します。ROS 2 の
+`hakoniwa_arm_samples control` は Dobot 公式サービスによる **Nova5 専用**の
+小動作サンプルで、他のロボットの関節名を `--joint-names` で指定する機能はありません。
 
 | Robot | 関節名（軌道順） |
 | --- | --- |
@@ -55,10 +56,7 @@ ROS 2の`control` sampleプログラムでは、ジョイント名はNova5を基
 | FR5 | `j1_joint j2_joint j3_joint j4_joint j5_joint j6_joint` |
 | SO-101 | `shoulder_pan shoulder_lift elbow_flex wrist_flex wrist_roll gripper` |
 
-```bash
-ros2 run hakoniwa_arm_samples control \
-  --joint-names j1_joint j2_joint j3_joint j4_joint j5_joint j6_joint
-```
+Nova5 の ROS 2 操作は[公式サービスの手順](../procedures/ros2/arm-operations.md)を参照してください。
 
 ROS 2 TCP設定の生成先も、次のようにロボット名で切り替わります。
 

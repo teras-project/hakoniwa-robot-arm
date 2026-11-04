@@ -39,7 +39,7 @@ C++ソース・Viewer有無 ─── build ─────┴──> Nova5実�
 | `--headless` | Viewerの組み込みと起動抑止 | `build --headless`と`configure --headless` | 実行ファイルと`launcher.json` |
 | C++ソース、`CMakeLists.txt` | Runtime applicationの実装 | `nova5.py build` | Recipe work内の実行ファイル |
 | `hakoniwa-pdu-endpoint`、`hakoniwa-pdu-ros` | Endpoint native／CFFIとROS 2 Bridge | `ros2_workspace.py build`でROS 2基盤環境を再build | `$HAKONIWA_ROS2_WS/native/`、`$HAKONIWA_ROS2_WS/install/` |
-| `ros2_packages/hakoniwa_arm_samples` | monitor／control sample node | 標準の`colcon build`でサンプル用ワークスペースを再build | `../work-host/ros2-samples/install/` |
+| `ros2_packages/hakoniwa_arm_samples` | Dobotサービスのcontrol／JointState monitor | 標準の`colcon build`でDobotアプリ用ワークスペースを再build | `../work-host/dobot-apps/install/` |
 
 表中の`install/`は、特記がない限り`$HAKONIWA_WORK_DIR/model-forge/nova5/install/`を表します。
 
@@ -126,7 +126,7 @@ $HAKONIWA_ROS2_WS/
 └── activate.bash
 ```
 
-このworkspaceはEndpointとBridgeだけを含むROS 2基盤環境です。付属の`hakoniwa_arm_samples`と利用者packageは、それぞれ標準colconで別のROS 2ワークスペースへbuildします。生成先と実行時の接続関係は[ROS 2 Bridge基盤環境の成果物と接続関係](ros2-bridge-environment.md)を参照してください。
+このworkspaceにはEndpointとBridge（`--with-rpc`指定時はPDU-RPC）が入ります。付属の`hakoniwa_dobot`と`hakoniwa_arm_samples`は、標準colconで別のDobotアプリ用ワークスペースへbuildします。生成先と実行時の接続関係は[ROS 2 Bridge基盤環境の成果物と接続関係](ros2-bridge-environment.md)を参照してください。
 
 HostとDockerのROS 2 TCP設定の受け渡しには、次のディレクトリを`HAKONIWA_ROS2_TCP_CONFIG`として使用します。
 

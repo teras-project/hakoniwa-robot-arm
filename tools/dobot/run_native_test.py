@@ -34,7 +34,7 @@ def main():
             client = Path(__file__).parent / 'test/native_roundtrip.py'
             result = subprocess.run([sys.executable, str(client), '--library', a.library,
                 '--config', str(root / 'rpc-client-services.json'), '--endpoint', str(root / 'endpoints.json')],
-                text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=25.)
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=40.)
             print(result.stdout[-4000:])
             if result.returncode: raise RuntimeError('Native roundtrip failed')
         except Exception:

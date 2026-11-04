@@ -70,4 +70,11 @@ if(HAKO_ARM_ENABLE_DOBOT)
     target_link_libraries(robot-arm-dobot-asset PRIVATE hako-robot-arm-manifest-factory
         mujoco-common ${HAKO_LIBMUJOCO} hakoniwa_pdu_rpc::rpc)
     set_target_properties(robot-arm-dobot-asset PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+    if(WIN32)
+        add_custom_command(TARGET robot-arm-dobot-asset POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:robot-arm-dobot-asset>
+                $<TARGET_FILE_DIR:robot-arm-dobot-asset>
+            COMMAND_EXPAND_LISTS)
+    endif()
 endif()

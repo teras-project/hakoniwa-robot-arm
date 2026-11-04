@@ -7,7 +7,8 @@ import shlex
 import subprocess
 import sys
 
-SERVICES = ('RequestControl', 'EnableRobot', 'DisableRobot', 'ServoJ', 'Stop',
+SERVICES = ('RequestControl', 'EnableRobot', 'DisableRobot', 'ServoJ', 'MovJ',
+            'MovL', 'SpeedFactor', 'DO', 'Stop',
             'GetAngle', 'RobotMode', 'ClearError', 'GetErrorID')
 
 

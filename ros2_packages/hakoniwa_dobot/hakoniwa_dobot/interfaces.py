@@ -1,4 +1,5 @@
-SERVICES = ('RequestControl', 'EnableRobot', 'DisableRobot', 'ServoJ', 'Stop',
+SERVICES = ('RequestControl', 'EnableRobot', 'DisableRobot', 'ServoJ', 'MovJ',
+            'MovL', 'SpeedFactor', 'DO', 'Stop',
             'GetAngle', 'RobotMode', 'ClearError', 'GetErrorID')
 QUERIES = frozenset(('GetAngle', 'RobotMode', 'GetErrorID'))
 DEFAULT_API = '/dobot_bringup_ros2/srv'

@@ -104,6 +104,30 @@ def main():
         arrived = angles()[0]
         if abs(arrived - target) >= .2:
             raise RuntimeError(f"Did not arrive at {target} degrees: {arrived}")
+        if call("SpeedFactor", ratio=10).res != 0:
+            raise RuntimeError("SpeedFactor rejected")
+        if call("DO", index=1, status=1, time=500).res != 0:
+            raise RuntimeError("DO rejected")
+        demo_first = dict(zip("abcdef", [50., -8., 0., 0., 0., 0.]))
+        demo_second = dict(zip("abcdef", [0., -8., 0., 0., 0., 0.]))
+        for motion in (demo_first, demo_second):
+            if call("MovJ", mode=True, **motion).res != 0:
+                raise RuntimeError(f"MovJ rejected: {motion}")
+        time.sleep(4.)
+        demo_mid = angles()[0]
+        if not 12. < demo_mid < 42.:
+            raise RuntimeError(f"First queued MovJ did not move: {demo_mid}")
+        time.sleep(18.)
+        demo_final = angles()
+        if abs(demo_final[0]) >= .2 or abs(demo_final[1] + 8.) >= .2:
+            raise RuntimeError(f"Queued MovJ commands did not finish in order: {demo_final}")
+        if call("MovL", mode=False).res == 0:
+            raise RuntimeError("Unsupported Cartesian MovL was accepted")
+        if call("MovL", mode=True, a=3., b=-8.).res != 0:
+            raise RuntimeError("Joint-target MovL rejected")
+        time.sleep(2.)
+        if abs(angles()[0] - 3.) >= .2:
+            raise RuntimeError("Joint-target MovL did not reach target")
     finally:
         try:
             if enabled:
@@ -117,7 +141,8 @@ def main():
     print(json.dumps({"initial_deg": initial, "mid_deg": middle,
                       "stop_deg": stopped, "held_deg": held,
                       "after_ack_deg": immediately, "target_deg": target,
-                      "arrived_deg": arrived,
+                      "arrived_deg": arrived, "demo_mid_deg": demo_mid,
+                      "demo_final_deg": demo_final,
                       "result": "PASS"}, indent=2))
 
 

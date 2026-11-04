@@ -13,6 +13,14 @@ if(NOT MUJOCO_LIBS)
 endif()
 list(GET MUJOCO_LIBS 0 MUJOCO_LIBRARY)
 add_executable(dobot-native-smoke native_smoke.cpp)
+if(APPLE)
+  # The Python wheel's dylib retains a framework install name that the wheel does not ship.
+  get_filename_component(MUJOCO_LIBRARY_NAME "${MUJOCO_LIBRARY}" NAME)
+  add_custom_command(TARGET dobot-native-smoke POST_BUILD
+    COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change
+      "@rpath/mujoco.framework/Versions/A/${MUJOCO_LIBRARY_NAME}"
+      "${MUJOCO_LIBRARY}" "$<TARGET_FILE:dobot-native-smoke>")
+endif()
 target_include_directories(dobot-native-smoke PRIVATE ../../apps/dobot
   "${HAKONIWA_ROBOT_RUNTIME_ROOT}/include" "${HAKONIWA_ROBOT_RUNTIME_ROOT}/src"
   "${HAKO_DOBOT_PDU_DIR}/pdu/types" "${MUJOCO_ROOT}/include")

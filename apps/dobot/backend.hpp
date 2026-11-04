@@ -36,6 +36,14 @@ inline int hako_convert_cpp2pdu_array_string_varray(const std::vector<std::strin
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_DisableRobotResponsePacket.hpp"
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_ServoJRequestPacket.hpp"
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_ServoJResponsePacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_MovJRequestPacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_MovJResponsePacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_MovLRequestPacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_MovLResponsePacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_SpeedFactorRequestPacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_SpeedFactorResponsePacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_DORequestPacket.hpp"
+#include "dobot_msgs_v4_msgs/pdu_cpptype_conv_DOResponsePacket.hpp"
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_StopRequestPacket.hpp"
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_StopResponsePacket.hpp"
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_GetAngleRequestPacket.hpp"
@@ -70,6 +78,26 @@ using ServoJWire = rpc::HakoRpcAssetServiceServer<
     HakoCpp_ServoJRequest, HakoCpp_ServoJResponse,
     ::hako::pdu::msgs::dobot_msgs_v4_msgs::ServoJRequestPacket,
     ::hako::pdu::msgs::dobot_msgs_v4_msgs::ServoJResponsePacket>;
+using MovJWire = rpc::HakoRpcAssetServiceServer<
+    HakoCpp_MovJRequestPacket, HakoCpp_MovJResponsePacket,
+    HakoCpp_MovJRequest, HakoCpp_MovJResponse,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::MovJRequestPacket,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::MovJResponsePacket>;
+using MovLWire = rpc::HakoRpcAssetServiceServer<
+    HakoCpp_MovLRequestPacket, HakoCpp_MovLResponsePacket,
+    HakoCpp_MovLRequest, HakoCpp_MovLResponse,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::MovLRequestPacket,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::MovLResponsePacket>;
+using SpeedFactorWire = rpc::HakoRpcAssetServiceServer<
+    HakoCpp_SpeedFactorRequestPacket, HakoCpp_SpeedFactorResponsePacket,
+    HakoCpp_SpeedFactorRequest, HakoCpp_SpeedFactorResponse,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::SpeedFactorRequestPacket,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::SpeedFactorResponsePacket>;
+using DOWire = rpc::HakoRpcAssetServiceServer<
+    HakoCpp_DORequestPacket, HakoCpp_DOResponsePacket,
+    HakoCpp_DORequest, HakoCpp_DOResponse,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::DORequestPacket,
+    ::hako::pdu::msgs::dobot_msgs_v4_msgs::DOResponsePacket>;
 using StopWire = rpc::HakoRpcAssetServiceServer<
     HakoCpp_StopRequestPacket, HakoCpp_StopResponsePacket,
     HakoCpp_StopRequest, HakoCpp_StopResponse,
@@ -267,13 +295,19 @@ private:
 
 struct DobotCommand {
     enum class Kind {
-        RequestControl, EnableRobot, DisableRobot, ServoJ, Stop,
+        RequestControl, EnableRobot, DisableRobot, ServoJ, MovJ, MovL,
+        SpeedFactor, DO, Stop,
         GetAngle, RobotMode, ClearError, GetErrorID
     };
     Kind kind;
     std::uint64_t token;
     Joints degrees {};
     std::vector<std::string> parameters;
+    bool joint_mode {false};
+    int ratio {0};
+    int index {0};
+    int status {0};
+    int time_ms {0};
 };
 
 class DobotRpcInput final : public rt::IControllerInput {
@@ -343,6 +377,34 @@ private:
             return {Kind::ServoJ, 0, {request.a, request.b, request.c,
                 request.d, request.e, request.f}, std::move(request.param_value)};
         }
+        if (name == "Dobot/MovJ") {
+            auto request = read<MovJWire, HakoCpp_MovJRequest>(incoming);
+            DobotCommand command {Kind::MovJ, 0, {request.a, request.b, request.c,
+                request.d, request.e, request.f}, std::move(request.param_value)};
+            command.joint_mode = request.mode;
+            return command;
+        }
+        if (name == "Dobot/MovL") {
+            auto request = read<MovLWire, HakoCpp_MovLRequest>(incoming);
+            DobotCommand command {Kind::MovL, 0, {request.a, request.b, request.c,
+                request.d, request.e, request.f}, std::move(request.param_value)};
+            command.joint_mode = request.mode;
+            return command;
+        }
+        if (name == "Dobot/SpeedFactor") {
+            auto request = read<SpeedFactorWire, HakoCpp_SpeedFactorRequest>(incoming);
+            DobotCommand command {Kind::SpeedFactor, 0};
+            command.ratio = request.ratio;
+            return command;
+        }
+        if (name == "Dobot/DO") {
+            auto request = read<DOWire, HakoCpp_DORequest>(incoming);
+            DobotCommand command {Kind::DO, 0};
+            command.index = request.index;
+            command.status = request.status;
+            command.time_ms = request.time;
+            return command;
+        }
         if (name == "Dobot/Stop") {
             (void)read<StopWire, HakoCpp_StopRequest>(incoming);
             return {Kind::Stop, 0};
@@ -403,6 +465,13 @@ private:
         case Kind::EnableRobot: return model_->enable();
         case Kind::DisableRobot: return model_->disable();
         case Kind::ServoJ: return model_->servo(command.degrees, command.parameters);
+        case Kind::MovJ: return model_->move(command.degrees, command.joint_mode,
+            command.parameters, false);
+        case Kind::MovL: return model_->move(command.degrees, command.joint_mode,
+            command.parameters, true);
+        case Kind::SpeedFactor: return model_->speed_factor(command.ratio);
+        case Kind::DO: return model_->set_digital_output(command.index,
+            command.status, command.time_ms);
         case Kind::Stop: return model_->stop();
         case Kind::GetAngle:
         case Kind::RobotMode:
@@ -494,6 +563,14 @@ private:
             send_result<DisableRobotWire, HakoCpp_DisableRobotResponse>(reply);
         else if (name == "Dobot/ServoJ")
             send_result<ServoJWire, HakoCpp_ServoJResponse>(reply);
+        else if (name == "Dobot/MovJ")
+            send_result<MovJWire, HakoCpp_MovJResponse>(reply);
+        else if (name == "Dobot/MovL")
+            send_result<MovLWire, HakoCpp_MovLResponse>(reply);
+        else if (name == "Dobot/SpeedFactor")
+            send_result<SpeedFactorWire, HakoCpp_SpeedFactorResponse>(reply);
+        else if (name == "Dobot/DO")
+            send_result<DOWire, HakoCpp_DOResponse>(reply);
         else if (name == "Dobot/Stop")
             send_result<StopWire, HakoCpp_StopResponse>(reply);
         else if (name == "Dobot/GetAngle") {

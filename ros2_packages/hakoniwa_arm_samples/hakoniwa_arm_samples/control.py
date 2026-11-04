@@ -1,105 +1,90 @@
+"""Move a small distance from the observed pose using Dobot's official services."""
 from __future__ import annotations
 
 import argparse
 import math
 import time
-from pathlib import Path
 
 import rclpy
+from dobot_msgs_v4.srv import EnableRobot, GetAngle, MovJ, RobotMode, SpeedFactor
 from rclpy.node import Node
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-
-from .trajectory_file import load_trajectory_file
 
 
-def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(description="Publish a robot-independent joint trajectory")
-    result.add_argument("--topic", default="/joint_trajectory")
-    result.add_argument(
-        "--trajectory",
-        type=Path,
-        help="JSON file containing joint_names and trajectory points",
-    )
-    result.add_argument("--joints", type=int)
-    result.add_argument(
-        "--joint-names",
-        nargs="+",
-        help="explicit joint names in trajectory order (overrides --joints)",
-    )
-    result.add_argument("--amplitude", type=float)
-    result.add_argument("--duration", type=float)
-    return result
+API = "/dobot_bringup_ros2/srv"
+
+
+def parse_angles(value: str) -> list[float]:
+    if not value.startswith("{") or not value.endswith("}"):
+        raise ValueError(f"invalid GetAngle response: {value!r}")
+    try:
+        angles = [float(part) for part in value.strip("{}").split(",")]
+    except ValueError as error:
+        raise ValueError(f"invalid GetAngle response: {value!r}") from error
+    if len(angles) != 6 or not all(math.isfinite(angle) for angle in angles):
+        raise ValueError(f"invalid GetAngle response: {value!r}")
+    return angles
+
+
+def call(node: Node, kind, name: str, request):
+    client = node.create_client(kind, f"{API}/{name}")
+    if not client.wait_for_service(timeout_sec=2.0):
+        raise RuntimeError(f"{name} service not available")
+    future = client.call_async(request)
+    rclpy.spin_until_future_complete(node, future, timeout_sec=2.0)
+    if not future.done():
+        future.cancel()
+        raise TimeoutError(f"{name} timed out; command outcome may be unknown, do not retry")
+    response = future.result()
+    if response is None or response.res != 0:
+        raise RuntimeError(f"{name} failed: {response!r}")
+    return response
 
 
 def main() -> None:
-    argument_parser = parser()
-    args = argument_parser.parse_args()
-    generated_options = (
-        args.joints,
-        args.joint_names,
-        args.amplitude,
-        args.duration,
-    )
-    if args.trajectory is not None and any(
-        value is not None for value in generated_options
-    ):
-        argument_parser.error(
-            "--trajectory cannot be combined with --joints, --joint-names, "
-            "--amplitude, or --duration"
-        )
-
-    if args.trajectory is not None:
-        try:
-            joint_names, point_specs = load_trajectory_file(args.trajectory)
-        except ValueError as error:
-            argument_parser.error(str(error))
-    else:
-        joint_count = 6 if args.joints is None else args.joints
-        amplitude = 0.35 if args.amplitude is None else args.amplitude
-        duration = 3.0 if args.duration is None else args.duration
-        joint_names = args.joint_names or [
-            f"joint{index}" for index in range(1, joint_count + 1)
-        ]
-        if not joint_names:
-            argument_parser.error("at least one joint is required")
-        point_specs = [
-            {
-                "positions": [
-                    amplitude * math.sin(phase + index * 0.35)
-                    for index in range(len(joint_names))
-                ],
-                "time_from_start": phase * duration,
-            }
-            for phase in (0.0, 1.0, 2.0, 3.0)
-        ]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--execute", action="store_true", help="enable and move the robot (including a real robot)")
+    parser.add_argument("--delta-deg", type=float, default=3.0, help="J1 displacement in degrees (maximum 5)")
+    args = parser.parse_args()
+    if not math.isfinite(args.delta_deg) or not 0 < abs(args.delta_deg) <= 5:
+        parser.error("--delta-deg must be nonzero and within +/-5 degrees")
 
     rclpy.init()
-    node = Node("hakoniwa_arm_trajectory_sample")
-    publisher = node.create_publisher(JointTrajectory, args.topic, 10)
-    message = JointTrajectory()
-    message.joint_names = joint_names
-    for point_spec in point_specs:
-        point = JointTrajectoryPoint()
-        point.positions = point_spec["positions"]
-        seconds = point_spec["time_from_start"]
-        point.time_from_start.sec = int(seconds)
-        nanoseconds = round((seconds - int(seconds)) * 1_000_000_000)
-        if nanoseconds == 1_000_000_000:
-            point.time_from_start.sec += 1
-            nanoseconds = 0
-        point.time_from_start.nanosec = nanoseconds
-        message.points.append(point)
-
-    deadline = time.monotonic() + 2.0
-    while publisher.get_subscription_count() == 0 and time.monotonic() < deadline:
-        rclpy.spin_once(node, timeout_sec=0.1)
-    publisher.publish(message)
-    node.get_logger().info(
-        f"published {len(message.points)} points for {len(joint_names)} joints to {args.topic}"
-    )
-    rclpy.spin_once(node, timeout_sec=0.2)
-    node.destroy_node()
-    rclpy.shutdown()
+    node = Node("hakoniwa_arm_control_sample")
+    try:
+        initial = parse_angles(call(node, GetAngle, "GetAngle", GetAngle.Request()).robot_return)
+        target = initial.copy()
+        target[0] += args.delta_deg
+        if abs(target[0]) > 350:
+            raise ValueError(f"J1 target is too close to its limit: {target[0]} degrees")
+        node.get_logger().info(f"Current (deg): {initial}; target (deg): {target}")
+        if not args.execute:
+            node.get_logger().info("Dry run: pass --execute after checking the robot and workspace")
+            return
+        call(node, EnableRobot, "EnableRobot", EnableRobot.Request())
+        speed = SpeedFactor.Request()
+        speed.ratio = 10
+        call(node, SpeedFactor, "SpeedFactor", speed)
+        move = MovJ.Request()
+        move.mode = True
+        move.a, move.b, move.c, move.d, move.e, move.f = target
+        call(node, MovJ, "MovJ", move)
+        node.get_logger().info("MovJ accepted; waiting for measured motion to finish")
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            mode = call(node, RobotMode, "RobotMode", RobotMode.Request())
+            if mode.robot_return == "{5}":
+                actual = parse_angles(call(node, GetAngle, "GetAngle", GetAngle.Request()).robot_return)
+                if max(abs(a - b) for a, b in zip(actual, target)) > 1:
+                    raise RuntimeError(f"MovJ ended away from target: {actual}")
+                node.get_logger().info(f"Reached target (deg): {actual}")
+                break
+            time.sleep(.5)
+        else:
+            raise TimeoutError("Motion did not finish in 15s; inspect robot before another command")
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":

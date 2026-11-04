@@ -1,11 +1,11 @@
-# Dobot 公式 ROS 2 API で Nova5 実機と箱庭を操作する初版
+# Dobot 公式 ROS 2 API で Nova5 実機と箱庭を操作する
 
 ユーザーは `dobot_msgs_v4/srv/*` をそのまま使います．実機は公式
 `dobot_bringup_v4_node`，箱庭は Service Bridge → TCP/PDU-RPC → MuJoCo の経路です．
 従来作成した `dobot_arm_samples bridge` はこの経路では起動しません．
 
-この初版の到達目標は ServoJ による関節移動，途中停止，実測角度の観測と，同じ要求の実機・箱庭への配送です．
-MoveIt の実行試験と完全な Dobot API 互換は次段階です．
+`virtual` では公式 `dobot_demo/demo.py` を変更せず実行できます．
+MoveIt の実行試験と完全な Dobot API 互換は対象外です．
 
 ## 実装範囲
 
@@ -15,6 +15,10 @@ MoveIt の実行試験と完全な Dobot API 互換は次段階です．
 | EnableRobot | 現在姿勢を保持して動作許可 |
 | DisableRobot | 軌道破棄・現在姿勢保持・動作指令禁止 |
 | ServoJ | J1..J6 の絶対角 deg，`t=秒` を受理し，物理時刻で線形補間 |
+| MovJ | `mode=true` の関節角 deg を受付順に実行．連続した2要求は上書きせずキューに積む |
+| MovL | `mode=true` の関節角 deg を低速で順に実行．**直線 TCP 軌道ではなく関節空間補間** |
+| SpeedFactor | 1..100% を受理．MovJ は最大60 deg/s，MovL は最大30 deg/s の割合で補間 |
+| DO | 1..24 の論理出力を保持．`time` が 1..60000 ms なら期限後に直前の値へ戻す．**物理 IO・グリッパには接続されない** |
 | Stop | 軌道を破棄し，その時点の実測姿勢を保持．Asset 自体は終了しない |
 | GetAngle | MuJoCo の現在関節角を deg の `{a,b,c,d,e,f}` 形式で返す |
 | RobotMode | 無効4，待機5，動作中7 |
@@ -25,6 +29,9 @@ MoveIt の実行試験と完全な Dobot API 互換は次段階です．
 `t` の対応範囲は0.004..120秒，省略時0.1秒です．その他の `param_value` は拒否します．
 範囲外角度/NaN/Inf/不正なパラメータも拒否します．未有効時は `res=-3`，不正値は `res=-1`．
 これらは初版の対応範囲のエラーであり，Dobot の全エラー体系の再現ではありません．
+MovJ/MovL は `mode=false`（TCP pose 指定）と追加の `param_value` を拒否します．
+直線軌道や TCP 姿勢指令が必要な用途では箱庭の `MovL` を使わないでください．
+移動指令の `res=0` はキューへの受付成功であり，現在の移動の完了を意味しません．
 
 正常系の結合判定では，`ServoJ` の `res=0` を指令の受理とみなし，到達完了とは区別します．
 到達は指定した `t` の経過後に `GetAngle` で別途確認します．`GetAngle` の
@@ -55,7 +62,10 @@ Runtime と PDU-ROS のパッチは各リポジトリで `git apply --check` 後
 
 ## 導入手順
 
-以下は既存 Nova5 の host-ros2 環境が動いている前提です．
+各構成で `virtual` を基本経路としてセットアップする場合は
+[共通のビルド手順](../../docs/procedures/ros2/dobot-build.md)と
+[各環境の起動手順](../../docs/procedures/README.md)に従ってください．
+以下は既存 Nova5 の host-ros2 環境から手動で切り替える場合の詳細例です．
 既存の Runtime / ドライバ / 独自 bridge は停止してから切り替えます．
 `dobot_ws` とリポジトリのパスは手元に合わせてください．
 
@@ -219,18 +229,27 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 ros2 service call /dobot_bringup_ros2/srv/RobotMode dobot_msgs_v4/srv/RobotMode '{}'
 ```
 
-付属の小動作サンプルも，公式 GetAngle / RobotMode / ServoJ だけを使います．
-現在角度を読み，J1 だけ +5°の目標を作ります．残り5軸をゼロで上書きしません．
+基本の小動作サンプルは公式 GetAngle / EnableRobot / SpeedFactor /
+MovJ / RobotMode を使います．現在角度から J1 だけ +3° を計算し，
+実行時は速度割合 10% を指定します．
 
 ```bash
-# 読み取りと目標表示だけ
-ros2 run hakoniwa_dobot jog --joint 1 --delta-deg 5 --duration 3
-# 既に有効・待機状態であることを確認してから実行
-ros2 run hakoniwa_dobot jog --joint 1 --delta-deg 5 --duration 3 --execute
+ros2 run hakoniwa_arm_samples control
+ros2 run hakoniwa_arm_samples control --execute
 ```
 
-サンプルは有効化を自動実行しません．`--execute` は実際に実機へ指令を送る指定です．
-同じ指令を繰り返すたび，その時の現在角度からさらに+5°になります．
+`--execute` は実機を含む接続先のロボットを有効化して動かします．
+`real` / `both` では作業空間と非常停止手段を確認し，安易に実行しないでください．
+`jog` は追加の ServoJ 操作例として利用できます．
+
+公式サンプルそのものも `virtual` で実行できます:
+
+```bash
+ros2 run dobot_demo demo
+```
+
+公式デモは J1 を絶対角 50° へ動かしてから 0° へ戻します．
+**`real` / `both` では実行しないでください**（実機用の安全な移動計画を別途確認する必要があります）．
 
 動作中に別端末から停止:
 
@@ -251,19 +270,20 @@ ros2 service call /hakoniwa/dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/Ge
 
 ## 同時配送の仕様と制限
 
-- 9サービスのうち GetAngle/RobotMode/GetErrorID は実機だけへ問い合わせます．
-- 他の6サービスは，同じ Request を実機と箱庭へそれぞれ `call_async()` します．
+- 13サービスのうち GetAngle/RobotMode/GetErrorID は実機だけへ問い合わせます．
+- 他の10サービスは，同じ Request を実機と箱庭へそれぞれ `call_async()` します．
 - ROS 上で両サービスが準備できていることを送信前に確認します．
 - 通常の成功応答は実機の内容です．いずれかが失敗した場合は失敗を返します．
 - 結果は `dobot_twin/status` に出します．timeout 時には結果不明であることをログへ出します．
 - 原子的な同時実行・ロールバックはありません．実機だけが受理した場合もあり得ます．
   別プロセス・RPC を通るので開始時刻の一致も保証しません．
 - 停止は通常の Dobot Stop 要求です．通信経路が使えない場合の非常停止の代わりにはなりません．
-- 初版は1台の Nova5 とその箱庭モデル向け．9サービス以外の公式サービスは同時配送の対象外です．
+- 1台の Nova5 とその箱庭モデル向け．13サービス以外の公式サービスは同時配送の対象外です．
 - Native Asset のポーズ変更・物理計算は simulation thread で行います．
 - Viewer pause 中は物理ステップが止まるため，サービスも期限切れになる場合があります．
-- 正常/動作中の簡易状態を実装し，Dobot 全アラーム，安全機構，I/O，MovJ/MovL，運動学，
-  任意ツール/負荷モデル，ServoJ のベンダー固有 gain 等は未対応です．
+- 正常/動作中の簡易状態と論理 DO を実装しています．Dobot 全アラーム，安全機構，
+  実 IO，Cartesian MovJ/MovL，直線 TCP 軌道，任意ツール/負荷モデル，
+  ServoJ のベンダー固有 gain 等は未対応です．
 - MoveIt は公式 action_move_server をこのAPIへ接続できる構造ですが，まだ実行検証していません．
   both では公式 joint state relay の入力を実機側へ remap し，箱庭の状態を混ぜない設定が必要です．
 
@@ -271,7 +291,7 @@ ros2 service call /hakoniwa/dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/Ge
 
 検証済み:
 
-- 公式 .srv から9サービスの PDU型・offset を生成．C++ converter のコンパイル．
+- 公式 .srv から13サービスの PDU型・offset を生成．C++ converter のコンパイル．
 - 本番 `CommandSource` / `Controller` / `Publisher` と本物の MuJoCo を使う headless 試験．
   TCP/PDU-RPC 経由で無効時の拒否，5°移動，途中停止，姿勢保持，次の移動，無効化を確認．
 - 実測例: 途中 1.960°，Stop直後 1.963°，0.7秒後 1.965°，次指令で 5.000°．
@@ -281,8 +301,14 @@ ros2 service call /hakoniwa/dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/Ge
   途中 1.955°，Stop直後 1.982°，0.7秒後 1.969°，
   再移動指令の受理直後 1.970°，1.3秒後 5.002°（目標5°，`t=1`）．
   停止前後の保持判定は0.7秒で角度差0.2°未満，到達判定は目標との差0.2°以内．
-- 改修後の `tools/dobot/virtual_ros_roundtrip.py` でも全9サービス，
-  停止・再移動を確認．Core reset 後も無効モードから現在姿勢+5°を操作可能．
+- 追加の4サービスを含む13サービスを Native TCP/PDU-RPC で起動し，
+  公式デモと同じ連続 MovJ（50°, -8° → 0°, -8°）の順次実行を確認．
+  4秒後の J1 は28.964°，終了後は0°，J2 は-8°．
+- macOS 上の headless Native MuJoCo Asset と Docker 内の ROS 2 Jazzy を接続し，
+  `backend:=virtual` で未変更の公式 `dobot_demo` を実行．
+  EnableRobot，SpeedFactor=10，連続 MovJ の受理と動作中の GetAngle=5.364° を確認．
+- 既存の `tools/dobot/virtual_ros_roundtrip.py` は停止・再移動に加え
+  新サービスと連続 MovJ の到達を検証します．
 - 物理ステップ停止中のサービス要求は期限切れになり，キュー上の要求に
   cancel 通知が届くことを確認．応答がない場合は ROS client 側でも期限を設けます．
 - C++ の補間・入力検査・取消，Python の設定と配送を試験．
@@ -331,3 +357,7 @@ ctest --test-dir /tmp/dobot-native-test --output-on-failure
 python3 tools/dobot/run_native_test.py --server /tmp/dobot-native-test/dobot-native-smoke \
   --config-root ../work-host/dobot-services/rpc --library "$HAKO_PDU_RPC_LIBRARY"
 ```
+
+macOS の Native 試験では、Endpoint と RPC の dylib を Python client から参照できるよう
+`DYLD_LIBRARY_PATH` に両方のインストール先の `lib` を追加します。`run_native_test.py`
+はホスト側の `--config-root` で生成した `127.0.0.1:54020` 宛の設定を使用してください。
