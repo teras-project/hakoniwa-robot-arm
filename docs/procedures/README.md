@@ -14,9 +14,10 @@
 | host+docker | [setup](host-docker/setup.md) | [build](host-docker/build.md) | [operation](host-docker/operation.md) |
 | docker-only | [setup](docker-only/setup.md) | [build](docker-only/build.md) | [operation](docker-only/operation.md) |
 
-環境をまだ選んでいない場合は[セットアップ手順](setup.md)から開始してください。各作業の入力、ゴール、成功判定の読み方は[手順の読み方と進行ゲート](conventions.md)にまとめています。
+ROS 利用構成の基本経路は **Dobot 公式サービスの `virtual`** です。`real`／`both` は実機接続と安全確認が必要な発展構成です。Windows native Host + Docker の[専用 Asset 手順](windows-host-docker/build.md)は未検証なので、各段階の成功判定を確認してください。環境をまだ選んでいない場合は[セットアップ手順](setup.md)から開始してください。各作業の入力、ゴール、成功判定の読み方は[手順の読み方と進行ゲート](conventions.md)にまとめています。
 
 ## ROS 2操作
 
 - [ROS 2によるアーム操作](ros2/arm-operations.md)
+- [Dobot 仮想サービスの共通ビルド手順](ros2/dobot-build.md)
 - [独自ROS 2 nodeの作成とbuild](ros2/custom-nodes.md)

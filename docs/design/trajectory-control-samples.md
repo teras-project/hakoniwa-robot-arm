@@ -1,19 +1,19 @@
-# JointTrajectoryサンプルの構成と変更方法
+# 箱庭単体 JointTrajectory と ROS 2 Dobot サンプル
 
-この文書は、箱庭単体版とROS 2版のJointTrajectoryサンプルについて、ソースの配置、軌道の設定方法、実行方法、変更の反映条件を説明します。環境のsetup、build、起動順序は[実行手順](../procedures/README.md)を使用してください。
+箱庭単体の JointTrajectory PDU と、Nova5 の ROS 2 Dobot サービス操作は別の経路です。環境のsetup、build、起動順序は[実行手順](../procedures/README.md)を使用してください。
 
-## 1. 2つのサンプル
+## 1. 2つの操作経路
 
 | 項目 | 箱庭単体版 | ROS 2版 |
 | --- | --- | --- |
 | 送信プログラム | `tools/control/send_joint_trajectory.py` | `ros2_packages/hakoniwa_arm_samples/hakoniwa_arm_samples/control.py` |
-| 軌道の指定 | `recipes/<robot>/demo-trajectory.json`または任意の外部JSON | 単体版と同じ外部JSON、またはCLIによる正弦軌道生成 |
-| 送信先 | SHM上のJointTrajectory PDU | ROS 2 `/joint_trajectory` topic |
-| Runtimeまでの経路 | sender → SHM PDU → Runtime | ROS 2 control → ROS Bridge → TCP → Endpoint → SHM PDU → Runtime |
-| 標準の実行方法 | `tools/recipe/<robot>.py start`でLauncherが自動起動 | `ros2 run hakoniwa_arm_samples control ...` |
-| 外部軌道ファイル | `--trajectory <file>` | `--trajectory <file>` |
+| 軌道の指定 | `recipes/<robot>/demo-trajectory.json`または任意の外部JSON | `GetAngle`から現在角を読み、小さな相対目標を作成 |
+| 送信先 | SHM上のJointTrajectory PDU | Dobot公式`GetAngle`、`EnableRobot`、`SpeedFactor`、`MovJ`サービス |
+| Runtimeまでの経路 | sender → SHM PDU → Runtime | ROS 2 control → Service Bridge → TCP/PDU-RPC → Dobot Asset → Runtime |
+| 標準の実行方法 | `tools/recipe/<robot>.py start`でLauncherが自動起動 | `ros2 run hakoniwa_arm_samples control`（既定はdry-run） |
+| 外部軌道ファイル | `--trajectory <file>` | 非対応。必要なら独自のDobotサービスクライアントを作成 |
 
-どちらも`trajectory_msgs/JointTrajectory`と同じ関節名、位置、開始からの時刻をRuntimeへ渡します。ただし、軌道を作る場所と入力方法が異なります。
+ROS 2 版は旧 `/joint_trajectory` topic を送信しません。箱庭単体版のsenderと外部軌道JSONの仕様は以下のとおりです。
 
 ## 2. 箱庭単体版
 
@@ -131,65 +131,29 @@ ros2_packages/hakoniwa_arm_samples/
 host-ros2構成では標準colcon build後に次の実行物が生成されます。
 
 ```text
-../work-host/ros2-samples/install/
+../work-host/dobot-apps/install/
 └── hakoniwa_arm_samples/lib/hakoniwa_arm_samples/
     ├── control
     └── monitor
 ```
 
-host+Dockerとdocker-onlyでは、選択した`HAKONIWA_ROS2_WS`に`-samples`を付けたworkspaceの`install/`以下へ生成されます。
+host+Dockerとdocker-onlyでは、選択した`DOBOT_WORK/dobot-apps/install/`以下へ生成されます。
 
-### 軌道の設定と実行
+### Dobot公式サービスによる実行
 
-ROS 2 `control`サンプルは、外部JSONを指定しない場合、CLIオプションから4点の正弦波状軌道を生成して`/joint_trajectory`へ1回publishします。
-
-```bash
-ros2 run hakoniwa_arm_samples control \
-  --topic /joint_trajectory \
-  --joints 6 \
-  --amplitude 0.15 \
-  --duration 2.0
-```
-
-| option | 意味 | default |
-| --- | --- | --- |
-| `--topic` | JointTrajectoryの送信先topic | `/joint_trajectory` |
-| `--trajectory` | 単体版と同じ形式の外部軌道JSON | 未指定 |
-| `--joints` | `joint1`から連番で生成する関節数 | `6` |
-| `--joint-names` | 関節名を順序付きで明示する。指定時は`--joints`より優先 | 未指定 |
-| `--amplitude` | 正弦波状に生成する目標位置の振幅 | `0.35` |
-| `--duration` | 連続する軌道点の時間間隔。最終点は`3 × duration`秒 | `3.0` |
-
-Nova5以外では関節名を明示します。FR5の例は次のとおりです。
+`control` は J1 の現在角から+3°を計算して表示し、`--execute` を付けた場合だけ
+`SpeedFactor=10` と `MovJ` を呼びます。受理応答と実測角の到達は別々に確認します。
 
 ```bash
-ros2 run hakoniwa_arm_samples control \
-  --topic /joint_trajectory \
-  --joint-names j1_joint j2_joint j3_joint j4_joint j5_joint j6_joint \
-  --amplitude 0.15 \
-  --duration 2.0
+ros2 run hakoniwa_arm_samples control
+ros2 run hakoniwa_arm_samples control --execute --delta-deg 3
+ros2 run hakoniwa_arm_samples monitor
 ```
 
-ROS 2側の詳細な端末準備と成功判定は[ROS 2によるアーム操作](../procedures/ros2/arm-operations.md)を参照してください。
-
-### 任意の軌道を送信する
-
-`--trajectory`へ、箱庭単体版と同じ`joint_names`と`points`を持つJSONを指定します。
-
-```bash
-ros2 run hakoniwa_arm_samples control \
-  --topic /joint_trajectory \
-  --trajectory /absolute/path/to/my-trajectory.json
-```
-
-`--trajectory`指定時はJSON内の関節名、軌道点、時刻、位置をそのまま使用します。`--joints`、`--joint-names`、`--amplitude`、`--duration`とは併用できません。JSON形式と検証条件は[箱庭単体版の軌道JSONの形式](#軌道jsonの形式)と共通です。
-
-外部JSONを使わず、プログラムで軌道を生成したい場合は次のいずれかを選びます。
-
-- `control.py`を変更し、サンプル用ROS 2ワークスペースを再buildする。
-- 独自ROS 2 nodeから`trajectory_msgs/msg/JointTrajectory`を`/joint_trajectory`へpublishする。
-
-独自nodeの配置とbuild方法は[独自ROS 2 nodeの作成とbuild](../procedures/ros2/custom-nodes.md)を参照してください。
+`monitor` の既定topicは `/joint_states_robot`、表示間隔は1秒です。
+実機を含む `real`／`both` で `--execute` を使う前に安全確認が必要です。
+同じ公式サービスを使う独自nodeの作成方法は[独自ROS 2 node](../procedures/ros2/custom-nodes.md)、
+利用構成と安全上の注意は[ROS 2によるアーム操作](../procedures/ros2/arm-operations.md)を参照してください。
 
 ## 4. 変更内容と必要な反映操作
 
@@ -199,7 +163,7 @@ ros2 run hakoniwa_arm_samples control \
 | 外部JSONを箱庭単体senderへ渡す | 不要 | 不要 | `send_joint_trajectory.py --trajectory ...`を実行 |
 | `tools/control/send_joint_trajectory.py` | 不要 | 不要 | Runtimeを停止して`start`し直す |
 | ROS 2 controlのCLI値 | 不要 | 不要 | `ros2 run ... control`を再実行 |
-| 外部JSONをROS 2 controlへ渡す | 不要 | 不要 | `ros2 run ... control --trajectory ...`を実行 |
+| ROS 2 controlの`--delta-deg`を変更 | 不要 | 不要 | dry-runで点検後、必要なら`--execute`を明示 |
 | `ros2_packages/.../control.py` | 不要 | サンプルworkspaceを再build | install環境をsourceして`ros2 run`を再実行 |
 | 独自ROS 2 package | 不要 | 独自workspaceをbuild | install環境をsourceしてnodeを実行 |
 

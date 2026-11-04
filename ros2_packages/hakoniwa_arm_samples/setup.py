@@ -16,7 +16,7 @@ setup(
     zip_safe=True,
     maintainer="tmori",
     maintainer_email="tmori@hakoniwa-lab.net",
-    description="Robot-independent ROS 2 samples for Hakoniwa robot arms.",
+    description="Dobot ROS 2 control and monitoring samples for the Nova5.",
     license="Apache-2.0",
     entry_points={
         "console_scripts": [

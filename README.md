@@ -2,7 +2,7 @@
 
 `hakoniwa-robot-arm` は、URDF / Xacro で記述されたROSロボットモデルをもとに、箱庭上でロボットアームシミュレータを構築・実行するためのシミュレーション開発基盤です。
 
-ロボットモデルをMuJoCo形式へ変換し、[箱庭ロボットランタイム](https://github.com/hakoniwalab/hakoniwa-robot-runtime)と組み合わせることで、実機を使用せずに関節制御や状態取得を行えます。また、ROS 2からの `JointTrajectory` による制御と `JointState` の取得にも対応しています。
+ロボットモデルをMuJoCo形式へ変換し、[箱庭ロボットランタイム](https://github.com/hakoniwalab/hakoniwa-robot-runtime)と組み合わせることで、実機を使用せずに関節制御や状態取得を行えます。Nova5 の ROS 2 基本経路は Dobot 公式 `dobot_msgs_v4/srv/*` サービスと `/joint_states_robot` です。実機の `real`／`both` は発展構成です。
 
 現在の対応状況：
 
@@ -37,43 +37,48 @@
 - URDF / Xacroで記述されたロボットモデルをMuJoCo形式へ変換
 - MuJoCoによるロボットアームの物理シミュレーション
 - 箱庭ロボットランタイムによる関節制御
-- ROS 2 `JointTrajectory` による関節軌道制御
-- ROS 2 `JointState` による関節状態の取得
+- [Dobot公式ROS 2サービスを使ったNova5操作](docs/procedures/ros2/arm-operations.md)（基本経路は `virtual`、実機の `real`／`both` は発展構成）
+- ROS 2 `/joint_states_robot` による状態取得
+- 公式 `dobot_demo/demo.py` を変更せず virtual で実行（実機・both では 50° 動作に注意し実行しない）
 - Dockerを利用したROS 2実行環境
 - Host上のMuJoCo Viewerを利用したシミュレーション可視化
 
 ## アーキテクチャ
 
-シミュレータ側とROS 2側をTCPで分離し、ROS 2標準メッセージを用いてロボットアームを制御・観測します。ROSトピックはROS 2側で終端し、シミュレータ側では箱庭PDUとして箱庭コアの共有メモリ（SHM）へ入出力します。
+シミュレータ側と ROS 2 側を TCP で分離します。Dobot 公式 ROS サービスは Service Bridge → PDU-RPC → Dobot Native Asset に接続し、関節状態は既存 TCP/PDU Bridge から `/joint_states_robot` へ remap します。ROS のサービス／topic は ROS 2 側で終端します。
 
 ```mermaid
 flowchart LR
   subgraph SIM["シミュレータ側<br/>Host / Docker"]
-    SimApp["Robot Armシミュレータ<br/>MuJoCo + 箱庭ロボットランタイム"]
+    SimApp["Dobot Native Asset<br/>MuJoCo + 箱庭ロボットランタイム"]
     Core["箱庭コア機能<br/>(SHM)"]
-    PduBridge["箱庭PDU<br/>TCP Bridge"]
-    SimApp <-->|"箱庭PDU<br/>JointTrajectory / JointState"| Core
-    Core <--> PduBridge
+    PduBridge["箱庭PDU<br/>TCP Bridge (状態)"]
+    Rpc["PDU-RPC server<br/>TCP 54020"]
+    SimApp -->|"JointState PDU"| Core
+    Core --> PduBridge
+    Rpc -->|"Dobot request"| SimApp
   end
 
   subgraph ROS["ROS 2側（Humble / Jazzy）<br/>Ubuntu / Docker"]
-    RosBridge["箱庭ROS Bridge"]
+    RosBridge["箱庭 ROS topic Bridge"]
+    Service["Dobot Service Bridge"]
     ControlNode["制御ノード"]
     MonitorNode["監視ノード"]
-    ControlNode -->|"/joint_trajectory<br/>trajectory_msgs/msg/JointTrajectory"| RosBridge
-    RosBridge -->|"/pdu/joint_states<br/>sensor_msgs/msg/JointState"| MonitorNode
+    ControlNode -->|"/dobot_bringup_ros2/srv/*<br/>dobot_msgs_v4/srv/*"| Service
+    RosBridge -->|"/joint_states_robot<br/>sensor_msgs/msg/JointState"| MonitorNode
   end
 
-  PduBridge <-->|"TCP（既定ポート: 54001）"| RosBridge
+  PduBridge -->|"TCP（既定ポート: 54001）"| RosBridge
+  Service -->|"TCP（既定ポート: 54020）"| Rpc
 ```
 
 ### シミュレータの構成
 
-シミュレータ側では、MuJoCoと箱庭ロボットランタイムがロボット定義を読み込み、物理シミュレーション、制御入力の受付、関節状態の出力を行います。箱庭PDU TCP Bridgeは、SHM上の箱庭PDUをROS 2側とのTCP通信へ中継します。MuJoCo Viewerを表示する実行と、Viewerを使用しないheadless実行を選択できます。
+シミュレータ側では、MuJoCo と箱庭ロボットランタイムが物理シミュレーション、Dobot サービスの受付、関節状態の出力を行います。PDU-RPC はサービス要求を Native Asset に送り、箱庭 PDU TCP Bridge は SHM 上の関節状態を ROS 2 側へ中継します。Viewer と headless を選択できます。
 
 ### ROS 2側の構成
 
-箱庭ROS Bridgeが、TCP上の箱庭PDUとROS 2標準メッセージを相互変換します。制御には `trajectory_msgs/msg/JointTrajectory`、状態取得には `sensor_msgs/msg/JointState` を使用します。シミュレータとROS 2をTCPで分離しているため、それぞれの実行環境を独立して構築できます。
+`dobot.launch.py backend:=virtual` は Service Bridge と topic Bridge を同時に起動します。制御には `dobot_msgs_v4/srv/GetAngle`、`MovJ`、`ServoJ` など、観測には `sensor_msgs/msg/JointState` を使用します。仮想 `MovL` の joint mode は関節空間の近似で Cartesian 直線ではなく、仮想 `DO` は 1～24 の状態／パルスのみで物理グリッパーはありません。[対応 API と安全上の注意](docs/procedures/ros2/arm-operations.md)を参照してください。
 
 ### 箱庭ロボットランタイム
 
@@ -102,7 +107,7 @@ flowchart LR
 | PDU Definition / Types | [`recipes/nova5/config/pdu/`](recipes/nova5/config/pdu) | Nova5が使用するPDU robot、channel、message type |
 | Endpoint | [`recipes/nova5/config/endpoint/nova5_endpoint.json`](recipes/nova5/config/endpoint/nova5_endpoint.json) | PDU Definitionと通信backendの選択 |
 
-`nova5.py configure`がwork側へ生成する`launcher.json`や、Forgeが生成するMJCFは直接編集しません。元となるManifest、config、Recipeを変更して再生成します。変更対象ごとのForge／configure／buildの区別、生成先、反映確認は[設定変更と反映方法](docs/design/configuration-workflow.md)を参照してください。
+`nova5.py configure`がwork側へ生成する`launcher.json`や、Forgeが生成するMJCFは手作業で編集しません。Dobot構成は[専用の変換ツール](docs/procedures/ros2/dobot-build.md)を使ってLauncherを切り替え、再configure後は再適用します。変更対象ごとのForge／configure／buildの区別、生成先、反映確認は[設定変更と反映方法](docs/design/configuration-workflow.md)を参照してください。
 
 ## ライセンスとRobot Model
 
@@ -163,9 +168,9 @@ Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証
 | 箱庭側 Python   | 3.12                                |
 | Build System | CMake / colcon                      |
 
-HostがmacOSまたはWindowsの場合、ROS 2環境をDocker Container上で実行し、Host上の箱庭ロボットアームシミュレータとTCP Bridgeを介して接続します。Windows 11では、Nova5の箱庭単体RuntimeとMuJoCo Viewerに加えて、Docker Desktop上のROS 2 JazzyからJointTrajectoryを入力し、JointStateを取得するhost+Docker構成まで確認しています。
+macOS の host+docker では ROS 2 を Docker Container 上で、箱庭の Native Asset を Host 上で実行します。Windows 11 の箱庭単体 Runtime と旧 ROS topic 経路は確認済みですが、[Dobot Native Asset / RPC を使う Windows host+Docker 手順](docs/procedures/windows-host-docker/build.md)は未検証です。各段階の成功判定を確認して進んでください。既存の動作確認実績を新サービス経路の検証済みと混同しないでください。
 
-Ubuntu 24.04では、native host-ros2構成でROS 2からJointTrajectoryを入力し、Nova5が動作することを確認しています。
+Ubuntu 24.04 native host-ros2 の従来経路は動作確認済みです。Dobot 仮想サービス経路の各 platform の検証状況は[Dobot の説明](ros2_packages/hakoniwa_dobot/README.md)を参照してください。
 
 ## 前提ソフトウェア
 
@@ -211,19 +216,19 @@ Windows 11上で箱庭RuntimeとMuJoCo Viewerをnative実行し、ROS 2を介さ
 
 ### host-ros2
 
-箱庭Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードを同じUbuntu Host上で実行し、`JointTrajectory`による制御と`JointState`の取得を確認します。
+箱庭 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROS ノードを同じ Ubuntu Host 上で実行します。基本経路は Dobot 仮想サービスと `/joint_states_robot` です。`real`／`both` は実機との安全確認を要する発展構成です。
 
 ### host+docker
 
-Host上でシミュレータ、Docker Container上でROS 2 BridgeとROSノードを実行します。macOSでROS 2を利用する場合の基本構成です。HostとDockerの生成物は、それぞれ `HAKONIWA_WORK_DIR` と `HAKONIWA_ROS2_WS` で分離します。
+Host 上で Dobot Native Asset、Docker Container 上で ROS 2 Service / topic Bridge と操作ノードを実行します。macOS で ROS 2 を利用する場合の基本構成です。Dobot 成果物は Host の `../work-host` と Container の `/workspace/work-host` の共有 mount に配置します。
 
 ### windows-host-docker
 
-Windows 11上でNova5 RuntimeとMuJoCo Viewerをnative実行し、Docker Desktop上でROS 2 BridgeとROSノードを実行します。PowerShellからWorkspaceとDocker CLIを操作し、`host.docker.internal`経由でHost TCP Bridgeへ接続します。
+Windows 11 native の Nova5 Runtime と Docker Desktop を組み合わせ、[Dobot仮想サービスの手順](docs/procedures/windows-host-docker/build.md)を実行できます。Native PDU-RPCと専用AssetのWindowsビルド・結合は未検証のため、失敗した段階で停止してください。
 
 ### docker-only
 
-シミュレータとROS 2を同一のLinux Container内で実行します。HostへPython、CMake、ROS 2などの開発環境を導入せずに動作確認したい場合に適しています。ネイティブUbuntuでも同じContainer内手順を利用でき、macOS上のDockerではheadless実行を使用します。
+シミュレータ、Dobot Native Asset と ROS 2 を同一の Linux Container 内で実行します。Host へ Python、CMake、ROS 2 などを導入せずに仮想サービスを確認する構成です。ネイティブ Ubuntu でも同じ Container 内手順を利用でき、macOS／Windows Docker Desktop では headless 実行を使用します。
 
 ## クイックスタート
 
@@ -257,6 +262,7 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 1. [Host ROS 2連携セットアップ](docs/procedures/host-ros2/setup.md)
 2. [Host ROS 2連携ビルド](docs/procedures/host-ros2/build.md)
 3. [Host ROS 2連携の起動・動作確認](docs/procedures/host-ros2/operation.md)
+4. [操作と安全上の警告（real／both は発展）](docs/procedures/ros2/arm-operations.md)
 
 ### macOSユーザー：host+docker
 
@@ -270,7 +276,7 @@ macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノード
 
 ### Windowsユーザー：host+DockerでROS 2連携
 
-Windows 11では、Nova5 RuntimeとMuJoCo Viewerをnative実行し、ROS 2 JazzyをDocker Desktop上で実行します。
+Windows 11 の native Runtime と ROS 2 Jazzy Docker Desktop の構成です。Dobot 仮想サービスは基本経路ですが、Windows native のビルドと結合は未検証です。各段階の確認に失敗したら先へ進まないでください。
 
 1. [Windows host+Dockerセットアップ](docs/procedures/windows-host-docker/setup.md)
 2. [Windows host+Dockerビルド](docs/procedures/windows-host-docker/build.md)
@@ -335,9 +341,10 @@ hakoniwa-robot-arm-workspace/
 ├── hakoniwa-mujoco-robots/       # configureが自動取得
 ├── hakoniwa-mbody-registry/      # configureが自動取得
 ├── hakoniwa-pdu-ros/             # ROS 2 buildが自動取得
-├── work-host/                    # Host側のFoundation、Forge、Runtime生成物
-├── work-docker-jazzy/            # docker-only側のFoundation、Forge、Runtime生成物
-└── ros2-work-jazzy/              # Dockerで共有するROS 2生成物
+├── work-host/                    # Host側のFoundation、Forge、Runtime、ROS 2生成物
+│   └── ros2/                     # host-ros2／host+dockerのROS 2基盤環境
+└── work-docker-jazzy/            # docker-only側のFoundation、Forge、Runtime生成物
+    └── ros2/                     # docker-onlyのROS 2基盤環境
 ```
 
 主な生成先の指定は次のとおりです。
@@ -346,7 +353,7 @@ hakoniwa-robot-arm-workspace/
 | --- | --- |
 | `HAKONIWA_COMPOSER` | Composerリポジトリのルート。標準配置では自動検出されるため設定不要 |
 | `HAKONIWA_WORK_DIR` | Foundation、Forge、Recipeの生成物。`workspace.py enter --workdir`が選択値を設定 |
-| `HAKONIWA_ROS2_WS` | ROS 2のvenv、build、install、log。`docker/run.bash`がディストリビューション別の既定値を設定 |
+| `HAKONIWA_ROS2_WS` | ROS 2のvenv、build、install、log。`docker/run.bash`は選択された`HAKONIWA_WORK_DIR/ros2`を既定値に設定 |
 | `HAKONIWA_ROS2_TCP_CONFIG` | Hostで生成したROS 2 TCP設定をDockerへ渡すHost側パス。`docker/run.bash`の前に利用者が設定 |
 
 ## 詳細情報
