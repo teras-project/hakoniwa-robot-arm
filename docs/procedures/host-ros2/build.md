@@ -116,8 +116,6 @@ colconのsummaryに`1 package finished`が表示され、最後に`hakoniwa_arm_
 
 次は[Host ROS 2連携の起動・動作確認](operation.md)へ進みます。
 
-Dobot公式サービスでNova5の実機・箱庭モデルを切り替えて操作する場合は、既存の動作確認を終えてから[任意のDobot連携手順](../../../ros2_packages/hakoniwa_dobot/README.md)へ進んでください。初版の起動モードは`real`、`virtual`、`both`です。
-
 ## 応用：独自ROS 2 nodeを追加する
 
 まず[Host ROS 2連携の起動・動作確認](operation.md)を最後まで実行し、付属の`monitor`と`control`でROS 2連携が成功することを確認してください。

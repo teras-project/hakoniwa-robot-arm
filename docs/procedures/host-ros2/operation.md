@@ -124,3 +124,7 @@ python tools/recipe/nova5.py status
 ```
 
 `status`が`TERMINATED`を返せば終了完了です。
+
+## 発展：Dobot公式サービスによる実機・箱庭連携
+
+ここまでのシミュレーションのみの動作確認を終え、既存のRuntimeとROS processを停止してから、[Dobot連携の発展手順](../../../ros2_packages/hakoniwa_dobot/README.md)へ進んでください。公式ROS 2サービスで`real`、`virtual`、`both`の起動モードを選択できます。

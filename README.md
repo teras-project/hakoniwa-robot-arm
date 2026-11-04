@@ -39,7 +39,7 @@
 - 箱庭ロボットランタイムによる関節制御
 - ROS 2 `JointTrajectory` による関節軌道制御
 - ROS 2 `JointState` による関節状態の取得
-- [Dobot公式ROS 2サービスを使ったNova5操作](ros2_packages/hakoniwa_dobot/README.md)（任意構成、`real`／`virtual`／`both`）
+- [Dobot公式ROS 2サービスを使ったNova5操作](ros2_packages/hakoniwa_dobot/README.md)（発展構成、`real`／`virtual`／`both`）
 - Dockerを利用したROS 2実行環境
 - Host上のMuJoCo Viewerを利用したシミュレーション可視化
 
@@ -212,7 +212,7 @@ Windows 11上で箱庭RuntimeとMuJoCo Viewerをnative実行し、ROS 2を介さ
 
 ### host-ros2
 
-箱庭Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードを同じUbuntu Host上で実行し、`JointTrajectory`による制御と`JointState`の取得を確認します。
+箱庭Runtime、MuJoCo Viewer、ROS 2 Bridge、ROSノードを同じUbuntu Host上で実行し、`JointTrajectory`による制御と`JointState`の取得を確認します。発展手順では、公式ROS 2サービスを使ってNova5実機と箱庭モデルを同時に操作するデジタルツイン構成も選択できます。
 
 ### host+docker
 
@@ -258,6 +258,7 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 1. [Host ROS 2連携セットアップ](docs/procedures/host-ros2/setup.md)
 2. [Host ROS 2連携ビルド](docs/procedures/host-ros2/build.md)
 3. [Host ROS 2連携の起動・動作確認](docs/procedures/host-ros2/operation.md)
+4. [発展：Dobot公式ROS 2サービスによる実機・箱庭連携](ros2_packages/hakoniwa_dobot/README.md)
 
 ### macOSユーザー：host+docker
 
