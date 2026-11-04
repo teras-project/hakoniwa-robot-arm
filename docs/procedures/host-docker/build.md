@@ -74,6 +74,7 @@ python tools/recipe/nova5.py doctor
 ```bash
 HAKONIWA_DOCKER_GUI=off \
 HAKONIWA_ROS2_TCP_CONFIG=../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp \
+HAKONIWA_DOCKER_WORK_DIR=/workspace/work-host \
 bash docker/run.bash jazzy
 ```
 
@@ -83,9 +84,10 @@ Humbleでは`jazzy`を`humble`へ置き換えます。起動ログに次の内�
 Mount: ... -> /workspace
 Container: hakoniwa-arm-dev-jazzy; ...
 GUI: off; DISPLAY: disabled
+Workdir: /workspace/work-host; Foundation mmap: tmpfs
 ```
 
-このshellを終了するとContainerも削除されるため、以後`docker-ros-bridge`端末として最後まで開いたままにします。
+この構成では `HAKONIWA_WORK_DIR=/workspace/work-host`、`HAKONIWA_ROS2_WS=/workspace/work-host/ros2` になります。このshellを終了するとContainerも削除されるため、以後`docker-ros-bridge`端末として最後まで開いたままにします。
 
 ## 4. Dobot / ROS サービスとサンプルを build する
 

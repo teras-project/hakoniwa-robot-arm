@@ -341,9 +341,10 @@ hakoniwa-robot-arm-workspace/
 ├── hakoniwa-mujoco-robots/       # configureが自動取得
 ├── hakoniwa-mbody-registry/      # configureが自動取得
 ├── hakoniwa-pdu-ros/             # ROS 2 buildが自動取得
-├── work-host/                    # Host側のFoundation、Forge、Runtime生成物
-├── work-docker-jazzy/            # docker-only側のFoundation、Forge、Runtime生成物
-└── ros2-work-jazzy/              # Dockerで共有するROS 2生成物
+├── work-host/                    # Host側のFoundation、Forge、Runtime、ROS 2生成物
+│   └── ros2/                     # host-ros2／host+dockerのROS 2基盤環境
+└── work-docker-jazzy/            # docker-only側のFoundation、Forge、Runtime生成物
+    └── ros2/                     # docker-onlyのROS 2基盤環境
 ```
 
 主な生成先の指定は次のとおりです。
@@ -352,7 +353,7 @@ hakoniwa-robot-arm-workspace/
 | --- | --- |
 | `HAKONIWA_COMPOSER` | Composerリポジトリのルート。標準配置では自動検出されるため設定不要 |
 | `HAKONIWA_WORK_DIR` | Foundation、Forge、Recipeの生成物。`workspace.py enter --workdir`が選択値を設定 |
-| `HAKONIWA_ROS2_WS` | ROS 2のvenv、build、install、log。`docker/run.bash`がディストリビューション別の既定値を設定 |
+| `HAKONIWA_ROS2_WS` | ROS 2のvenv、build、install、log。`docker/run.bash`は選択された`HAKONIWA_WORK_DIR/ros2`を既定値に設定 |
 | `HAKONIWA_ROS2_TCP_CONFIG` | Hostで生成したROS 2 TCP設定をDockerへ渡すHost側パス。`docker/run.bash`の前に利用者が設定 |
 
 ## 詳細情報

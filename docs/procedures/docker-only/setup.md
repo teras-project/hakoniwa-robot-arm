@@ -85,7 +85,7 @@ Workdir: /workspace/work-docker-jazzy; Foundation mmap: tmpfs
 Dobot / ROS成果物: /workspace/work-docker-jazzy/ros2
 ```
 
-どちらもHostへmountしたcheckout用ディレクトリ内に残ります。`docker/run.bash` は従来の `HAKONIWA_ROS2_WS=/workspace/ros2-work-jazzy` も設定しますが、Dobot 手順では生成先として使用しません。ただし、`foundation/runtime/mmap`だけはContainer内tmpfsであり、Container終了時に破棄されます。
+どちらもHostへmountしたcheckout用ディレクトリ内に残ります。`docker/run.bash` の `HAKONIWA_ROS2_WS` も `/workspace/work-docker-jazzy/ros2` を指します。ただし、`foundation/runtime/mmap`だけはContainer内tmpfsであり、Container終了時に破棄されます。
 
 ## 3. 箱庭Workspaceへ入る
 

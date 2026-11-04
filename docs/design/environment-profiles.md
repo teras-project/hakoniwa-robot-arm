@@ -68,7 +68,7 @@ $HAKONIWA_WORK_DIR/profiles/
 | `activate-host-ros-build.bash` | ROS 2 workspaceをbuildする通常Host環境 |
 | `activate-host-ros-bridge.bash` | ROS 2 Bridgeを起動・維持する環境 |
 | `activate-host-ros-monitor.bash` | `JointState`を観察する環境 |
-| `activate-host-ros-control.bash` | `JointTrajectory`を送信する環境 |
+| `activate-host-ros-control.bash` | Dobot公式サービスで関節を操作する環境 |
 
 各profileは共通profileを読み込んだ上で、`HAKONIWA_WORK_DIR`、`HAKONIWA_ROS2_WS`、必要なbinding pathを設定し、`HAKO_TERMINAL_ROLE`を設定してpromptへ`(host-hako)`などのロール名を表示します。既存の箱庭Workspace promptは上書きせず、併記します。
 
@@ -80,14 +80,17 @@ ROS用profileは、`ros2_workspace.py build`により`$HAKONIWA_ROS2_WS/activate
 
 DockerではHost用の`activate-host-*.bash`を使用しません。これらにはHostの絶対パスが記録されるため、Container内では有効な配置を表さないためです。
 
-`docker/run.bash`が、mount先に合わせて`ARM_PACK`、`HAKONIWA_COMPOSER`、`HAKONIWA_WORK_DIR`、`HAKONIWA_ROS2_WS`をContainerへ設定します。追加shellは`docker/attach.bash`で開き、必要なROS 2環境だけを次のように読み込みます。
+`docker/run.bash`が、mount先に合わせて`ARM_PACK`、`HAKONIWA_COMPOSER`、`HAKONIWA_WORK_DIR`、`HAKONIWA_ROS2_WS`をContainerへ設定します。追加shellは`docker/attach.bash`で開き、Dobot用のROS 2環境を次のように読み込みます。
 
 ```bash
+export DOBOT_WORK="$HAKONIWA_WORK_DIR"
 source "$HAKONIWA_ROS2_WS/activate.bash"
-source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
+source "$DOBOT_WORK/dobot-ros/install/setup.bash"
+source "$DOBOT_WORK/dobot-types/activate.bash"
+source "$DOBOT_WORK/dobot-apps/install/setup.bash"
 ```
 
-箱庭workは構成ごとに分離します。host+dockerはHostの`../work-host`を使用し、docker-onlyは`/workspace/work-docker-<distro>`を使用します。一方、ROS 2 Bridgeとサンプルは`/workspace/ros2-work-<distro>`と`/workspace/ros2-work-<distro>-samples`へ生成し、同じROS distributionとCPU architectureのhost+docker／docker-only間で共有します。
+箱庭workは構成ごとに分離します。host+dockerはHostの`../work-host`（Containerでは`/workspace/work-host`）、docker-onlyは`/workspace/work-docker-<distro>`を使用します。それぞれのROS 2 Bridgeは`$HAKONIWA_WORK_DIR/ros2`、公式メッセージとサンプルは同workの`dobot-ros`と`dobot-apps`へ生成します。HostのNative成果物とContainerのROS 2成果物を混同せず、異なる構成間でビルド済み環境を共有しません。
 
 ### 利用方法
 
