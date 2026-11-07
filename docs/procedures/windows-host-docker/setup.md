@@ -48,16 +48,16 @@ python tools\workspace.py run -- python tools\foundation.py doctor `
   --recipe ..\hakoniwa-robot-arm\recipes\nova5\nova5-joint-trajectory-control.yaml
 ```
 
-Workspace doctorに`[NG]`がなく、RecipeとFoundationが`SATISFIED`ならOKです。Nova5 RecipeはWindowsのcallback-backed Endpoint向けに共有callback assets runtimeを明示要求します。通常のCore buildは従来どおりstaticのままで、このRecipeにだけ実験的な構成が適用されます。
+Workspace doctorに`[NG]`がなく、RecipeとFoundationが`SATISFIED`ならOKです。Nova5 RecipeはWindowsのcallback-backed Endpoint向けに、共有callback assets runtimeと、Core本体を1つの`hako.dll`にする構成を明示要求します。Core本体をstaticのまま共有callback assetsだけを使うと、Core本体の写しがDLLごとにでき、buildが重複定義で失敗します。この構成はこのRecipeにだけ適用され、Linux/macOSでは無視されます。
 
 生成済みreceiptでも選択結果を確認できます。
 
 ```powershell
 Select-String `
   -Path .\work\foundation\install\share\hakoniwa\receipts\hakoniwa-core-pro.yaml `
-  -Pattern 'callback_assets_shared: true'
+  -Pattern 'callback_assets_shared: true', 'core_shared: true'
 ```
 
-該当行が表示されればHost TCP Bridgeに必要なCore構成です。表示されない場合は、最新のBusiness Pack、Robot Arm、Coreを取得してRecipeを再configureしてください。
+2行とも表示されればHost TCP Bridgeに必要なCore構成です。表示されない場合は、最新のBusiness Pack、Robot Arm、Coreを取得してRecipeを再configureしてください。
 
 次は[Windows host+Dockerビルド](build.md)へ進んでください。
