@@ -1,0 +1,9 @@
+{
+  "send_rate_hz": 20.0,
+  "commands": [
+    {"duration_sec": 1.5, "linear_x": 0.4, "angular_z": 0.0, "joint_velocity_rad_s": [0.0, 0.0, 0.0, 0.0]},
+    {"duration_sec": 1.5, "linear_x": 0.0, "angular_z": 0.0, "joint_velocity_rad_s": [0.25, 0.0, 0.0, 0.0]},
+    {"duration_sec": 1.5, "linear_x": 0.0, "angular_z": 0.0, "joint_velocity_rad_s": [0.0, -0.15, 0.2, -0.2]},
+    {"duration_sec": 0.5, "linear_x": 0.0, "angular_z": 0.0, "joint_velocity_rad_s": [0.0, 0.0, 0.0, 0.0]}
+  ]
+}

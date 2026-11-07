@@ -1,0 +1,6 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": {"joint_name": "right_track_wheel_2_joint", "type": "velocity", "limit": {"velocity": 8.0}},
+  "mjcf_binding": {"actuator_name": "right_track_wheel_2_motor"},
+  "pdu_config": {"update_rate_hz": 50.0}
+}

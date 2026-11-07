@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "resolution": [129, 129],
+  "size_m": [60.0, 60.0],
+  "max_depth_m": 1.2,
+  "pit_center_m": [9.0, 0.0],
+  "pit_floor_radius_m": [2.0, 1.4],
+  "pit_rim_radius_m": [2.733333334, 2.0],
+  "color_rgba": [0.38, 0.25, 0.12, 1.0],
+  "friction": [1.2, 0.02, 0.001]
+}

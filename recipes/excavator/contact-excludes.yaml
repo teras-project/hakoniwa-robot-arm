@@ -1,0 +1,9 @@
+excludes:
+  - body1: base_link
+    body2: base_chassis_link
+  - body1: base_chassis_link
+    body2: chassis_boom_link
+  - body1: chassis_boom_link
+    body2: boom_stick_link
+  - body1: boom_stick_link
+    body2: stick_bucket_link

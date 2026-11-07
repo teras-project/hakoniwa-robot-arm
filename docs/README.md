@@ -2,7 +2,7 @@
 
 このディレクトリは、対応ロボットを初めて利用する人が、環境構築からROS 2による動作確認までを再現するための詳細手順です。製品概要、アーキテクチャ、Business Packの基本概念は[トップREADME](../README.md)を先に参照してください。
 
-環境別の手順はNova5を例に記載しています。FR5またはSO-101を使用する場合は、[対応ロボット](reference/robots.md)を参照してロボット名や関節名を置き換えてください。
+環境別の手順はNova5を例に記載しています。FR5、SO-101、MathScavator9000を使用する場合は、[対応ロボット](reference/robots.md)を参照してください。MathScavator9000は現時点でmacOS Hostのheadless経路だけが確認済みです。
 
 ## 読み方
 

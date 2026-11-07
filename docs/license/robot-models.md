@@ -30,8 +30,11 @@ $HAKONIWA_WORK_DIR/model-forge/<robot>/    Git管理しない取得・生成物
 | DOBOT Nova5 | [`Dobot-Arm/DOBOT_6Axis_ROS2_V4`](https://github.com/Dobot-Arm/DOBOT_6Axis_ROS2_V4) | `0f21e9839888f188ac06b0a9fea622d13a29a74f` | repository: MIT、`cra_description/package.xml`: BSD | 宣言の不一致を解消するまで要確認 | [`LICENSE_INFO.yaml`](../../sources/models/nova5/LICENSE_INFO.yaml) |
 | FAIRINO FR5 | [`FAIR-INNOVATION/frcobot_ros2`](https://github.com/FAIR-INNOVATION/frcobot_ros2) | `60755d44d521a5ad6bee8494cc19522f8801aa20` | 利用可能な宣言を確認できず、package metadataも未確定 | モデルと正規化済みURDFは、許諾確認まで外部再配布不可。正規化は利用者のwork内で実施 | [`LICENSE_INFO.yaml`](../../sources/models/fr5/LICENSE_INFO.yaml) |
 | SO-101 follower | [`TheRobotStudio/SO-ARM100`](https://github.com/TheRobotStudio/SO-ARM100) | `7629d2ad9853d10fb903093a33ef6114099d97e5` | Apache License 2.0 | ライセンス条件と対象資産の確認を満たす場合に限る | [`LICENSE_INFO.yaml`](../../sources/models/so101/LICENSE_INFO.yaml) |
+| MathScavator9000 Excavator | [`mathworks-robotics/autonomous-excavator`](https://github.com/mathworks-robotics/autonomous-excavator) | `aa35f433319895b3dbea0352a5c9495a23ef4c8e` | BSD-3-Clause、Copyright (c) 2024, The MathWorks, Inc. | 著作権表示、条件、免責条項を保持すれば再配布可能。MathWorksまたはcontributorの名称を派生成果物の推奨・宣伝に使用しない | [`LICENSE_INFO.yaml`](../../sources/models/excavator/LICENSE_INFO.yaml) |
 
 共通手順のロボットIDを置き換える方法は[対応ロボット](../reference/robots.md)にまとめています。FR5とSO-101のソースとツールは移行済みですが、本リポジトリへの移行後の実行再検証は未実施です。また、metadataを含むことは、それらのモデル本体を本リポジトリが再配布することを意味しません。
+
+MathScavator9000の上流CAD／URDF／meshと派生成果物にはBSD-3-Clauseが適用されます。source形式・binary形式の再配布では、Copyright (c) 2024, The MathWorks, Inc. の表示、条件、免責条項を保持してください。The MathWorks, Inc.またはcontributorの名称を、書面による事前許可なく派生成果物の推奨・宣伝へ使用できません。
 
 ## Nova5の注意事項
 

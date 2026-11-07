@@ -1,0 +1,20 @@
+{
+  "send_rate_hz": 20.0,
+  "deadzone": 0.10,
+  "expo": 0.35,
+  "axes": {
+    "base_angular": {"index": 0, "inverse": true},
+    "base_linear": {"index": 1, "inverse": true},
+    "right_x": {"index": 2, "inverse": false},
+    "right_y": {"index": 3, "inverse": true}
+  },
+  "buttons": {
+    "deadman": 9,
+    "arm_bank_2": 10,
+    "quit": 6
+  },
+  "base_limits": {
+    "linear_m_s": 1.25,
+    "angular_rad_s": 0.55
+  }
+}

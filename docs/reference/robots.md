@@ -10,12 +10,13 @@
 | DOBOT Nova5 | `nova5` | `tools/recipe/nova5.py` | `nova5.contact.xml` | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。 |
 | FAIRINO FR5 | `fr5` | `tools/recipe/fr5.py` | `FR5WM.contact.xml` | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | `so101` | `tools/recipe/so101.py` | `so101.xml` | ソースとツールを公開。動作確認中。 |
+| MathScavator9000 Excavator | `excavator` | `tools/recipe/excavator.py` | `excavator.mobile.xml` | macOS host、WSL2 Ubuntu 24.04、Windows 11 native（いずれもheadless）で走行を動作確認済み。Viewer表示は未確認、掘削は実験的。[実行手順](../procedures/excavator/host-standalone/setup.md)。 |
 
 FR5とSO-101についても、基本的な実行手順は[Nova5の環境別手順](../README.md)と共通です。ただしFR5では、初回Model Forge時に機種固有のURDF正規化が必要です。詳細は[FR5 source normalization](../../sources/models/fr5/README.md)を参照してください。
 
 ## ロボット名を置き換えるポイント
 
-ロボット名(`<robot>`) には、`nova5`、`fr5`、`so101` を指定できます。
+ロボット名(`<robot>`) には、`nova5`、`fr5`、`so101`、`excavator` を指定できます。
 
 | Nova5手順中の項目 | 共通表現 |
 | --- | --- |
@@ -25,7 +26,7 @@ FR5とSO-101についても、基本的な実行手順は[Nova5の環境別手�
 | `model-forge/nova5/` | `model-forge/<robot>/` |
 | `recipes/nova5-joint-trajectory-control/` | `recipes/<robot>-joint-trajectory-control/` |
 
-たとえば、対象を一度だけ選んで次のように参照できます。`ROBOT`には`nova5`、`fr5`、`so101`のいずれかを指定します。以下は`fr5`の例です。
+たとえば、対象を一度だけ選んで次のように参照できます。`ROBOT`には`nova5`、`fr5`、`so101`、`excavator`のいずれかを指定します。以下は`fr5`の例です。
 
 ```bash
 export ROBOT=fr5
@@ -54,6 +55,11 @@ ROS 2の`control` sampleプログラムでは、ジョイント名はNova5を基
 | Nova5 | `joint1 joint2 joint3 joint4 joint5 joint6` |
 | FR5 | `j1_joint j2_joint j3_joint j4_joint j5_joint j6_joint` |
 | SO-101 | `shoulder_pan shoulder_lift elbow_flex wrist_flex wrist_roll gripper` |
+| MathScavator9000 | `base_chassis_joint chassis_boom_joint boom_stick_joint stick_bucket_joint` |
+
+## MathScavator9000固有情報
+
+公開MathScavator9000 URDFを固定revisionから取得し、mesh正規化、4軸position actuator、6輪差動base、隣接contact除外を加えて`excavator.mobile.xml`を生成します。bucket proxy、HField、50個の剛体球によるsoilを含む`excavator.soil.xml`は掘削操作用の実験的PoCで、土質力学モデルではありません。
 
 ```bash
 ros2 run hakoniwa_arm_samples control \

@@ -1,0 +1,13 @@
+{
+    "schema_version": 1,
+    "enabled": true,
+    "grid_count": [5, 5, 2],
+    "spacing_m": 0.42,
+    "particle_radius_m": 0.18,
+    "center_xy_m": [9.0, 0.0],
+    "bottom_z_m": -1.01,
+    "density_kg_m3": 130.0,
+    "contact_condim": 4,
+    "friction": [1.0, 0.02, 0.001],
+    "color_rgba": [0.42, 0.24, 0.10, 1.0]
+}

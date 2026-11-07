@@ -1,0 +1,97 @@
+id: excavator-model-forge
+title: MathWorks MathScavator9000 Source to MuJoCo Model Forge
+recipe_version: 1.0
+
+goal:
+  user_request: 公開油圧ショベルURDFを固定し、MuJoCoモデルを再現可能に生成したい
+  description: Fetch the pinned BSD-3-Clause model, normalize its oversized STL as OBJ, and generate an actuated MJCF model.
+
+feasibility:
+  status: feasible
+  confidence: high
+
+validation:
+  status: verified
+  verified_at: 2026-08-29
+  summary: On a macOS host, the headless mobile excavator completed six-wheel differential Twist drive and stop followed by a four-joint JointTrajectory, emitted JointState, and remained numerically stable. Mobile Viewer display, Docker, Ubuntu, Windows, and ROS 2 paths are not verified. The digging worksite is experimental and requires an accepted bucket-collision calibration.
+
+foundation_contract:
+  mode: not_required
+  reason: Model forging is an offline operation and does not execute Hakoniwa Core.
+
+recipe_local_requirements_schema_version: 1
+recipe_local_requirements:
+  hakoniwa-mbody-registry:
+    root:
+      default_path: ../hakoniwa-mbody-registry
+      override_env: HAKONIWA_MBODY_REGISTRY_ROOT
+      relative_to: recipe_repository
+    source:
+      type: git
+      url: https://github.com/hakoniwalab/hakoniwa-mbody-registry.git
+      revision: main
+    required_artifacts:
+      - {path: tools/fetch.py, kind: file}
+      - {path: tools/urdf2mjcf.py, kind: file}
+
+artifacts:
+  - name: Excavator runtime MJCF
+    owner: hakoniwa-robot-arm
+    path: $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.runtime.xml
+    purpose: Physics and visualization input for the common arm runtime.
+  - name: Human-calibrated bucket collision YAML
+    owner: hakoniwa-robot-arm
+    path: recipes/excavator/bucket-collision.yaml
+    purpose: Single source of truth for the accepted five-part open bucket proxy.
+  - name: Excavator digging worksite MJCF
+    owner: hakoniwa-robot-arm
+    path: $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.soil.xml
+    purpose: Explicit PoC model containing the HField, accepted bucket proxy, and fifty rigid soil particles.
+
+source_catalogs: [sources/models/excavator/source.yaml]
+source_artifacts:
+  - sources/models/excavator/LICENSE_INFO.yaml
+  - recipes/excavator/actuator.yaml
+  - recipes/excavator/contact-excludes.yaml
+  - recipes/excavator/bucket-collision.yaml
+  - recipes/excavator/bucket-proxy-requirements.txt
+  - recipes/excavator/config/environment/README.md
+  - recipes/excavator/config/environment/terrain.json
+  - recipes/excavator/config/environment/soil.json
+
+runtime_dependencies:
+  python:
+    interpreter: Recipe-owned tools-venv (resolved by cross-platform Python helper)
+    requirements: recipes/excavator/bucket-proxy-requirements.txt
+    packages:
+      - {name: PyYAML, version: 6.0.3, purpose: Parse the human-authored bucket collision calibration YAML.}
+      - {name: mujoco, version: 3.10.0, purpose: Load and display the generated calibration MJCF.}
+      - {name: numpy, version: 2.5.1, purpose: Support STL section visualization.}
+      - {name: trimesh, version: 4.12.2, purpose: Render reference-only STL sections without semantic inference.}
+
+demo:
+  objective: Regenerate the four-axis excavator model from the pinned source.
+  steps:
+    - order: 0
+      component: hakoniwa-robot-arm
+      action: Build the Recipe-owned bucket proxy calibration environment.
+      command: python tools/install_excavator_bucket_proxy_tools.py
+    - order: 1
+      component: hakoniwa-robot-arm
+      action: Run the arm-local excavator forge.
+      command: python tools/recipe/excavator.py forge
+    - order: 2
+      component: hakoniwa-robot-arm
+      action: Validate one-sphere settle, side containment, slow curl hold, and dump.
+      command: python tools/recipe/excavator.py validate-bucket
+  success_signals:
+    - excavator.runtime.xml is generated with four position actuators
+    - bucket calibration status is accepted
+    - all four one-sphere physical validation stages pass
+    - the accepted proxy remains independently covered by one-sphere physical validation
+
+current_soil_candidate:
+  particle_count: 50
+  particle_diameter_m: 0.36
+  status: pending_manual_acceptance
+  note: The accepted bucket proxy is unchanged. The current 50-particle configuration uses slightly larger spheres and requires a PS5 scooping and retention check.
