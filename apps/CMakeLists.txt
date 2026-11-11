@@ -94,6 +94,16 @@ target_link_libraries(robot-arm-hakoniwa-asset PRIVATE
     mujoco-common
     ${HAKO_LIBMUJOCO}
 )
+if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
+    # The generated registration is linked into the executable itself, so its
+    # static initializer always runs and pulls in each implementation's entry point.
+    target_sources(robot-arm-hakoniwa-asset PRIVATE
+        ${HAKO_ROBOT_ARM_SENSOR_REGISTRATION_SOURCE})
+    target_include_directories(robot-arm-hakoniwa-asset PRIVATE
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR})
+    target_link_libraries(robot-arm-hakoniwa-asset PRIVATE
+        ${HAKO_ROBOT_ARM_SENSOR_LIBRARIES})
+endif()
 
 if(MSVC)
     target_compile_options(robot-arm-hakoniwa-asset PRIVATE
