@@ -125,6 +125,7 @@ ${_hako_sensor_registrations}    return true;
     target_sources(hako-robot-arm-runtime PRIVATE
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/sensor/sensor_registry.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_joint_state_publisher.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_wrench_publisher.cpp
     )
     target_compile_definitions(hako-robot-arm-runtime PUBLIC
         HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR=1
@@ -278,6 +279,10 @@ add_library(hako-robot-arm-endpoint-adapter STATIC
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/joint_trajectory_pdu_event_reader.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/joy_pdu_event_reader.cpp
 )
+if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
+    target_sources(hako-robot-arm-endpoint-adapter PRIVATE
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/wrench_stamped_pdu_writer.cpp)
+endif()
 target_compile_features(hako-robot-arm-endpoint-adapter PUBLIC cxx_std_20)
 target_include_directories(hako-robot-arm-endpoint-adapter PUBLIC
     ${HAKO_ROBOT_RUNTIME_INCLUDE_DIR}
