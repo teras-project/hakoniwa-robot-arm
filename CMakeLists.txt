@@ -127,6 +127,7 @@ ${_hako_sensor_registrations}    return true;
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_joint_state_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_wrench_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_imu_publisher.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_laser_scan_publisher.cpp
     )
     target_compile_definitions(hako-robot-arm-runtime PUBLIC
         HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR=1
@@ -251,6 +252,9 @@ add_library(hako-robot-arm-mujoco-adapter STATIC
 if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
     target_sources(hako-robot-arm-mujoco-adapter PRIVATE
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/physics/mujoco/mujoco_sensor_stage.cpp)
+    # The world's ray caster for range sensors (hakoniwa-mujoco-robots).
+    target_compile_definitions(hako-robot-arm-mujoco-adapter PRIVATE
+        HAKO_MUJOCO_ROBOTS_ENABLE_RAY_CASTER)
 endif()
 target_compile_features(hako-robot-arm-mujoco-adapter PUBLIC cxx_std_20)
 target_include_directories(hako-robot-arm-mujoco-adapter PUBLIC
@@ -283,7 +287,8 @@ add_library(hako-robot-arm-endpoint-adapter STATIC
 if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
     target_sources(hako-robot-arm-endpoint-adapter PRIVATE
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/wrench_stamped_pdu_writer.cpp
-        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/imu_pdu_writer.cpp)
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/imu_pdu_writer.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/laser_scan_pdu_writer.cpp)
 endif()
 target_compile_features(hako-robot-arm-endpoint-adapter PUBLIC cxx_std_20)
 target_include_directories(hako-robot-arm-endpoint-adapter PUBLIC

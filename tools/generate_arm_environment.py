@@ -171,6 +171,61 @@ def apply_physics(root: ET.Element, config: dict) -> None:
     option.set("noslip_iterations", str(noslip))
 
 
+def apply_sensor_housings(root: ET.Element, worldbody: ET.Element, config: dict,
+                          names: set[str]) -> None:
+    """Add sensor housings as bodies a sensor can be mounted on.
+
+    A housing is a rigid body fixed to its parent body (the world by default).
+    It has its own collision geom, so it is hit by contacts and seen by other
+    sensors; the sensor it carries excludes it. On a robot body it adds mass.
+    """
+    bodies = {
+        body.get("name"): body for body in root.findall(".//body") if body.get("name")
+    }
+    for housing in config.get("sensor_housings", []):
+        name = housing["name"]
+        if name in names or name in bodies:
+            raise ValueError(f"duplicate sensor housing name: {name}")
+        names.add(name)
+        parent_name = housing.get("parent_body", "world")
+        if parent_name == "world":
+            parent = worldbody
+        else:
+            parent = bodies.get(parent_name)
+            if parent is None:
+                raise ValueError(f"sensor housing {name} references unknown body: {parent_name}")
+            if "mass_kg" not in housing:
+                raise ValueError(f"sensor housing {name} on a robot body needs mass_kg")
+        body = ET.SubElement(
+            parent,
+            "body",
+            {
+                "name": name,
+                "pos": vector(housing["pos_m"], 3, f"{name}.pos_m"),
+                "quat": rpy_degrees_to_quaternion(housing.get("rpy_deg", [0, 0, 0]), f"{name}.rpy_deg"),
+            },
+        )
+        shape = housing.get("type")
+        if shape == "cylinder":
+            size = f"{float(housing['radius_m'])} {float(housing['half_height_m'])}"
+        elif shape == "box":
+            size = vector(housing["half_size_m"], 3, f"{name}.half_size_m")
+        else:
+            raise ValueError(f"unsupported sensor housing type: {shape}")
+        geom = {
+            "name": f"{name}_geom",
+            "type": shape,
+            "size": size,
+            "rgba": vector(housing.get("rgba", [0.15, 0.15, 0.15, 1.0]), 4, f"{name}.rgba"),
+            "condim": "3",
+            "contype": "1",
+            "conaffinity": "1",
+        }
+        if "mass_kg" in housing:
+            geom["mass"] = str(float(housing["mass_kg"]))
+        ET.SubElement(body, "geom", geom)
+
+
 def materialize(source: Path, config_path: Path, output: Path) -> None:
     config = json.loads(config_path.read_text(encoding="utf-8"))
     if config.get("schema_version") != 1:
@@ -333,6 +388,8 @@ def materialize(source: Path, config_path: Path, output: Path) -> None:
                 **contact_attributes(dynamic_object, name),
             },
         )
+
+    apply_sensor_housings(root, worldbody, config, names)
 
     ET.indent(tree, space="  ")
     output.parent.mkdir(parents=True, exist_ok=True)
