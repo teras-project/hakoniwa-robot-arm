@@ -131,6 +131,28 @@ def apply_robot_collision_pads(root: ET.Element, config: dict) -> None:
         body.insert(first_child_body, geom)
 
 
+def apply_physics(root: ET.Element, config: dict) -> None:
+    """Apply optional solver settings needed by the workspace objects.
+
+    noslip_iterations runs MuJoCo's noslip solver after the main solver. It
+    removes the slow creep that soft contacts otherwise allow, so a held
+    object does not slide out of the gripper.
+    """
+    physics = config.get("physics")
+    if physics is None:
+        return
+    noslip = physics.get("noslip_iterations")
+    if noslip is None:
+        return
+    if not isinstance(noslip, int) or isinstance(noslip, bool) or noslip < 0:
+        raise ValueError("physics.noslip_iterations must be a non-negative integer")
+    option = root.find("option")
+    if option is None:
+        option = ET.Element("option")
+        root.insert(1, option)
+    option.set("noslip_iterations", str(noslip))
+
+
 def materialize(source: Path, config_path: Path, output: Path) -> None:
     config = json.loads(config_path.read_text(encoding="utf-8"))
     if config.get("schema_version") != 1:
@@ -145,6 +167,7 @@ def materialize(source: Path, config_path: Path, output: Path) -> None:
 
     apply_robot_visual(root, config)
     apply_robot_collision_pads(root, config)
+    apply_physics(root, config)
 
     visual_config = config["visual"]
     visual = root.find("visual")

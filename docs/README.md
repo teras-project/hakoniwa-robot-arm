@@ -28,6 +28,7 @@
 - [利用構成を選ぶ](procedures/setup.md)
 - [手順の読み方と進行ゲート](procedures/conventions.md)
 - [ROS 2によるアーム操作](procedures/ros2/arm-operations.md)
+- [SO-101 キューブ把持デモ](procedures/so101-grasp-demo.md)
 - [独自ROS 2 nodeの作成とbuild](procedures/ros2/custom-nodes.md)
 
 ## 設計文書

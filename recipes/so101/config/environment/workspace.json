@@ -17,9 +17,9 @@
       "body": "gripper",
       "replaces_collision_mesh": "wrist_roll_follower_so101_v1",
       "type": "box",
-      "pos_local_m": [-0.00616136, -0.00012215, -0.0767655],
-      "rpy_deg": [-2.78913103, 90.0, 0.0],
-      "half_size_m": [0.020, 0.006, 0.0015],
+      "pos_local_m": [-0.0094, -0.00021812, -0.0781274],
+      "rpy_deg": [0.0, 90.0, 0.0],
+      "half_size_m": [0.02, 0.006, 0.0015],
       "visible": true,
       "rgba": [0.10, 0.80, 1.0, 0.55],
       "friction": [2.0, 0.02, 0.001]
@@ -29,14 +29,17 @@
       "body": "moving_jaw_so101_v1",
       "replaces_collision_mesh": "moving_jaw_so101_v1",
       "type": "box",
-      "pos_local_m": [-0.01406594, -0.05336550, 0.01832314],
-      "rpy_deg": [-92.78913075, 0.0, -90.00000300],
-      "half_size_m": [0.020, 0.006, 0.0015],
+      "pos_local_m": [-0.01218464, -0.05346198, 0.01901812],
+      "rpy_deg": [-90.0, 0.0, -106.394098],
+      "half_size_m": [0.02, 0.006, 0.0015],
       "visible": true,
       "rgba": [0.10, 0.80, 1.0, 0.55],
       "friction": [2.0, 0.02, 0.001]
     }
   ],
+  "physics": {
+    "noslip_iterations": 5
+  },
   "floor": {
     "half_size_m": [1.2, 1.2, 0.03],
     "checker_rgb1": [0.08, 0.18, 0.32],
