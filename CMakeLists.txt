@@ -130,6 +130,9 @@ ${_hako_sensor_registrations}    return true;
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_laser_scan_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_point_cloud_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_range_publisher.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_magnetic_field_publisher.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_fluid_pressure_publisher.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_nav_sat_fix_publisher.cpp
     )
     target_compile_definitions(hako-robot-arm-runtime PUBLIC
         HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR=1
@@ -292,7 +295,10 @@ if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/imu_pdu_writer.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/laser_scan_pdu_writer.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/point_cloud2_pdu_writer.cpp
-        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/range_pdu_writer.cpp)
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/range_pdu_writer.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/magnetic_field_pdu_writer.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/fluid_pressure_pdu_writer.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/nav_sat_fix_pdu_writer.cpp)
 endif()
 target_compile_features(hako-robot-arm-endpoint-adapter PUBLIC cxx_std_20)
 target_include_directories(hako-robot-arm-endpoint-adapter PUBLIC
