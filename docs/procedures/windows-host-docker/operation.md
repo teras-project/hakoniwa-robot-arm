@@ -77,7 +77,7 @@ ros2 run hakoniwa_arm_samples monitor
 
 ## 4. サービスでdry-run後に小動作を確認
 
-別のHost PowerShellから手順3と同じ`docker exec -it ... /ros_entrypoint.sh bash`で`docker-ros-control`を開きます。Container Bashで実行します。
+別のHost PowerShellから手順3と同じ`docker exec -it ... /ros_entrypoint.sh bash`で`docker-ros-control`を開きます。`hakoniwa_arm_samples control` と公式 `dobot_demo demo` は同じ `/dobot_bringup_ros2/srv/*` を呼び、箱庭専用の宛先には固定されていません。dry-run の `GetAngle` も実機の同名サービスに届く可能性があり、`--execute` は実機を動かし得ます。**この箱庭手順では実機 driver を停止するか別の ROS domain に分離し、同名サービスの競合がないことを確認してから** Container Bash で実行します。[安全上の警告](../ros2/arm-operations.md)も参照してください。
 
 ```bash
 export DOBOT_WORK=/workspace/hakoniwa-business-pack/work
@@ -90,7 +90,7 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 ros2 run hakoniwa_arm_samples control
 ```
 
-`GetAngle`の応答とdry-runの現在角・J1 +3°目標を点検します。**実機 driver がこの ROS domain にいないことを確認**してから、小動作を明示的に実行します。
+`GetAngle`の応答とdry-runの現在角・J1 +3°目標を点検します。**同じ ROS domain に同名サービスを出す実機 driver がいないことを再確認**してから、小動作を明示的に実行します。
 
 ```bash
 ros2 run hakoniwa_arm_samples control --execute --delta-deg 3

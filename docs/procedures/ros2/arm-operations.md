@@ -26,7 +26,9 @@ ros2 run hakoniwa_arm_samples monitor --topic /joint_states_robot
 
 周囲・姿勢・可動域・非常停止手段を確認します。`both` では実機と箱庭の初期姿勢を事前に合わせ、実機に送る指令が鏡像にも届くことを確認します。実機へは無人で指令を送らないでください。`Stop` サービスは非常停止の代わりになりません。通信 timeout 時は受理済みか不明なので自動再送せず、両方の状態を点検してください。
 
-最初は virtual のみで、状態とサービスを調べます。付属 `hakoniwa_arm_samples control` は現在角を `GetAngle` で取得し、`EnableRobot`、`SpeedFactor=10%`、`MovJ` で J1 を現在角から +3° 動かします。既定は **dry-run** で、`--execute` を付けない限り動作指令を出しません。monitor は `/joint_states_robot` を既定で購読し、1 Hz で表示します。
+`hakoniwa_arm_samples control` と公式 `dobot_demo demo` は、どちらも `/dobot_bringup_ros2/srv/*` を呼びます。プログラム自体は箱庭専用ではありません。`virtual` で起動していても、同じ ROS domain で実機 driver が同名サービスを提供していると宛先が競合します。`ros2 service type` だけでは提供元を区別できません。まず実機 driver を停止するか別の ROS domain に分離し、箱庭のサービスだけがこの名前を提供する状態で確認してください。`both` では公開サービスが実機と箱庭に動作指令を同時配送します。
+
+付属 `hakoniwa_arm_samples control` は既定の **dry-run** では `GetAngle` だけを呼び、目標を表示します。サービスが競合していれば、取得した角度も実機のものかもしれません。`--execute` を付けると `EnableRobot`、`SpeedFactor=10%`、`MovJ` を呼び、J1 を現在角から +3° 動かします。実機が同名サービスを提供している場合や `real`／`both` の場合、実機も動き得ます。monitor は `/joint_states_robot` を既定で購読し、1 Hz で表示します。
 
 実行するコマンド（ROS 2 control端末）:
 ```bash
@@ -46,7 +48,7 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 
 ## 公式デモ（箱庭専用の基本検証）
 
-公式 `dobot_demo/demo.py` は変更しません。`EnableRobot`、`SpeedFactor=10`、`MovJ` を呼び、**(J1,J2)=(50°,-8°) へ移動し、(0°,-8°) に移動**します。仮想 `MovJ` は関節モード（`mode=true`）の関節目標をキューに受け付け、10% の補間速度は 6 deg/s です。受理応答は到達を意味しません。箱庭だけで、可動域と周辺に問題がないことを確認した後に実行してください。
+公式 `dobot_demo/demo.py` は変更しません。`control` と同じ公開サービスに、`--execute` のような確認オプションなしで `EnableRobot`、`SpeedFactor=10`、`MovJ` を送り、**(J1,J2)=(50°,-8°) へ移動し、(0°,-8°) に移動**します。仮想 `MovJ` は関節モード（`mode=true`）の関節目標をキューに受け付け、10% の補間速度は 6 deg/s です。受理応答は到達を意味しません。箱庭だけで、可動域と周辺に問題がないことを確認した後に実行してください。
 
 ```bash
 ros2 run dobot_demo demo

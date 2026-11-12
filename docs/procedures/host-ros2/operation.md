@@ -102,7 +102,7 @@ ros2 run hakoniwa_arm_samples monitor
 | この作業の入力成果物 | 起動中のRuntimeとROS Bridge、受信中のJointState monitor、`activate-host-ros-control.bash`、build済みのサンプル用ROS 2ワークスペース |
 | この作業のゴール | `GetAngle` と dry-run で目標を点検し、明示的な小動作を Viewer / monitor で確認する。 |
 
-新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
+新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。`hakoniwa_arm_samples control` と公式 `dobot_demo demo` は同じ `/dobot_bringup_ros2/srv/*` を呼び、箱庭専用の宛先には固定されていません。dry-run の `GetAngle` も実機の同名サービスに届く可能性があり、`--execute` は実機を動かし得ます。**この箱庭手順では実機 driver を停止するか別の ROS domain に分離し、同名サービスの競合がないことを確認してから進んでください。** [操作と安全上の警告](../ros2/arm-operations.md)を参照してください。
 
 実行するコマンド（`host-ros-control`にする通常のHost terminal）:
 ```bash
@@ -117,7 +117,7 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 ros2 run hakoniwa_arm_samples control
 ```
 
-dry-run で現在姿勢と J1 +3° の目標を確認してから `ros2 run hakoniwa_arm_samples control --execute --delta-deg 3` を実行します。Viewer と monitor の変化を確認します。続いて箱庭だけで公式 `ros2 run dobot_demo demo` を実行し、Viewer と monitor で連続する移動を確認します。50° の絶対移動を含むため、[安全上の警告と API の制限](../ros2/arm-operations.md)を先に読み、実機が同じ ROS domain にいないことを確認してください。
+dry-run で現在姿勢と J1 +3° の目標を確認してから `ros2 run hakoniwa_arm_samples control --execute --delta-deg 3` を実行します。Viewer と monitor の変化を確認します。続いて箱庭だけで公式 `ros2 run dobot_demo demo` を実行し、Viewer と monitor で連続する移動を確認します。50° の絶対移動を含むため、[安全上の警告と API の制限](../ros2/arm-operations.md)を先に読み、同じ ROS domain に同名サービスを出す実機 driver がいないことを再確認してください。
 
 ## 5. 終了する
 

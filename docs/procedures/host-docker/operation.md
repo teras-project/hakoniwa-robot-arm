@@ -104,7 +104,7 @@ Humbleでは`jazzy`を`humble`へ置き換えます。6関節の値が繰り返�
 bash docker/attach.bash jazzy
 ```
 
-Containerのプロンプトが出てから、次を実行します。
+Containerのプロンプトが出てから、次を実行します。`hakoniwa_arm_samples control` と公式 `dobot_demo demo` はどちらも `/dobot_bringup_ros2/srv/*` を呼び、箱庭専用の宛先には固定されていません。dry-run は `GetAngle` だけですが、同じ ROS domain に実機 driver の同名サービスがあると実機の角度を読む可能性があります。`--execute` は実機へ動作指令が届き得ます。**この手順では実機 driver を停止するか別の ROS domain に分離し、`virtual` のサービスだけがこの名前を提供する状態を確認してから進んでください。** [安全上の警告](../ros2/arm-operations.md)も参照してください。
 
 実行するコマンド（`docker-ros-control`）:
 ```bash
@@ -126,7 +126,7 @@ dry-run で目標 J1 +3° を点検してから、同じ `docker-ros-control` �
 ros2 run hakoniwa_arm_samples control --execute --delta-deg 3
 ```
 
-monitor と Viewer で位置の変化を確認します。続いて箱庭だけで公式デモを実行します。50° の絶対移動を含むため、[安全上の警告](../ros2/arm-operations.md)を先に読み、実機 driver が同じ ROS domain にいないことを確認してください。
+monitor と Viewer で位置の変化を確認します。続いて箱庭だけで公式デモを実行します。50° の絶対移動を含むため、[安全上の警告](../ros2/arm-operations.md)を先に読み、同じ ROS domain に同名サービスを出す実機 driver がいないことを再確認してください。
 
 実行するコマンド（`docker-ros-control`）:
 ```bash
