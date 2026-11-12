@@ -47,7 +47,7 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 
 画面のないHostやCIでは、最初のコマンドだけ`build --headless`へ置き換えます。最後の`ls`で`robot-arm-hakoniwa-asset`が表示されればOK、`No such file or directory`ならNGです。
 
-続けてROS 2基盤環境をbuildします。
+ROS 2 と Dobot の成果物は次の手順3で用意します。
 
 ## 3. Dobot の ROS / Native 環境をビルドする
 
@@ -58,11 +58,7 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 | この作業の入力成果物 | 手順1で生成した`activate-host-ros-build.bash`と、手順2でbuildしたNova5 Runtime |
 | この作業のゴール | 公式 `.srv` と demo、Service Bridge / PDU-RPC、Dobot 型・サービス binding が `../work-host` に生成される。 |
 
-手順1の configure が端末 profile を生成済みです。この手順では ROS 端末と箱庭 Native 端末を**分離**します。[Dobot 共通ビルド手順](../ros2/dobot-build.md)の1・2を以下の環境で実行してください。
-
-生成されるファイルの配置と、`ros2 run`からEndpoint共有ライブラリ、TCP、箱庭Runtimeまでの接続関係は、[ROS 2 Bridge基盤環境の成果物と接続関係](../../design/ros2-bridge-environment.md)を参照してください。
-
-この手順へ進む前に、手順1の`ls`で`activate-host-ros-build.bash`が表示されたことを確認してください。未確認の場合は手順1へ戻ります。
+手順1の`ls`で`activate-host-ros-build.bash`が表示されたことを確認してください。未確認の場合は手順1へ戻ります。ROS 端末と箱庭 Native 端末は**分離**します。
 
 新しい通常Host terminalで`hakoniwa-robot-arm`のrepository rootへ移動し、`pwd`で確認してから実行します。
 
@@ -73,7 +69,9 @@ ls -l ../work-host/profiles/activate-host-ros-build.bash
 
 profileのファイル情報が表示されれば続けます。`No such file or directory`ならprofileをsourceせず、手順1へ戻ります。
 
-実行するコマンド（`host-ros-build`にする通常のHost terminal）:
+まず次の設定を行ってください。
+
+実行する設定コマンド（`host-ros-build`にする通常のHost terminal）:
 ```bash
 source ../work-host/profiles/activate-host-ros-build.bash
 
@@ -82,11 +80,16 @@ export ROS_DISTRO=jazzy
 export DOBOT_RPC_ADDRESS=127.0.0.1
 ```
 
-Ubuntu 22.04／Humble では `ROS_DISTRO=humble` に置き換えます。ROS profile による `ROS_DOMAIN_ID` は既定 73 です。共通手順1・2の実行後、次を確認します。
+Ubuntu 22.04／Humble では `ROS_DISTRO=humble` に置き換えます。ROS profile による `ROS_DOMAIN_ID` は既定 73 です。
 
+次に、**同じ `host-ros-build` 端末で**[Dobot 共通ビルド手順](../ros2/dobot-build.md)の **1 → 2** を順に実行してください。共通手順3はこの端末では実行せず、手順4で `host-hako` に戻って行います。共通手順1・2の完了後、次を確認します。
+
+実行する確認コマンド（`host-ros-build`。共通手順1・2の完了後）:
 ```bash
 /usr/bin/python3 tools/recipe/ros2_workspace.py doctor --workdir "$DOBOT_WORK/ros2"
 ```
+
+生成されるファイルの配置と、`ros2 run`からEndpoint共有ライブラリ、TCP、箱庭Runtimeまでの接続関係は、[ROS 2 Bridge基盤環境の成果物と接続関係](../../design/ros2-bridge-environment.md)を参照してください。
 
 ## 4. Native PDU-RPC と Dobot Asset をビルドし Launcher を切り替える
 
@@ -97,13 +100,15 @@ Ubuntu 22.04／Humble では `ROS_DISTRO=humble` に置き換えます。ROS pro
 | この作業の入力成果物 | 前段の生成型・Native サービス設定と、Nova5 Runtime の既存 CMake build |
 | この作業のゴール | `robot-arm-dobot-asset` が生成され、Launcher が公式サービスを受ける専用 Asset に切り替わる。 |
 
-`host-hako` で Robot Arm ルートへ移動し、[Dobot 共通ビルド手順](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)の3を実行します。
+手順3の完了後、`host-hako` に戻ります。端末を閉じていた場合は[セットアップの手順2](setup.md#2-host-hako端末を開く)に従って開き直してください。`hakoniwa-robot-arm` の repository root へ移動し、`pwd` で確認してから、まず次の設定を行ってください。
 
 実行する設定コマンド（`host-hako`）:
 ```bash
 export DOBOT_WORK="$(realpath ../work-host)"
 test -d "$DOBOT_WORK/foundation/install/include"
 ```
+
+`test -d` が成功しなければ先へ進まず、Foundation と `DOBOT_WORK` を確認してください。次に、**同じ `host-hako` 端末で**[Dobot 共通ビルド手順3](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)を実行してください。手順4は共通手順3の準備と実行であり、その前に別途行うビルドではありません。
 
 共通手順3の CMake と `adapt_launcher.py` の成功、`launcher.pre-dobot.json` の生成を確認してください。`nova5.py configure` を再実行した場合は Launcher 適用をやり直します。
 
