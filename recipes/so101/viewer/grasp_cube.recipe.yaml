@@ -1,0 +1,14 @@
+# The cube to grasp, as its own view-model (hakoniwa-mbody-registry format), moved by
+# viewer_body_states. tools/recipe/so101_view_model.py writes the environment MJCF as model.xml.
+format: hako_viewer_model_recipe
+version: 0.1
+
+robot: grasp_cube
+mjcf: model.xml
+coordinate_system: mujoco
+
+assets:
+  glb_dir: parts
+  map: body_name
+
+base: grasp_cube

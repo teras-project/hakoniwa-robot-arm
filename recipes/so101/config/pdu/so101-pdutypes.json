@@ -9,5 +9,7 @@
   {"channel_id": 7, "pdu_size": 32, "name": "actuator/gripper/command", "type": "std_msgs/Float64"},
   {"channel_id": 8, "pdu_size": 512, "name": "joy", "type": "sensor_msgs/Joy"},
   {"channel_id": 9, "pdu_size": 327680, "name": "lidar_scan", "type": "sensor_msgs/PointCloud2"},
-  {"channel_id": 10, "pdu_size": 512, "name": "wrist_wrench", "type": "geometry_msgs/WrenchStamped"}
+  {"channel_id": 10, "pdu_size": 512, "name": "wrist_wrench", "type": "geometry_msgs/WrenchStamped"},
+  {"channel_id": 11, "pdu_size": 2048, "name": "viewer_joint_states", "type": "sensor_msgs/JointState"},
+  {"channel_id": 12, "pdu_size": 4096, "name": "viewer_body_states", "type": "sensor_msgs/MultiDOFJointState"}
 ]

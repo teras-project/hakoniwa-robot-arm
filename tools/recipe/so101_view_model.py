@@ -1,12 +1,14 @@
-"""SO-101 view-model for a Hakoniwa viewer (e.g. hakoniwa-threejs-drone).
+"""SO-101 view-models for a Hakoniwa viewer (e.g. hakoniwa-threejs-drone).
 
-From the forged SO-101 MJCF, writes one GLB per body and the view-model JSON
-with the tools of hakoniwa-mbody-registry (a sibling checkout):
+From the forged SO-101 MJCFs, writes one GLB per body and the view-model JSON
+with the tools of hakoniwa-mbody-registry (a sibling checkout), for the arm
+(so101.xml, recipes/so101/viewer/viewer.recipe.yaml) and for the cube to grasp
+(so101.environment.xml, recipes/so101/viewer/grasp_cube.recipe.yaml):
 
-  <output>/model.xml          the MJCF, mesh names and paths made explicit
-  <output>/parts/<body>.glb   one GLB per body (mjcf2glb.py --split-by body --visible-only)
-  <output>/viewer.recipe.yaml recipes/so101/viewer/viewer.recipe.yaml
-  <output>/view-model.json    hako_viewer_model_gen.py, checked by validate_view_model.py
+  <output>/<name>/model.xml          the MJCF, mesh names and paths made explicit
+  <output>/<name>/parts/<body>.glb   one GLB per body (mjcf2glb.py --split-by body --visible-only)
+  <output>/<name>/viewer.recipe.yaml the recipe
+  <output>/<name>/view-model.json    hako_viewer_model_gen.py, checked by validate_view_model.py
 
 The forged MJCF names its meshes after their files and finds them in meshdir,
 as MuJoCo does; mjcf2glb.py needs the names and the paths written out, so the
@@ -51,29 +53,32 @@ def main() -> int:
     work = workspace_work_dir()
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", type=Path, default=work / "model-forge/so101/install/so101.xml")
+    parser.add_argument("--environment-model", type=Path,
+                        default=work / "model-forge/so101/install/so101.environment.xml")
     parser.add_argument("--output", type=Path, default=work / "model-forge/so101/viewer")
     parser.add_argument("--registry", type=Path, default=ARM_ROOT.parent / "hakoniwa-mbody-registry")
     args = parser.parse_args()
     tools = args.registry / "tools"
     if not (tools / "mjcf2glb.py").is_file():
         raise SystemExit(f"hakoniwa-mbody-registry not found: {args.registry}")
-    if args.output.exists():
-        shutil.rmtree(args.output)
-    (args.output / "parts").mkdir(parents=True)
-    (args.output / "model.xml").write_text(explicit_meshes(args.model), encoding="utf-8")
-    shutil.copyfile(ARM_ROOT / "recipes/so101/viewer/viewer.recipe.yaml", args.output / "viewer.recipe.yaml")
 
     def run(tool: str, *tool_args: object) -> None:
         # From the registry root, as its own body tools run (the validator finds its schema there).
         subprocess.run([sys.executable, str(tools / tool), *(str(a) for a in tool_args)],
                        cwd=args.registry, check=True)
 
-    run("mjcf2glb.py", args.output / "model.xml", "--output-dir", args.output / "parts",
-        "--split-by", "body", "--visible-only")
-    run("hako_viewer_model_gen.py", args.output / "viewer.recipe.yaml", "--out", args.output / "view-model.json",
-        "--pretty")
-    run("validate_view_model.py", args.output / "view-model.json")
-    print(f"written: {args.output / 'view-model.json'}")
+    if args.output.exists():
+        shutil.rmtree(args.output)
+    for name, model, recipe in (("so101", args.model, "viewer.recipe.yaml"),
+                                ("grasp_cube", args.environment_model, "grasp_cube.recipe.yaml")):
+        out = args.output / name
+        (out / "parts").mkdir(parents=True)
+        (out / "model.xml").write_text(explicit_meshes(model), encoding="utf-8")
+        shutil.copyfile(ARM_ROOT / "recipes/so101/viewer" / recipe, out / "viewer.recipe.yaml")
+        run("mjcf2glb.py", out / "model.xml", "--output-dir", out / "parts", "--split-by", "body", "--visible-only")
+        run("hako_viewer_model_gen.py", out / "viewer.recipe.yaml", "--out", out / "view-model.json", "--pretty")
+        run("validate_view_model.py", out / "view-model.json")
+        print(f"written: {out / 'view-model.json'}")
     return 0
 
 

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/multi-dof-joint-state-output.schema.json",
+  "spec": {
+    "frame_id": "world",
+    "bodies": [
+      {
+        "name": "grasp_cube"
+      }
+    ]
+  },
+  "mjcf_binding": {
+    "bodies": [
+      {
+        "name": "grasp_cube",
+        "mjcf_freejoint": "grasp_cube_freejoint"
+      }
+    ]
+  },
+  "pdu_config": {
+    "pdu_name": "viewer_body_states",
+    "update_rate_hz": 50.0,
+    "message_type": "sensor_msgs/MultiDOFJointState"
+  }
+}

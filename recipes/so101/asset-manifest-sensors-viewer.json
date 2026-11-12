@@ -1,0 +1,110 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/hakoniwa-asset-manifest.schema.json",
+  "schema_version": 1,
+  "name": "SO101",
+  "description": "SO-101 collision-workspace variant with an overhead 3D LiDAR and a wrist force-torque sensor, and the states for a Hakoniwa viewer (joints named SO101/<joint>, the cube pose).",
+  "model": "so101.environment.xml",
+  "pdu_def": "config/pdu/so101-pdudef.json",
+  "endpoint": "config/endpoint/so101_endpoint.json",
+  "runtime_config": "config/runtime-sensors.json",
+  "components": [
+    {
+      "id": "shoulder_pan",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/shoulder_pan.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "shoulder_lift",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/shoulder_lift.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "elbow_flex",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/elbow_flex.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "wrist_flex",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/wrist_flex.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "wrist_roll",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/wrist_roll.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "gripper",
+      "kind": "actuator",
+      "type": "joint_position_actuator",
+      "config": "config/actuator/joint/gripper.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "manual_controller",
+      "kind": "controller",
+      "type": "joy_manual_controller",
+      "config": "config/controller/manual.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "trajectory_controller",
+      "kind": "controller",
+      "type": "joint_trajectory_controller",
+      "config": "config/controller/trajectory.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "joint_states",
+      "kind": "state_output",
+      "type": "joint_state",
+      "config": "config/sensors/joint_state/so101-joint-states.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "sensors",
+      "kind": "sensor",
+      "type": "sensor_instances",
+      "config": "config/sensors/so101-sensors.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "lidar_output",
+      "kind": "state_output",
+      "type": "sensor_output",
+      "config": "config/sensors/so101-lidar-output.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "wrist_wrench_output",
+      "kind": "state_output",
+      "type": "sensor_output",
+      "config": "config/sensors/so101-wrist-wrench-output.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "viewer_joint_states",
+      "kind": "state_output",
+      "type": "joint_state",
+      "config": "config/state/viewer/so101-viewer-joint-states.json",
+      "pdu_robot": "SO101"
+    },
+    {
+      "id": "viewer_body_states",
+      "kind": "state_output",
+      "type": "multi_dof_joint_state",
+      "config": "config/state/viewer/so101-viewer-body-states.json",
+      "pdu_robot": "SO101"
+    }
+  ]
+}

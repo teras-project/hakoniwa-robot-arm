@@ -1,0 +1,60 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-state-output.schema.json",
+  "spec": {
+    "type": "joint_state",
+    "name": "viewer_joint_states",
+    "joints": [
+      {
+        "name": "SO101/shoulder_pan"
+      },
+      {
+        "name": "SO101/shoulder_lift"
+      },
+      {
+        "name": "SO101/elbow_flex"
+      },
+      {
+        "name": "SO101/wrist_flex"
+      },
+      {
+        "name": "SO101/wrist_roll"
+      },
+      {
+        "name": "SO101/gripper"
+      }
+    ]
+  },
+  "mjcf_binding": {
+    "joints": [
+      {
+        "name": "SO101/shoulder_pan",
+        "mjcf_joint": "shoulder_pan"
+      },
+      {
+        "name": "SO101/shoulder_lift",
+        "mjcf_joint": "shoulder_lift"
+      },
+      {
+        "name": "SO101/elbow_flex",
+        "mjcf_joint": "elbow_flex"
+      },
+      {
+        "name": "SO101/wrist_flex",
+        "mjcf_joint": "wrist_flex"
+      },
+      {
+        "name": "SO101/wrist_roll",
+        "mjcf_joint": "wrist_roll"
+      },
+      {
+        "name": "SO101/gripper",
+        "mjcf_joint": "gripper"
+      }
+    ]
+  },
+  "pdu_config": {
+    "pdu_name": "viewer_joint_states",
+    "update_rate_hz": 50.0,
+    "message_type": "sensor_msgs/JointState"
+  }
+}
