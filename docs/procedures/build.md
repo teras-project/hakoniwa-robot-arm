@@ -39,4 +39,35 @@ python "$ARM_PACK/tools/recipe/nova5.py" build --headless
 
 `build`はCMakeによる実行ファイルの構築を担当します。Viewer、ROS 2 TCP、周辺環境、realtime pacingなどの起動条件は`configure`がwork側のLauncher設定へ反映します。
 
+## センサの実装を選ぶ準備
+
+センサ（関節のエンコーダ、力覚、IMU、LiDAR、カメラなど）を使うときだけ必要です。センサの設定の `implementation` で、センサごとに実装を選びます（書き方は [hakoniwa-robot-runtime の設定](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/configuration.md#34-センサopt-in)）。選んだ実装のライブラリを、アームのビルドにリンクしておきます。
+
+| 実装 | 対応するセンサ | 用意するもの |
+| --- | --- | --- |
+| `hakoniwa` | 全種類 | 箱庭ラボが提供するライブラリです。[箱庭ラボにお問い合わせください](https://hakoniwa-lab.net/contact/)。 |
+| `airsim` | IMU、地磁気、気圧、GPS | [hakoniwa-sensor-adapter-airsim](https://github.com/hakoniwalab/hakoniwa-sensor-adapter-airsim) をビルドします（C++17 と Boost のヘッダが必要）。 |
+| `gazebo` | 関節のエンコーダ（真値）、力覚、IMU、地磁気、気圧、GPS | [hakoniwa-sensor-adapter-gazebo](https://github.com/hakoniwalab/hakoniwa-sensor-adapter-gazebo) をビルドします（gz-sensors が必要。pixi か Docker で入れる手順がその README にあります）。リンクには gz-sensors のライブラリも要ります。 |
+
+`airsim` のライブラリを作るコマンド（アームのリポジトリと同じ階層で実行）:
+
+```bash
+git clone https://github.com/hakoniwalab/hakoniwa-sensor-adapter.git
+git clone https://github.com/hakoniwalab/hakoniwa-sensor-adapter-airsim.git
+cmake -S hakoniwa-sensor-adapter-airsim -B hakoniwa-sensor-adapter-airsim/build -DCMAKE_BUILD_TYPE=Release
+cmake --build hakoniwa-sensor-adapter-airsim/build -j
+```
+
+アームの CMake には、次の 3 つを渡します。
+
+| 変数 | 値 |
+| --- | --- |
+| `HAKO_ROBOT_ARM_ENABLE_SENSOR` | `ON` |
+| `HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS` | リンクする実装の名前をセミコロンで並べる（例：`hakoniwa;airsim`） |
+| `HAKO_ROBOT_ARM_SENSOR_LIBRARIES` | その実装のライブラリ（`airsim` なら `hakoniwa-sensor-adapter-airsim/build/libhakoniwa_sensor_adapter_airsim.a`） |
+
+- 設定で選んだ実装がリンクされていないと、起動時に理由を示して止まります。
+- 定義ファイルの書き方は実装ごとに違います（`airsim` は Project AirSim のセンサの JSON、`gazebo` は SDFormat を JSON に写したもの）。
+- いまのレシピの `build` は、この 3 つを渡しません。センサを使うときは CMake を直接実行します。
+
 ビルド後は、選択した利用構成の[起動・動作確認手順](operation.md)へ進んでください。
