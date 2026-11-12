@@ -48,7 +48,7 @@ python tools/recipe/nova5.py configure \
 python tools/recipe/nova5.py build
 ```
 
-画面のないHostでは`python tools/recipe/nova5.py build --headless`へ置き換えます。続けて成果物と設定を確認します。
+画面のないHostでは`python tools/recipe/nova5.py build --headless`へ置き換えます。この通常 Asset のビルドは、同じ build ディレクトリに以前の Dobot 専用設定が残っていても、Dobot 用 PDU 型を要求しません。Dobot 専用 Asset は手順5で別途ビルドします。続けて成果物と設定を確認します。
 
 実行する確認コマンド（`host-hako`）:
 ```bash

@@ -477,6 +477,7 @@ def build(mujoco_root: Path, headless: bool) -> int:
         f"-DHAKONIWA_MUJOCO_ROBOTS_ROOT={mujoco_root}",
         "-DHAKO_USE_THIRDPARTY_HAKONIWA=OFF",
         f"-DHAKO_ARM_ENABLE_VIEWER={'OFF' if headless else 'ON'}",
+        "-DHAKO_ARM_ENABLE_DOBOT=OFF",
     ]
     env = environment(foundation, workspace)
     if run(configure_command, cwd=arm_root(), env=env) != 0:
