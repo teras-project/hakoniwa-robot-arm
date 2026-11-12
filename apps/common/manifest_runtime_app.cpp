@@ -63,11 +63,13 @@ int run_manifest_runtime_app(
     if (config.viewer_enabled) {
         print_viewer_help();
         try {
+            // The viewer draws the Runner's copy of the world under its own lock:
+            // it never waits for a step, which may wait for this thread to render.
             run_mujoco_viewer(
                 runtime_runner->model(),
-                runtime_runner->data(),
+                runtime_runner->view_data(),
                 runtime_runner->running(),
-                runtime_runner->model_mutex(),
+                runtime_runner->view_mutex(),
                 {
                     [&runtime_runner]() { runtime_runner->request_stop(); },
                     [&runtime_runner]() { runtime_runner->toggle_pause(); },
