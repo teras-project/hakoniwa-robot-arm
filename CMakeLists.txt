@@ -54,8 +54,15 @@ add_library(hako-robot-arm-runtime STATIC
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/controller/hold_controller.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/arbiter/priority_command_arbiter.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/joint_state_publisher.cpp
+    # The Runtime's mobile-base switch (as Urban): MultiDOF body-state outputs
+    # (an object's pose, e.g. for a viewer) and the Ackermann parts it brings.
+    # A manifest without those components runs as before.
+    ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/multi_dof_joint_state_publisher.cpp
+    ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/source/ackermann_drive_command_source.cpp
+    ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/controller/ackermann_controller.cpp
 )
 target_compile_features(hako-robot-arm-runtime PUBLIC cxx_std_20)
+target_compile_definitions(hako-robot-arm-runtime PUBLIC HAKONIWA_ROBOT_RUNTIME_ENABLE_MOBILE_BASE=1)
 target_include_directories(hako-robot-arm-runtime PUBLIC
     ${HAKO_ROBOT_RUNTIME_INCLUDE_DIR}
     $<BUILD_INTERFACE:${HAKO_ROBOT_RUNTIME_SRC_DIR}>
@@ -312,6 +319,8 @@ add_library(hako-robot-arm-endpoint-adapter STATIC
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/joint_state_pdu_writer.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/joint_trajectory_pdu_event_reader.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/joy_pdu_event_reader.cpp
+    ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/multi_dof_joint_state_pdu_writer.cpp
+    ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/ackermann_drive_pdu_event_reader.cpp
 )
 if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
     target_sources(hako-robot-arm-endpoint-adapter PRIVATE
@@ -388,6 +397,7 @@ add_library(hako-robot-arm-manifest-factory STATIC
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_trajectory.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_manual.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_state_output.cpp
+    ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_ackermann.cpp
 )
 if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
     target_sources(hako-robot-arm-manifest-factory PRIVATE

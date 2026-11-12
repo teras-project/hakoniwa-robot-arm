@@ -56,8 +56,8 @@ def main() -> int:
     parser.add_argument("--ws-port", type=int, default=8765)
     args = parser.parse_args()
     out = args.output
-    for name in ("so101", "grasp_cube"):
-        if not (out / name / "view-model.json").is_file():
+    for name in ("so101", "grasp_cube", "environment"):
+        if not (out / name).is_dir():
             raise SystemExit(f"no view-model in {out / name}: run tools/recipe/so101_view_model.py first")
 
     # The two PDUs, with the channel IDs of the Robot Runtime's PDU definition.
@@ -111,6 +111,14 @@ def main() -> int:
         }],
     })
 
+    # The scenery (floor, sensor housing), where so101_view_model.py found it.
+    scenery = json.loads((out / "environment/environment.json").read_text(encoding="utf-8"))
+    environments = [
+        {"name": body["name"], "model": served(out / "environment/parts" / f"{body['name']}.glb", args.http_root),
+         "pos": body["pos"], "groundTexture": False}
+        for body in scenery
+    ]
+
     browser = out / "browser"
     write_json(browser / "vehicle-types.json", {
         "so101": {"viewModelPath": served(out / "so101/view-model.json", args.http_root)},
@@ -119,6 +127,7 @@ def main() -> int:
     write_json(browser / "scene-config.json", {
         "version": "1.0",
         "format": "compact",
+        "environments": environments,
         "main_camera": {"fov": 50, "near": 0.01, "far": 100, "initialMode": "fixed",
                         "position": [0.7, -0.6, 0.5], "target": ROBOT},
         "vehicleTypesPath": "./vehicle-types.json",

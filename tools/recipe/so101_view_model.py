@@ -9,17 +9,20 @@ with the tools of hakoniwa-mbody-registry (a sibling checkout), for the arm
   <output>/<name>/parts/<body>.glb   one GLB per body (mjcf2glb.py --split-by body --visible-only)
   <output>/<name>/viewer.recipe.yaml the recipe
   <output>/<name>/view-model.json    hako_viewer_model_gen.py, checked by validate_view_model.py
+  <output>/environment/              the scenery (floor, sensor housing) as GLBs in the three.js
+                                     frame, and environment.json (body name, position)
 
-The forged MJCF names its meshes after their files and finds them in meshdir,
-as MuJoCo does; mjcf2glb.py needs the names and the paths written out, so the
-copy has them. Needs trimesh, numpy and PyYAML.
+The MJCF copy is made for mjcf2glb.py (viewer_copy): it reads neither MuJoCo's
+default mesh names and meshdir nor materials, default classes or planes.
+Needs trimesh, numpy and PyYAML.
 
 python3 tools/recipe/so101_view_model.py
 """
 from __future__ import annotations
 
 import argparse
-import re
+import json
+import xml.etree.ElementTree as ET
 import shutil
 import subprocess
 import sys
@@ -29,24 +32,53 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from _hakoniwa_composer import workspace_work_dir  # noqa: E402
 
 ARM_ROOT = Path(__file__).resolve().parents[2]
+FLOOR_HALF_THICKNESS = 0.002
+FLOOR_RGBA = "0.11 0.24 0.41 1"  # the floor's checker texture, averaged
 
 
-def explicit_meshes(source: Path) -> str:
-    """The MJCF with each <mesh> named after its file and given its full path."""
-    text = source.read_text(encoding="utf-8")
-    found = re.search(r'meshdir="([^"]+)"', text)
-    meshdir = (source.parent / found.group(1)) if found else source.parent
+def viewer_copy(source: Path) -> str:
+    """The MJCF as mjcf2glb.py reads it: each <mesh> named after its file and
+    given its full path (as MuJoCo resolves them), each visual geom given its
+    material's colour, the collision geoms left out (they overlap the visual
+    ones), and a plane made a thin box (mjcf2glb.py draws no planes)."""
+    root = ET.parse(source).getroot()
+    compiler = root.find("compiler")
+    meshdir = source.parent / (compiler.get("meshdir", "") if compiler is not None else "")
+    for mesh in root.iter("mesh"):
+        file = mesh.get("file")
+        if file:
+            mesh.set("name", mesh.get("name") or Path(file).stem)
+            mesh.set("file", str((meshdir / file).resolve()))
+    colours = {m.get("name"): m.get("rgba") for m in root.iter("material") if m.get("rgba")}
+    for parent in root.iter():
+        for geom in list(parent.findall("geom")):
+            if geom.get("class") == "collision":
+                parent.remove(geom)
+                continue
+            if geom.get("rgba") is None and geom.get("material") in colours:
+                geom.set("rgba", colours[geom.get("material")])
+            if geom.get("type") == "plane":
+                sx, sy = geom.get("size", "1 1").split()[:2]
+                geom.set("type", "box")
+                geom.set("size", f"{sx} {sy} {FLOOR_HALF_THICKNESS}")
+                geom.set("pos", f"0 0 {-FLOOR_HALF_THICKNESS}")
+                geom.set("rgba", geom.get("rgba") or FLOOR_RGBA)
+    return ET.tostring(root, encoding="unicode")
 
-    def mesh(match: re.Match) -> str:
-        attributes = match.group(1)
-        file = re.search(r'file="([^"]+)"', attributes).group(1)
-        path = (meshdir / file).resolve()
-        attributes = attributes.replace(f'file="{file}"', f'file="{path}"')
-        if "name=" not in attributes:
-            attributes = f' name="{Path(file).stem}"' + attributes
-        return f"<mesh{attributes}"
 
-    return re.sub(r"<mesh((?:\s+[a-z_]+=\"[^\"]*\")+)", mesh, text)
+def environment_bodies(source: Path) -> list[dict]:
+    """The static scenery of the environment MJCF: the world's own geoms
+    (worldbody, the floor) and each body without a joint that is not the arm."""
+    root = ET.parse(source).getroot()
+    world = root.find("worldbody")
+    bodies = [{"name": "worldbody", "pos": [0.0, 0.0, 0.0]}]
+    for body in world.findall("body"):
+        if body.get("name") in ("base", "grasp_cube") or body.find("joint") is not None \
+                or body.find("freejoint") is not None:
+            continue
+        pos = [float(v) for v in body.get("pos", "0 0 0").split()]
+        bodies.append({"name": body.get("name"), "pos": pos})
+    return bodies
 
 
 def main() -> int:
@@ -67,18 +99,32 @@ def main() -> int:
         subprocess.run([sys.executable, str(tools / tool), *(str(a) for a in tool_args)],
                        cwd=args.registry, check=True)
 
-    if args.output.exists():
-        shutil.rmtree(args.output)
+    # Only this tool's own folders: so101_viewer_config.py writes beside them.
+    for name in ("so101", "grasp_cube", "environment"):
+        if (args.output / name).exists():
+            shutil.rmtree(args.output / name)
     for name, model, recipe in (("so101", args.model, "viewer.recipe.yaml"),
                                 ("grasp_cube", args.environment_model, "grasp_cube.recipe.yaml")):
         out = args.output / name
         (out / "parts").mkdir(parents=True)
-        (out / "model.xml").write_text(explicit_meshes(model), encoding="utf-8")
+        (out / "model.xml").write_text(viewer_copy(model), encoding="utf-8")
         shutil.copyfile(ARM_ROOT / "recipes/so101/viewer" / recipe, out / "viewer.recipe.yaml")
         run("mjcf2glb.py", out / "model.xml", "--output-dir", out / "parts", "--split-by", "body", "--visible-only")
         run("hako_viewer_model_gen.py", out / "viewer.recipe.yaml", "--out", out / "view-model.json", "--pretty")
         run("validate_view_model.py", out / "view-model.json")
         print(f"written: {out / 'view-model.json'}")
+
+    # The scenery (floor, sensor housing): GLBs in the viewer's (three.js) frame
+    # and where they stand (ROS frame), for the scene's environments.
+    out = args.output / "environment"
+    (out / "parts").mkdir(parents=True)
+    (out / "model.xml").write_text(viewer_copy(args.environment_model), encoding="utf-8")
+    run("mjcf2glb.py", out / "model.xml", "--output-dir", out / "parts", "--split-by", "body", "--visible-only",
+        "--target-frame", "threejs")
+    scenery = [body for body in environment_bodies(args.environment_model)
+               if (out / "parts" / f"{body['name']}.glb").is_file()]
+    (out / "environment.json").write_text(json.dumps(scenery, indent=2) + "\n", encoding="utf-8")
+    print(f"written: {out / 'environment.json'} ({', '.join(b['name'] for b in scenery)})")
     return 0
 
 
