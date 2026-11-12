@@ -82,6 +82,15 @@ cmake -S . -B "$DOBOT_WORK/recipes/nova5-joint-trajectory-control/build" \
   -Dhakoniwa_pdu_rpc_DIR="$DOBOT_WORK/dobot-rpc-native/lib/cmake/hakoniwa_pdu_rpc"
 cmake --build "$DOBOT_WORK/recipes/nova5-joint-trajectory-control/build" \
   --target robot-arm-dobot-asset --parallel 2
+```
+
+各コマンドがエラーなく終了し、次の確認で専用 Asset が表示されてから Launcher を切り替えてください。リンクなどに失敗した場合、`adapt_launcher.py` は実行しません。
+
+```bash
+ls -l "$DOBOT_WORK/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-dobot-asset"
+```
+
+```bash
 python3 tools/dobot/adapt_launcher.py \
   --launcher "$DOBOT_WORK/recipes/nova5-joint-trajectory-control/config/launcher.json" \
   --binary "$DOBOT_WORK/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-dobot-asset" \

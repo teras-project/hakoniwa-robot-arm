@@ -67,6 +67,9 @@ if(HAKO_ARM_ENABLE_DOBOT)
         "${HAKO_MUJOCO_ROBOTS_PROJECT_ROOT}/src" "${HAKO_MUJOCO_ROBOTS_PROJECT_ROOT}/include")
     target_include_directories(robot-arm-dobot-asset SYSTEM PRIVATE
         "${HAKO_MUJOCO_SOURCE_DIR}" "${HAKO_MUJOCO_ROBOTS_PROJECT_ROOT}/thirdparty/nolman/single_include")
+    if(HAKO_MUJOCO_LIB_DIR)
+        target_link_directories(robot-arm-dobot-asset PRIVATE ${HAKO_MUJOCO_LIB_DIR})
+    endif()
     target_link_libraries(robot-arm-dobot-asset PRIVATE hako-robot-arm-manifest-factory
         mujoco-common ${HAKO_LIBMUJOCO} hakoniwa_pdu_rpc::rpc)
     set_target_properties(robot-arm-dobot-asset PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")

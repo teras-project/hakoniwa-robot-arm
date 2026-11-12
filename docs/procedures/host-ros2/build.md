@@ -100,7 +100,7 @@ Ubuntu 22.04／Humble では `ROS_DISTRO=humble` に置き換えます。ROS pro
 | この作業の入力成果物 | 前段の生成型・Native サービス設定と、Nova5 Runtime の既存 CMake build |
 | この作業のゴール | `robot-arm-dobot-asset` が生成され、Launcher が公式サービスを受ける専用 Asset に切り替わる。 |
 
-手順3の完了後、`host-hako` に戻ります。端末を閉じていた場合は[セットアップの手順2](setup.md#2-host-hako端末を開く)に従って開き直してください。`hakoniwa-robot-arm` の repository root へ移動し、`pwd` で確認してから、まず次の設定を行ってください。
+手順3の完了後、`host-ros-build` 端末ではなく、手順1・2で使用した `host-hako` 端末に戻ります。端末を閉じていた場合は[セットアップの手順2](setup.md#2-host-hako端末を開く)に従って開き直してください。プロンプトが `(host-hako) (hako)` であることを確認します。`(venv) (host-ros-build)` のままでは実行しません。`hakoniwa-robot-arm` の repository root へ移動し、`pwd` で確認してから、まず次の設定を行ってください。
 
 実行する設定コマンド（`host-hako`）:
 ```bash
