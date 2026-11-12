@@ -131,7 +131,21 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 ros2 run hakoniwa_arm_samples control
 ```
 
-dry-run で J1 +3° の目標を点検後、`ros2 run hakoniwa_arm_samples control --execute --delta-deg 3` を実行します。monitor と（有効な場合）Viewer で位置の変化を確認します。続いて箱庭だけで公式 `ros2 run dobot_demo demo` を実行し、monitor で連続する移動を確認します。50° の絶対移動を含むため、[安全上の警告](../ros2/arm-operations.md)を先に読み、同じ ROS domain に同名サービスを出す実機 driver がいないことを再確認してください。
+dry-run で J1 +3° の目標を点検後、同じ `docker-ros-control` 端末で小動作を実行します。
+
+実行するコマンド（`docker-ros-control`）:
+```bash
+ros2 run hakoniwa_arm_samples control --execute --delta-deg 3
+```
+
+monitor と（有効な場合）Viewer で位置の変化を確認します。続いて箱庭だけで公式デモを実行します。50° の絶対移動を含むため、[安全上の警告](../ros2/arm-operations.md)を先に読み、同じ ROS domain に同名サービスを出す実機 driver がいないことを再確認してください。
+
+実行するコマンド（`docker-ros-control`）:
+```bash
+ros2 run dobot_demo demo
+```
+
+monitor で連続する移動を確認します。
 
 ## 5. 終了する
 
@@ -142,7 +156,14 @@ dry-run で J1 +3° の目標を点検後、`ros2 run hakoniwa_arm_samples contr
 | この作業の入力成果物 | 動作確認済みで起動中の全process |
 | この作業のゴール | ROS 2 process、Nova5 Runtime、Containerがすべて終了する。 |
 
-先に control 端末から `ros2 service call /dobot_bringup_ros2/srv/DisableRobot dobot_msgs_v4/srv/DisableRobot '{}'` を実行し、monitor と launch を Ctrl+C で停止します。`docker-hako`でRuntimeを停止します。
+先に `docker-ros-control` 端末で次のコマンドを実行します。
+
+実行するコマンド（`docker-ros-control`）:
+```bash
+ros2 service call /dobot_bringup_ros2/srv/DisableRobot dobot_msgs_v4/srv/DisableRobot '{}'
+```
+
+monitor と launch を Ctrl+C で停止します。`docker-hako`でRuntimeを停止します。
 
 実行するコマンド（`docker-hako`の`(hako)` shell）:
 ```bash

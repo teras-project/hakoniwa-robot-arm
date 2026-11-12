@@ -97,11 +97,25 @@ ros2 run hakoniwa_arm_samples control --execute --delta-deg 3
 ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{}'
 ```
 
-`control`は`EnableRobot`、`SpeedFactor=10%`、`MovJ`を使用します。応答`res=0`は受理であって到達ではありません。monitorの値とViewerの動きを確認してください。次に箱庭だけで、未変更の公式`ros2 run dobot_demo demo`を実行し、連続する移動を確認します。J1 50°／J2 -8°への絶対角移動を含むため、[安全上の警告と仮想MovL／DOの制限](../ros2/arm-operations.md)を読んでから実行してください。**実機に公式デモを送らないでください。**
+`control`は`EnableRobot`、`SpeedFactor=10%`、`MovJ`を使用します。応答`res=0`は受理であって到達ではありません。monitorの値とViewerの動きを確認してください。次に箱庭だけで公式デモを実行します。J1 50°／J2 -8°への絶対角移動を含むため、[安全上の警告と仮想MovL／DOの制限](../ros2/arm-operations.md)を読んでから実行してください。**実機に公式デモを送らないでください。**
+
+実行するコマンド（`docker-ros-control`）:
+```bash
+ros2 run dobot_demo demo
+```
+
+monitor で連続する移動を確認します。
 
 ## 5. 停止
 
-ROS control端末で`ros2 service call /dobot_bringup_ros2/srv/DisableRobot dobot_msgs_v4/srv/DisableRobot '{}'`を実行します。monitorとlaunchをCtrl+Cで止めてからHost PowerShell（Business Packルート）で実行します。
+`docker-ros-control` 端末で次のコマンドを実行します。
+
+実行するコマンド（`docker-ros-control`）:
+```bash
+ros2 service call /dobot_bringup_ros2/srv/DisableRobot dobot_msgs_v4/srv/DisableRobot '{}'
+```
+
+monitorとlaunchをCtrl+Cで止めてからHost PowerShell（Business Packルート）で実行します。
 
 ```powershell
 python tools\workspace.py run -- python `

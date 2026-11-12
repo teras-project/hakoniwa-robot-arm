@@ -22,7 +22,7 @@ ros2 run hakoniwa_arm_samples monitor --topic /joint_states_robot
 
 終了するまで表示を続けます。最初の1メッセージだけ確認したい場合は `--once` を指定します。
 
-## 安全な制御：現在位置を確認してから動かす
+## 小動作：現在位置を確認してから動かす
 
 周囲・姿勢・可動域・非常停止手段を確認します。`both` では実機と箱庭の初期姿勢を事前に合わせ、実機に送る指令が鏡像にも届くことを確認します。実機へは無人で指令を送らないでください。`Stop` サービスは非常停止の代わりになりません。通信 timeout 時は受理済みか不明なので自動再送せず、両方の状態を点検してください。
 
@@ -37,7 +37,7 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 ros2 run hakoniwa_arm_samples control
 ```
 
-現在角と目標を確認し、virtual で動作させる場合だけ明示的に実行します。
+現在角と目標を確認し、指令先での動作を許可できる場合だけ明示的に実行します。
 
 ```bash
 ros2 run hakoniwa_arm_samples control --execute --delta-deg 3
@@ -46,7 +46,7 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 
 `both` の場合は `/dobot_bringup_ros2/srv/*` が同時配送、個別の観測には `/real/dobot_bringup_ros2/srv/GetAngle` と `/hakoniwa/dobot_bringup_ros2/srv/GetAngle` を使用します。`--execute` は **real／both でも実機を動かします**。初期姿勢合わせ、安全監督と明示的なリスク評価なしには付けないでください。必要に応じて別端末から `ros2 service call /dobot_bringup_ros2/srv/Stop dobot_msgs_v4/srv/Stop '{}'` で通常停止します。終了時は `DisableRobot` を呼びます。
 
-## 公式デモ（箱庭専用の基本検証）
+## 公式デモ（箱庭環境でのみ実行）
 
 公式 `dobot_demo/demo.py` は変更しません。`control` と同じ公開サービスに、`--execute` のような確認オプションなしで `EnableRobot`、`SpeedFactor=10`、`MovJ` を送り、**(J1,J2)=(50°,-8°) へ移動し、(0°,-8°) に移動**します。仮想 `MovJ` は関節モード（`mode=true`）の関節目標をキューに受け付け、10% の補間速度は 6 deg/s です。受理応答は到達を意味しません。箱庭だけで、可動域と周辺に問題がないことを確認した後に実行してください。
 

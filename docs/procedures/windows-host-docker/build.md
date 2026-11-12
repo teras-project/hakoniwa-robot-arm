@@ -65,7 +65,7 @@ imageが`linux/amd64`で、ContainerのBash promptが表示されることを確
 
 ## 3. Containerで公式メッセージ、PDU-RPC／型、bindingを生成
 
-`docker-ros-bridge`（Container Bash）で実行します。続いて[Dobot共通ビルド手順の**1と2のみ**](../ros2/dobot-build.md)を同じ端末で順に実行します（**Native手順3はWindows Hostで次節を使用**）。共通手順は公式`DOBOT_6Axis_ROS2_V4`を取得し、`dobot_msgs_v4`と未変更の`dobot_demo/demo.py`だけをビルドします。箱庭との通信に必要な`ros2_workspace.py build --with-rpc`、`generate_types.py`、`hakoniwa_dobot configure --address host.docker.internal`も実行します。実機 driver はビルドしません。
+まず `docker-ros-bridge`（Container Bash）で次の設定を行います。
 
 ```bash
 cd /workspace/hakoniwa-robot-arm
@@ -74,6 +74,8 @@ export DOBOT_WORK=/workspace/hakoniwa-business-pack/work
 export ROS_DISTRO=jazzy
 export DOBOT_RPC_ADDRESS=host.docker.internal
 ```
+
+次に、**同じ `docker-ros-bridge` 端末で**[Dobot共通ビルド手順の**1 → 2 のみ**](../ros2/dobot-build.md)を順に実行します。共通手順3はWindows Nativeには適用せず、以下の手順4・5でWindows HostのRPCとAssetをビルドします。実機 driver はビルドしません。
 
 共通手順の最後に`ros2 pkg executables dobot_demo`で`dobot_demo demo`、`ros2 pkg executables hakoniwa_dobot`で`hakoniwa_dobot configure`が見え、`$DOBOT_WORK/dobot-types/pdu/offset`と`$DOBOT_WORK/dobot-services/rpc/endpoints/dobot_virtual.json`が生成されたことを確認します。公式checkoutとregistryを変更しません。生成されたRPC endpoint JSONの参照は相対パスなので、Hostでは同じ共有`work`をWindowsパスで指定します。
 
@@ -103,7 +105,7 @@ cmake --install "$dobotWork\dobot-rpc-build" --config Release
 Test-Path "$dobotWork\dobot-rpc-native\lib\cmake\hakoniwa_pdu_rpc\hakoniwa_pdu_rpcConfig.cmake"
 ```
 
-最後が`True`でなければ停止します。GeneratorやFoundation Endpointが非互換なら、この手順は未検証なのでWindowsでの動作を仮定しないでください。
+最後が`True`でなければ停止します。GeneratorやFoundation Endpointが非互換なら先へ進まないでください。
 
 ## 5. Windows Dobot AssetをビルドしLauncherを適用
 
@@ -116,14 +118,22 @@ cmake -S . -B "$buildDir" `
   "-DHAKO_DOBOT_PDU_DIR=$dobotWork\dobot-types" `
   "-Dhakoniwa_pdu_rpc_DIR=$dobotWork\dobot-rpc-native\lib\cmake\hakoniwa_pdu_rpc"
 cmake --build "$buildDir" --target robot-arm-dobot-asset --config Release --parallel 2
+```
 
+ビルドが失敗したらここで停止し、Launcher は変更しません。実行ファイルとDLLを確認します。
+
+```powershell
 $binary = @("$buildDir\bin\robot-arm-dobot-asset.exe",
             "$buildDir\bin\Release\robot-arm-dobot-asset.exe") |
   Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $binary) { throw 'robot-arm-dobot-asset.exe not found; stop here' }
 $binary = (Resolve-Path $binary).Path
 Get-ChildItem (Split-Path $binary) -Filter '*.dll'
+```
 
+確認できた場合のみ、同じPowerShellでLauncherを切り替えます。
+
+```powershell
 python tools\dobot\adapt_launcher.py `
   --launcher "$dobotWork\recipes\nova5-joint-trajectory-control\config\launcher.json" `
   --binary "$binary" `
@@ -132,4 +142,4 @@ python tools\dobot\adapt_launcher.py `
 Test-Path "$dobotWork\recipes\nova5-joint-trajectory-control\config\launcher.pre-dobot.json"
 ```
 
-最後が`True`で、exeの隣に必要なEndpoint等のDLLが揃っていることを確認します。`adapt_launcher.py`はWindowsパスをLauncherへ書き込みます。`nova5.py configure`を再実行した場合は**停止してから**再度Launcherを適用します。ここまでのWindows Native／Docker統合の成否はまだ未検証です。成功した場合のみ[起動・動作確認](operation.md)へ進んでください。
+最後が`True`で、exeの隣に必要なEndpoint等のDLLが揃っていることを確認します。`adapt_launcher.py`はWindowsパスをLauncherへ書き込みます。`nova5.py configure`を再実行した場合は**停止してから**再度Launcherを適用します。成功した場合のみ[起動・動作確認](operation.md)へ進んでください。

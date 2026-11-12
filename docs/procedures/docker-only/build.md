@@ -95,7 +95,7 @@ Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer�
 | この作業の入力成果物 | 起動中のContainerと、configure済みTCP設定 |
 | この作業のゴール | 公式メッセージ・demo、Service Bridge、サンプルと binding が実行可能になる。 |
 
-`docker-ros-build` で [Dobot 共通ビルド手順](../ros2/dobot-build.md)の1・2を次の設定後に実行します。Docker が同じ Container のため RPC 接続先は localhost です。
+まず `docker-ros-build` で次の設定を行ってください。Docker が同じ Container のため RPC 接続先は localhost です。
 
 実行する設定コマンド（`docker-ros-build`）:
 ```bash
@@ -104,16 +104,19 @@ export ROS_DISTRO=jazzy
 export DOBOT_RPC_ADDRESS=127.0.0.1
 ```
 
-Humble では `ROS_DISTRO=humble` に変更します。`dobot_demo demo` と `hakoniwa_dobot configure` が表示され、service / endpoint JSON が存在すればOKです。
+Humble では `ROS_DISTRO=humble` に変更します。次に、**同じ `docker-ros-build` 端末で**[Dobot 共通ビルド手順](../ros2/dobot-build.md)の **1 → 2** を順に実行してください。共通手順3はここでは実行せず、手順5で `docker-hako` に戻って行います。`dobot_demo demo` と `hakoniwa_dobot configure` が表示され、service / endpoint JSON が存在すればOKです。
 
 ## 5. Native RPC / Asset をビルドし Launcher を切り替える
 
-`docker-hako` の `(hako)` shell で Robot Arm ルートへ移動し、[共通ビルド手順3](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)を次の設定後に実行します。
+手順4の完了後、`docker-hako` の `(hako)` shell に戻り、Robot Arm ルートでまず次の設定を行ってください。
 
+実行する設定コマンド（`docker-hako`）:
 ```bash
 export DOBOT_WORK="$HAKONIWA_WORK_DIR"
 test -d "$DOBOT_WORK/foundation/install/include"
 ```
+
+`test -d` が成功しなければ先へ進まず、Foundation と `DOBOT_WORK` を確認してください。次に、**同じ `docker-hako` 端末で**[共通ビルド手順3](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)を実行してください。
 
 `robot-arm-dobot-asset` と Launcher backup を確認してください。`docker-ros-build` は `exit` して構いませんが、`docker-hako` と Container は終了しないでください。
 
