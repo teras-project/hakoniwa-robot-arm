@@ -75,7 +75,7 @@ python tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
-`plan`に`Recipe plan:`が表示されれば、構築予定を確認できています。初回の`plan`では、まだ存在しないFoundation成果物が`MISSING`と表示されても正常です。`configure`後に実行する2つのdoctorで`[OK]`と`SATISFIED`が表示され、ここでは`[NG]`、`MISSING`、`error:`がなければOKです。
+`plan`に`Recipe plan:`が表示されれば、構築予定を確認できています。Nova5 が使う Runtime の拡張 API は[上流 PR #29](https://github.com/hakoniwalab/hakoniwa-robot-runtime/pull/29)で未マージのため、この Recipe は fork 上の対応 commit を固定して取得します。既に上流 `main` の Runtime を取得していた場合も、未変更の checkout なら `configure` が対応 commit へ切り替えます。初回の`plan`では、まだ存在しないFoundation成果物が`MISSING`と表示されても正常です。`configure`後に実行する2つのdoctorで`[OK]`と`SATISFIED`が表示され、ここでは`[NG]`、`MISSING`、`error:`がなければOKです。
 
 ## 4. Nova5 MJCFを生成する
 

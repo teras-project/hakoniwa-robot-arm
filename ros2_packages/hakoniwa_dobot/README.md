@@ -58,8 +58,8 @@ MovJ/MovL は `mode=false`（TCP pose 指定）と追加の `param_value` を拒
 - `hakoniwa-pdu-ros`: Service / Topic Bridge の CLI が ROS remapping 引数を受け付けるための修正．
 - Dobot リポジトリは変更しません．
 
-同梱パッチの基準は `tools/dobot/versions.json` を参照してください．
-Runtime と PDU-ROS のパッチは各リポジトリで `git apply --check` 後に適用します．
+対応リビジョンは `tools/dobot/versions.json` を参照してください．
+Runtime の拡張 API は[上流 PR #29](https://github.com/hakoniwalab/hakoniwa-robot-runtime/pull/29)で未マージのため、Nova5 Recipe は fork 上の対応 commit を固定して取得します。手動でパッチを適用する必要はありません。
 ローカルで改修している場合は差分を確認して取り込んでください．
 
 ## 導入手順
