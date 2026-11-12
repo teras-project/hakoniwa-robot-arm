@@ -1,6 +1,6 @@
 # 箱庭単体セットアップ
 
-Nova5 RuntimeとMuJoCo ViewerをHost上で実行し、ROS 2を使わずに箱庭単体で動作確認するための準備手順です。
+Ubuntu／macOS Host上でNova5 RuntimeとMuJoCo Viewerを実行し、ROS 2を使わずに箱庭単体で動作確認するための準備手順です。
 
 手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
 
@@ -19,14 +19,22 @@ PS5コントローラー（DualSense）で操作する場合は、[箱庭単体�
 | この作業の入力成果物 | 同じ親ディレクトリへclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm` |
 | この作業のゴール | Nova5 Runtimeのconfigureとbuildに必要なHostコマンドが使用できる。 |
 
-UbuntuへHost用パッケージを導入します。FoundationにはCPython 3.12とそのvenv作成機能が必要です。
+FoundationにはCPython 3.12とそのvenv作成機能が必要です。使用するHost OSのコマンドだけを実行します。
 
-実行するコマンド（通常のHost terminal）:
+Ubuntuで実行するコマンド（通常のHost terminal）:
 ```bash
 sudo apt update
 sudo apt install -y \
   git ruby python3.12 python3.12-venv \
   build-essential cmake libboost-dev libgl1-mesa-dev libglfw3-dev
+
+python3.12 --version
+cmake --version
+```
+
+macOSで実行するコマンド（通常のHost terminal）:
+```bash
+brew install git ruby python@3.12 cmake glfw
 
 python3.12 --version
 cmake --version

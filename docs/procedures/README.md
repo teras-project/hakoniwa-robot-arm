@@ -6,9 +6,9 @@
 
 | 利用構成 | setup | build | operation |
 | --- | --- | --- | --- |
-| host-standalone | [setup](host-standalone/setup.md) | [build](host-standalone/build.md) | [operation](host-standalone/operation.md) |
-| host-standalone + PS5 gamepad | [setup](host-standalone/setup-gamepad.md) | [build](host-standalone/build-gamepad.md) | [operation](host-standalone/operation-gamepad.md) |
-| windows-host-standalone | [setup](windows-host-standalone/setup.md) | [build](windows-host-standalone/build.md) | [operation](windows-host-standalone/operation.md) |
+| host-standalone（Ubuntu／macOS） | [setup](host-standalone/setup.md) | [build](host-standalone/build.md) | [operation](host-standalone/operation.md) |
+| host-standalone + PS5 gamepad（Ubuntu／macOS） | [setup](host-standalone/setup-gamepad.md) | [build](host-standalone/build-gamepad.md) | [operation](host-standalone/operation-gamepad.md) |
+| windows-host-standalone（Windows native） | [setup](windows-host-standalone/setup.md) | [build](windows-host-standalone/build.md) | [operation](windows-host-standalone/operation.md) |
 
 ## 段階2：ROS 2から箱庭を操作
 

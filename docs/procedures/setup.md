@@ -8,7 +8,7 @@
 
 | 利用構成 | 適した環境 | Nova5 Runtime / MuJoCo | ROS 2 | 詳細手順 |
 | --- | --- | --- | --- | --- |
-| host-standalone | ROS 2を使わず箱庭単体で確認する | Host | 使用しない | [setup](host-standalone/setup.md) |
+| host-standalone | Ubuntu／macOSでROS 2を使わず箱庭単体で確認する | Host | 使用しない | [setup](host-standalone/setup.md) |
 | windows-host-standalone | Windows nativeで箱庭単体を確認する | Windows Host | 使用しない | [setup](windows-host-standalone/setup.md) |
 | windows-host-docker | WindowsでMuJoCo ViewerとROS 2連携を確認する | Windows Host | Docker Desktop | [setup](windows-host-docker/setup.md) |
 | host-ros2 | Ubuntu HostだけでROS 2連携まで確認する | Host | 同じUbuntu Host | [setup](host-ros2/setup.md) |

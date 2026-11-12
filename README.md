@@ -212,7 +212,7 @@ docker --version
 
 | 環境 | 構成 |
 | --- | --- |
-| Ubuntu Host | `host-standalone` |
+| Ubuntu／macOS Host | `host-standalone`（Bash。macOS は Homebrew で前提を準備） |
 | Windows 11 native Host | `windows-host-standalone`（PowerShell） |
 
 ### 段階2：ROS 2から箱庭を動かす
@@ -247,11 +247,13 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 
 ### 段階1：箱庭単体で確認する（ROS 2なし）
 
-#### Ubuntu：host-standalone
+#### Ubuntu／macOS：host-standalone
 
 1. [箱庭単体セットアップ](docs/procedures/host-standalone/setup.md)
 2. [箱庭単体ビルド](docs/procedures/host-standalone/build.md)
 3. [箱庭単体の起動・動作確認](docs/procedures/host-standalone/operation.md)
+
+両OSともROS 2やDockerは不要です。セットアップ手順の冒頭で、Ubuntuは`apt`、macOSはHomebrewの前提コマンドを選んでください。
 
 #### Windows native：windows-host-standalone
 

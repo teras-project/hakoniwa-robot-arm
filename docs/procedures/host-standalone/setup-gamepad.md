@@ -25,18 +25,7 @@ Nova5 RuntimeとMuJoCo ViewerをHost上で実行し、PS5コントローラー�
 | この作業の入力成果物 | 同じ親ディレクトリへclone済みの`hakoniwa-business-pack`と`hakoniwa-robot-arm` |
 | この作業のゴール | Forge済みのNova5 MJCFが`../work-host/model-forge/nova5/install/nova5.contact.xml`に存在する。 |
 
-native Ubuntuでは[箱庭単体セットアップ](setup.md)の手順1から5までを実行します。
-
-macOSでは最初に次のHost packageを準備します。
-
-実行するコマンド（通常のHost terminal）:
-```bash
-brew install git ruby python@3.12 cmake glfw
-python3.12 --version
-cmake --version
-```
-
-両方のversionが表示されたら、[箱庭単体セットアップ](setup.md)の手順2から5までを実行します。macOSではUbuntu用の`apt`コマンドがある手順1を実行しません。
+Ubuntu／macOSとも[箱庭単体セットアップ](setup.md)の手順1から5までを実行します。手順1ではHost OSに対応する前提コマンドだけを選んでください。
 
 `host-hako`のRobot Arm repository rootで、次のファイルが存在することを確認してください。
 
