@@ -1,6 +1,6 @@
 # Host ROS 2連携セットアップ
 
-Nova5 Runtime、MuJoCo Viewer、Dobot 公式サービスに接続する ROS 2 Bridge と sample node を同じ Ubuntu Host 上で実行する準備手順です。Ubuntu 22.04／ROS 2 Humble、または Ubuntu 24.04／ROS 2 Jazzy を使用します。基本経路は `backend:=virtual`、実機の `real`／`both` は発展構成です。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で取得・生成します。
+Nova5 Runtime、MuJoCo Viewer、Dobot 公式サービスに接続する ROS 2 Bridge と sample node を同じ Ubuntu Host 上で実行する準備手順です。Ubuntu 22.04／ROS 2 Humble、または Ubuntu 24.04／ROS 2 Jazzy を使用します。ROS launch の既定は箱庭で、実機の `real`／`both` は箱庭確認後の[追加手順](real.md)で扱います。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で取得・生成します。
 
 手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
 

@@ -1,6 +1,6 @@
 # Windows host+Docker：Dobot 仮想サービスのビルド
 
-[セットアップ](setup.md)でWindows native Foundation／Nova5 MJCFとDocker Desktopを準備してから実行します。**基本経路は`backend:=virtual`**です。Windows HostはPowerShell、ROS 2 Jazzy ContainerはBashです。WindowsでのNative PDU-RPC／専用AssetのCMakeビルドと結合は**未検証の手順**です。各段階の確認に失敗したら先へ進まず、旧topic経路を代わりに起動しないでください。
+[セットアップ](setup.md)でWindows native Foundation／Nova5 MJCFとDocker Desktopを準備してから実行します。**ROS launch の既定は箱庭**です。Windows HostはPowerShell、ROS 2 Jazzy ContainerはBashです。WindowsでのNative PDU-RPC／専用AssetのCMakeビルドと結合は**未検証の手順**です。各段階の確認に失敗したら先へ進まず、旧topic経路を代わりに起動しないでください。
 
 | 端末 | 作業ディレクトリ | 役割 |
 | --- | --- | --- |
@@ -65,7 +65,7 @@ imageが`linux/amd64`で、ContainerのBash promptが表示されることを確
 
 ## 3. Containerで公式メッセージ、PDU-RPC／型、bindingを生成
 
-`docker-ros-bridge`（Container Bash）で実行します。続いて[Dobot共通ビルド手順の**1と2のみ**](../ros2/dobot-build.md)を同じ端末で順に実行します（**Native手順3はWindows Hostで次節を使用**）。共通手順は公式`DOBOT_6Axis_ROS2_V4`を取得し、`dobot_msgs_v4`、bringup、未変更の`dobot_demo/demo.py`、`ros2_workspace.py build --with-rpc`、`generate_types.py`、`hakoniwa_dobot configure --address host.docker.internal`を含みます。
+`docker-ros-bridge`（Container Bash）で実行します。続いて[Dobot共通ビルド手順の**1と2のみ**](../ros2/dobot-build.md)を同じ端末で順に実行します（**Native手順3はWindows Hostで次節を使用**）。共通手順は公式`DOBOT_6Axis_ROS2_V4`を取得し、`dobot_msgs_v4`と未変更の`dobot_demo/demo.py`だけをビルドします。箱庭との通信に必要な`ros2_workspace.py build --with-rpc`、`generate_types.py`、`hakoniwa_dobot configure --address host.docker.internal`も実行します。実機 driver はビルドしません。
 
 ```bash
 cd /workspace/hakoniwa-robot-arm

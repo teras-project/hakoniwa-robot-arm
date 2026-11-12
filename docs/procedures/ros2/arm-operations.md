@@ -1,6 +1,6 @@
 # ROS 2によるアーム操作
 
-この文書は Nova5 の Dobot 公式 ROS 2 API を使う操作を説明します。[host-ros2](../host-ros2/operation.md)、[host+docker](../host-docker/operation.md)、[docker-only](../docker-only/operation.md)、[Windows host+Docker](../windows-host-docker/operation.md) のいずれかの起動手順を先に完了してください。Windows native Host の Dobot Asset はビルド・結合が未検証です。
+この文書は Nova5 の Dobot 公式 ROS 2 API を使う操作を説明します。[host-ros2](../host-ros2/operation.md)、[host+docker](../host-docker/operation.md)、[docker-only](../docker-only/operation.md)、[Windows host+Docker](../windows-host-docker/operation.md) のいずれかの起動手順を先に完了してください。これらの箱庭手順では launch の既定モードを使い、モード選択は不要です。実機への追加手順は [Ubuntu host-ros2](../host-ros2/real.md) に限ります。Windows native Host の Dobot Asset はビルド・結合が未検証です。
 
 [手順一覧](../README.md)に戻る。各 ROS 端末では `/opt/ros/<distro>/setup.bash`、`$DOBOT_WORK/ros2/activate.bash`、`$DOBOT_WORK/dobot-ros/install/setup.bash`、`$DOBOT_WORK/dobot-types/activate.bash`、`$DOBOT_WORK/dobot-apps/install/setup.bash` を順に source し、同じ `ROS_DOMAIN_ID`（既定 73）を使います。
 
@@ -44,7 +44,7 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 
 `both` の場合は `/dobot_bringup_ros2/srv/*` が同時配送、個別の観測には `/real/dobot_bringup_ros2/srv/GetAngle` と `/hakoniwa/dobot_bringup_ros2/srv/GetAngle` を使用します。`--execute` は **real／both でも実機を動かします**。初期姿勢合わせ、安全監督と明示的なリスク評価なしには付けないでください。必要に応じて別端末から `ros2 service call /dobot_bringup_ros2/srv/Stop dobot_msgs_v4/srv/Stop '{}'` で通常停止します。終了時は `DisableRobot` を呼びます。
 
-## 公式デモ（virtual 専用の基本検証）
+## 公式デモ（箱庭専用の基本検証）
 
 公式 `dobot_demo/demo.py` は変更しません。`EnableRobot`、`SpeedFactor=10`、`MovJ` を呼び、**(J1,J2)=(50°,-8°) へ移動し、(0°,-8°) に移動**します。仮想 `MovJ` は関節モード（`mode=true`）の関節目標をキューに受け付け、10% の補間速度は 6 deg/s です。受理応答は到達を意味しません。箱庭だけで、可動域と周辺に問題がないことを確認した後に実行してください。
 

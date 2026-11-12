@@ -56,7 +56,7 @@ ls -l ../work-host/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-ha
 | 実行端末 | 新しい通常Host terminal。この作業で`host-ros-build`になる。`host-hako`では実行しない。 |
 | 実行ディレクトリ | cloneした`hakoniwa-robot-arm`のrepository root |
 | この作業の入力成果物 | 手順1で生成した`activate-host-ros-build.bash`と、手順2でbuildしたNova5 Runtime |
-| この作業のゴール | 公式 `.srv`、Dobot driver / demo、Service Bridge / PDU-RPC、Dobot 型・サービス binding が `../work-host` に生成される。 |
+| この作業のゴール | 公式 `.srv` と demo、Service Bridge / PDU-RPC、Dobot 型・サービス binding が `../work-host` に生成される。 |
 
 手順1の configure が端末 profile を生成済みです。この手順では ROS 端末と箱庭 Native 端末を**分離**します。[Dobot 共通ビルド手順](../ros2/dobot-build.md)の1・2を以下の環境で実行してください。
 
@@ -108,6 +108,8 @@ test -d "$DOBOT_WORK/foundation/install/include"
 共通手順3の CMake と `adapt_launcher.py` の成功、`launcher.pre-dobot.json` の生成を確認してください。`nova5.py configure` を再実行した場合は Launcher 適用をやり直します。
 
 次は[Host ROS 2連携の起動・動作確認](operation.md)へ進みます。
+
+実機 driver はこの箱庭用ビルドには含めません。箱庭での確認後、実機へ進む場合だけ[実機追加手順](real.md)でビルドします。
 
 ## 応用：独自ROS 2 nodeを追加する
 

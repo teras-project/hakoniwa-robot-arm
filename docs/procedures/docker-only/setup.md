@@ -1,6 +1,6 @@
 # docker-onlyセットアップ
 
-Nova5 Runtime、MuJoCo、箱庭 Core、TCP Bridge、Dobot Service / topic Bridge、monitor、control を同じ Ubuntu Container 内で実行する準備手順です。基本経路は `backend:=virtual`、実機の `real`／`both` は発展構成です。Host の Foundation や ROS 2 は使用しません。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で準備します。
+Nova5 Runtime、MuJoCo、箱庭 Core、TCP Bridge、Dobot Service / topic Bridge、monitor、control を同じ Ubuntu Container 内で実行する準備手順です。実機を使わず、箱庭で公式デモを確認します。Host の Foundation や ROS 2 は使用しません。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で準備します。
 
 手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
 

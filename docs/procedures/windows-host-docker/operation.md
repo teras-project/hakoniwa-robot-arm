@@ -1,6 +1,6 @@
 # Windows host+Docker：Dobot 仮想サービスの起動・動作確認
 
-[ビルド](build.md)のWindows Native PDU-RPC／専用Asset、Container内の公式ROSメッセージ・PDU型・service/topic binding、Launcherの切り替えが**すべて成功した場合のみ**実行します。**Windows Host + DockerのDobot結合は未検証です。** 基本経路は`backend:=virtual`です。`real`／`both`は実機の安全対策を伴う発展構成であり、未検証のWindows接続が動くと仮定しないでください。
+[ビルド](build.md)のWindows Native PDU-RPC／専用Asset、Container内の公式ROSメッセージ・PDU型・service/topic binding、Launcherの切り替えが**すべて成功した場合のみ**実行します。**Windows Host + DockerのDobot結合は未検証です。** ROS launch は既定で箱庭だけに接続します。この手順では実機に接続しません。
 
 | 端末 | 環境・実行するもの |
 | --- | --- |
@@ -41,7 +41,7 @@ source "$DOBOT_WORK/dobot-ros/install/setup.bash"
 source "$DOBOT_WORK/dobot-types/activate.bash"
 source "$DOBOT_WORK/dobot-apps/install/setup.bash"
 test -f "$HAKONIWA_ROS_BINDING"
-ros2 launch hakoniwa_dobot dobot.launch.py backend:=virtual \
+ros2 launch hakoniwa_dobot dobot.launch.py \
   service_binding:="$DOBOT_WORK/dobot-services/dobot-services.json" \
   offset_dir:="$DOBOT_WORK/dobot-types/pdu/offset" \
   rpc_output:="$DOBOT_WORK/dobot-services/rpc" \
@@ -90,14 +90,14 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 ros2 run hakoniwa_arm_samples control
 ```
 
-`GetAngle`の応答とdry-runの現在角・J1 +3°目標を点検します。**`backend:=virtual`であることと、実機driverがこのROS domainにいないことを確認**してから、小動作を明示的に実行します。
+`GetAngle`の応答とdry-runの現在角・J1 +3°目標を点検します。**実機 driver がこの ROS domain にいないことを確認**してから、小動作を明示的に実行します。
 
 ```bash
 ros2 run hakoniwa_arm_samples control --execute --delta-deg 3
 ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{}'
 ```
 
-`control`は`EnableRobot`、`SpeedFactor=10%`、`MovJ`を使用します。応答`res=0`は受理であって到達ではありません。monitorの値とViewerの動きを確認してください。公式`dobot_demo/demo.py`は未変更で`ros2 run dobot_demo demo`から**virtualのみ**で実行できますが、J1 50°／J2 -8°への絶対角移動を含みます。[安全上の警告と仮想MovL／DOの制限](../ros2/arm-operations.md)を読んでから実行してください。**real／bothでは公式demoを実行しないでください。**
+`control`は`EnableRobot`、`SpeedFactor=10%`、`MovJ`を使用します。応答`res=0`は受理であって到達ではありません。monitorの値とViewerの動きを確認してください。次に箱庭だけで、未変更の公式`ros2 run dobot_demo demo`を実行し、連続する移動を確認します。J1 50°／J2 -8°への絶対角移動を含むため、[安全上の警告と仮想MovL／DOの制限](../ros2/arm-operations.md)を読んでから実行してください。**実機に公式デモを送らないでください。**
 
 ## 5. 停止
 
@@ -111,7 +111,3 @@ python tools\workspace.py run -- python `
 ```
 
 `TERMINATED`を確認後、追加Container shellを`exit`し、最後に`docker-ros-bridge`を`exit`します。`--rm`でContainerは削除されますが、Host共有`work`内の生成物は残ります。
-
-## 発展：real／both（実機・Windowsネットワーク未検証）
-
-実機IP、Containerから実機への到達性、初期姿勢合わせ、安全監督と非常停止手段を確認した場合に限ります。`real`は箱庭Assetを起動せず、ROS側で`ros2 launch hakoniwa_dobot dobot.launch.py backend:=real robot_ip:=192.168.5.1`を使用します。`both`は手順2のlaunchを`backend:=both robot_ip:=192.168.5.1`に変更し、monitorは`/real/joint_states_robot`と`/hakoniwa/joint_states_robot`を別端末で観察します。IPは実機のものに置き換えます。どちらもWindows Dockerネットワークでの動作は未検証で、指令の配送・到達の一致は保証しません。**公式demoはreal／bothで実行禁止**、通常の`Stop`サービスは非常停止の代わりになりません。

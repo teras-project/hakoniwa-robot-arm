@@ -96,7 +96,7 @@ Workdir: /workspace/work-host; Foundation mmap: tmpfs
 | 実行端末 | 手順3の`docker/run.bash`で開いた同じContainer shell（`docker-ros-bridge`）。 |
 | 実行ディレクトリ | 最初はContainer内の`hakoniwa-business-pack`リポジトリルート。手順4.1で`hakoniwa-robot-arm`へ移動する。 |
 | この作業の入力成果物 | 起動中のContainerと、共有 mount `/workspace/work-host` |
-| この作業のゴール | 公式メッセージ・driver・demo、ROS Service Bridge、Dobot サンプルが実行可能になる。 |
+| この作業のゴール | 公式メッセージ・demo、ROS Service Bridge、Dobot サンプルが実行可能になる。 |
 
 以下はすべて、手順3で開いた同じContainer shellで実行します。新しいHost terminalを開いたり、追加attachしたりする必要はありません。`docker-ros-bridge`はこの端末の役割名であり、ROS 2 Bridgeのプロセスはまだ起動しません。Bridgeの起動は次の[起動・動作確認](operation.md)で行います。
 

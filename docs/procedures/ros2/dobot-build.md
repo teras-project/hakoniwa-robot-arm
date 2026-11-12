@@ -4,7 +4,7 @@
 
 ## 1. ROS 端末：公式ソース、メッセージ、RPC、PDU 型
 
-Dobot 公式ソースは**変更せず**に取得します。既存 checkout がある場合は clone / checkout 行を省略し、手元の対応版であることを確認します。実機 driver と公式 `dobot_demo/demo.py` を使用するため、メッセージ、bringup、demo の3パッケージをビルドします。先に ROS の profile または `/opt/ros/$ROS_DISTRO/setup.bash` を source してください。
+Dobot 公式ソースは**変更せず**に取得します。既存 checkout がある場合は clone / checkout 行を省略し、手元の対応版であることを確認します。箱庭で公式 `dobot_demo/demo.py` を動かすため、メッセージとデモの2パッケージだけをビルドします。実機 driver は Ubuntu host-ros2 の[実機追加手順](../host-ros2/real.md)でビルドします。先に ROS の profile または `/opt/ros/$ROS_DISTRO/setup.bash` を source してください。
 
 ```bash
 mkdir -p "$DOBOT_WORK/dobot-deps"
@@ -14,10 +14,10 @@ export DOBOT_SRC="$DOBOT_WORK/dobot-deps/DOBOT_6Axis_ROS2_V4"
 git -C "$DOBOT_SRC" checkout --detach 89d47c66a6e0c654dbbe6819f2291132ad0ce979
 
 colcon --log-base "$DOBOT_WORK/dobot-ros/log" build \
-  --base-paths "$DOBOT_SRC/dobot_msgs_v4" "$DOBOT_SRC/dobot_bringup_v4" "$DOBOT_SRC/dobot_demo" \
+  --base-paths "$DOBOT_SRC/dobot_msgs_v4" "$DOBOT_SRC/dobot_demo" \
   --build-base "$DOBOT_WORK/dobot-ros/build" \
   --install-base "$DOBOT_WORK/dobot-ros/install" \
-  --symlink-install --packages-select dobot_msgs_v4 dobot_bringup_v4 dobot_demo
+  --symlink-install --packages-select dobot_msgs_v4 dobot_demo
 source "$DOBOT_WORK/dobot-ros/install/setup.bash"
 
 /usr/bin/python3 tools/recipe/ros2_workspace.py build \
@@ -41,7 +41,7 @@ ros2 pkg executables hakoniwa_dobot
 ros2 pkg executables dobot_demo
 ```
 
-公式ソースは[対応リビジョン](../../../tools/dobot/versions.json)の commit に固定しています。既存 checkout を利用する場合は clone / checkout 行を飛ばし、`.srv` の互換性を確認してください。`--with-rpc` は隣接する `hakoniwa-pdu-rpc` と `hakoniwa-pdu-registry` がなければ取得し、既存の checkout は切り替えません。型生成は公式 `.srv` をコピーして生成領域に出力し、公式ソースと registry は編集しません。`hakoniwa_dobot configure`、`hakoniwa_arm_samples control`、`dobot_demo demo` が表示されなければ次へ進まないでください。
+公式ソースは[対応リビジョン](../../../tools/dobot/versions.json)の commit に固定しています。既存 checkout を利用する場合は clone / checkout 行を飛ばし、`.srv` の互換性を確認してください。`--with-rpc` は隣接する `hakoniwa-pdu-rpc` と `hakoniwa-pdu-registry` がなければ取得し、既存の checkout は切り替えません。`dobot-types` は実機 driver 用ではなく、ROS サービスと箱庭 Native Asset 間の PDU-RPC 用です。型生成は公式 `.srv` をコピーして生成領域に出力し、公式ソースと registry は編集しません。`hakoniwa_dobot configure`、`hakoniwa_arm_samples control`、`dobot_demo demo` が表示されなければ次へ進まないでください。
 
 ## 2. ROS 端末：サービスと topic の binding
 

@@ -31,6 +31,7 @@ ROS 2 連携では、virtual のサービスと状態 topic を確認します�
 
 - Nova5 RuntimeとLauncherが`RUNNING`になる。
 - `control` は現在角からの +3° を dry-run 表示し、明示的な `--execute` でサービスを呼ぶ。
+- 箱庭だけで公式 `dobot_demo demo` の連続する移動を確認する（実機には送らない）。
 - Viewerありの場合はNova5の動作を画面で確認できる。
 - `monitor`の6軸が動作に応じて変化する（既定表示周期 1 Hz）。
 

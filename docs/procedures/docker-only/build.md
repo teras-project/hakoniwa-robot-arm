@@ -93,7 +93,7 @@ Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer�
 | 実行端末 | `docker-ros-build` |
 | 実行ディレクトリ | Container内の`hakoniwa-robot-arm` repository root |
 | この作業の入力成果物 | 起動中のContainerと、configure済みTCP設定 |
-| この作業のゴール | 公式メッセージ・driver・demo、Service Bridge、サンプルと binding が実行可能になる。 |
+| この作業のゴール | 公式メッセージ・demo、Service Bridge、サンプルと binding が実行可能になる。 |
 
 `docker-ros-build` で [Dobot 共通ビルド手順](../ros2/dobot-build.md)の1・2を次の設定後に実行します。Docker が同じ Container のため RPC 接続先は localhost です。
 

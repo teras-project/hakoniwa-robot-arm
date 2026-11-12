@@ -1,5 +1,7 @@
 # Dobot 公式 ROS 2 API で Nova5 実機と箱庭を操作する
 
+利用者向けには[段階2の箱庭用手順](../../docs/procedures/README.md#段階2ros-2から箱庭を操作)から始めてください。ROS launch の既定は箱庭で、公式メッセージとデモだけをビルドします。実機 driver は[Ubuntu host-ros2 の段階3](../../docs/procedures/host-ros2/real.md)で追加します。以下は既存環境から手動で切り替える場合の技術的な詳細です。
+
 ユーザーは `dobot_msgs_v4/srv/*` をそのまま使います．実機は公式
 `dobot_bringup_v4_node`，箱庭は Service Bridge → TCP/PDU-RPC → MuJoCo の経路です．
 従来作成した `dobot_arm_samples bridge` はこの経路では起動しません．

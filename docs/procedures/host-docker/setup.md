@@ -1,6 +1,6 @@
 # host+dockerセットアップ
 
-Nova5 RuntimeとMuJoCo ViewerをHost、Dobot 公式サービス用 ROS 2 Bridge、monitor、controlをDocker Containerで実行する準備手順です。macOS＋ROS 2 Jazzyを主な対象とします。基本経路は `backend:=virtual`、実機の `real`／`both` は発展構成です。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で準備します。
+Nova5 RuntimeとMuJoCo ViewerをHost、Dobot 公式サービス用 ROS 2 Bridge、monitor、controlをDocker Containerで実行する準備手順です。macOS＋ROS 2 Jazzyを主な対象とします。実機を使わず、箱庭で公式デモを確認します。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で準備します。
 
 手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
 

@@ -1,6 +1,6 @@
 # Windows host+Dockerセットアップ
 
-Nova5 RuntimeとMuJoCo ViewerをWindows 11 Host上でnative実行し、Dobot 公式 ROS 2サービスとJointState BridgeをDocker Desktop上で実行する準備手順です。Host側はPowerShell、Container内はBashで操作します。基本経路は`backend:=virtual`、実機の`real`／`both`は安全確認を要する発展構成です。**以下のWindows Dobot Native Asset / PDU-RPC手順は未検証**です。失敗した段階で止め、成功済みとして扱わないでください。
+Nova5 RuntimeとMuJoCo ViewerをWindows 11 Host上でnative実行し、Dobot 公式 ROS 2サービスとJointState BridgeをDocker Desktop上で実行する準備手順です。Host側はPowerShell、Container内はBashで操作します。実機を使わず、箱庭で公式デモを確認します。**以下のWindows Dobot Native Asset / PDU-RPC手順は未検証**です。失敗した段階で止め、成功済みとして扱わないでください。
 
 端末: 手順1はWindows nativeセットアップに従い、手順2～3はWindows HostのPowerShell（`hakoniwa-business-pack`のrepository root）を使用します。ContainerのBashは[ビルド](build.md)から使用します。`powershell`ブロックは実行コマンド、表示結果は手順の成功条件を確認するためのものです。
 

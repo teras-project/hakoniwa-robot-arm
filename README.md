@@ -2,13 +2,13 @@
 
 `hakoniwa-robot-arm` は、URDF / Xacro で記述されたROSロボットモデルをもとに、箱庭上でロボットアームシミュレータを構築・実行するためのシミュレーション開発基盤です。
 
-ロボットモデルをMuJoCo形式へ変換し、[箱庭ロボットランタイム](https://github.com/hakoniwalab/hakoniwa-robot-runtime)と組み合わせることで、実機を使用せずに関節制御や状態取得を行えます。Nova5 の ROS 2 基本経路は Dobot 公式 `dobot_msgs_v4/srv/*` サービスと `/joint_states_robot` です。実機の `real`／`both` は発展構成です。
+ロボットモデルをMuJoCo形式へ変換し、[箱庭ロボットランタイム](https://github.com/hakoniwalab/hakoniwa-robot-runtime)と組み合わせることで、実機を使用せずに関節制御や状態取得を行えます。Nova5 は箱庭単体、ROS 2 からの箱庭操作、Ubuntu host-ros2 での実機接続の3段階で利用できます。ROS 2 では Dobot 公式 `dobot_msgs_v4/srv/*` サービスと `/joint_states_robot` を使い、箱庭に対して無改変の公式デモを実行します。
 
 現在の対応状況：
 
 | Robot | 状況 |
 | --- | --- |
-| DOBOT Nova5 | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）で動作確認済み。 |
+| DOBOT Nova5 | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）の従来経路で動作確認済み。Dobot 仮想サービス経路の検証状況は[こちら](ros2_packages/hakoniwa_dobot/README.md#検証済みと未検証)。 |
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
 
@@ -37,7 +37,7 @@
 - URDF / Xacroで記述されたロボットモデルをMuJoCo形式へ変換
 - MuJoCoによるロボットアームの物理シミュレーション
 - 箱庭ロボットランタイムによる関節制御
-- [Dobot公式ROS 2サービスを使ったNova5操作](docs/procedures/ros2/arm-operations.md)（基本経路は `virtual`、実機の `real`／`both` は発展構成）
+- [Dobot公式ROS 2サービスを使ったNova5操作](docs/procedures/ros2/arm-operations.md)（箱庭が既定、Ubuntu host-ros2 の実機 `real`／`both` は発展構成）
 - ROS 2 `/joint_states_robot` による状態取得
 - 公式 `dobot_demo/demo.py` を変更せず virtual で実行（実機・both では 50° 動作に注意し実行しない）
 - Dockerを利用したROS 2実行環境
@@ -78,7 +78,7 @@ flowchart LR
 
 ### ROS 2側の構成
 
-`dobot.launch.py backend:=virtual` は Service Bridge と topic Bridge を同時に起動します。制御には `dobot_msgs_v4/srv/GetAngle`、`MovJ`、`ServoJ` など、観測には `sensor_msgs/msg/JointState` を使用します。仮想 `MovL` の joint mode は関節空間の近似で Cartesian 直線ではなく、仮想 `DO` は 1～24 の状態／パルスのみで物理グリッパーはありません。[対応 API と安全上の注意](docs/procedures/ros2/arm-operations.md)を参照してください。
+`dobot.launch.py` は既定で箱庭の Service Bridge と topic Bridge を同時に起動します。制御には `dobot_msgs_v4/srv/GetAngle`、`MovJ`、`ServoJ` など、観測には `sensor_msgs/msg/JointState` を使用します。仮想 `MovL` の joint mode は関節空間の近似で Cartesian 直線ではなく、仮想 `DO` は 1～24 の状態／パルスのみで物理グリッパーはありません。[対応 API と安全上の注意](docs/procedures/ros2/arm-operations.md)を参照してください。
 
 ### 箱庭ロボットランタイム
 
@@ -206,29 +206,29 @@ docker --version
 
 ## 利用構成
 
-### host-standalone
+### 段階1：ROS 2を使わず箱庭単体で動かす
 
-箱庭RuntimeとMuJoCo ViewerをHost上で実行し、ROS 2を介さずに箱庭PDUレベルの動作確認を行います。
+同じ Nova5 モデルを箱庭 Runtime と MuJoCo Viewer で動かし、箱庭 PDU と独自の軌道スクリプトを使います。公式 ROS サービスや Dobot 用 PDU-RPC は不要です。
 
-### windows-host-standalone
+| 環境 | 構成 |
+| --- | --- |
+| Ubuntu Host | `host-standalone` |
+| Windows 11 native Host | `windows-host-standalone`（PowerShell） |
 
-Windows 11上で箱庭RuntimeとMuJoCo Viewerをnative実行し、ROS 2を介さずに箱庭PDUレベルの動作確認を行います。PowerShellからWorkspaceの非対話`run`操作を使用します。
+### 段階2：ROS 2から箱庭を動かす
 
-### host-ros2
+環境は異なりますが、いずれも箱庭側の Nova5 と ROS 2 側の Dobot 公式サービスを接続し、**箱庭だけで**無改変の `dobot_demo demo` を動かします。ROS launch の既定は箱庭（`virtual`）で、利用者が実機モードを選ぶ必要はありません。公式ソースから `dobot_msgs_v4` と `dobot_demo` をビルドし、箱庭との通信に必要な `dobot-types` を生成します。実機 driver はビルドしません。
 
-箱庭 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROS ノードを同じ Ubuntu Host 上で実行します。基本経路は Dobot 仮想サービスと `/joint_states_robot` です。`real`／`both` は実機との安全確認を要する発展構成です。
+| 環境 | 構成 |
+| --- | --- |
+| Ubuntu Host（ROS 2と箱庭を同じHostで実行） | `host-ros2` |
+| macOS Host＋Ubuntu ROS 2 Container | `host+docker` |
+| Windows 11 native Host＋Ubuntu ROS 2 Container | `windows-host-docker`（Dobot Native Asset／RPCのビルド・結合は未検証） |
+| Ubuntu／macOS／Windows Host＋単一 Ubuntu Container | `docker-only`（macOS／Windowsではheadless。Windows Hostからの Bash 手順は未検証） |
 
-### host+docker
+### 段階3：Ubuntu host-ros2から実機にも接続する（発展）
 
-Host 上で Dobot Native Asset、Docker Container 上で ROS 2 Service / topic Bridge と操作ノードを実行します。macOS で ROS 2 を利用する場合の基本構成です。Dobot 成果物は Host の `../work-host` と Container の `/workspace/work-host` の共有 mount に配置します。
-
-### windows-host-docker
-
-Windows 11 native の Nova5 Runtime と Docker Desktop を組み合わせ、[Dobot仮想サービスの手順](docs/procedures/windows-host-docker/build.md)を実行できます。Native PDU-RPCと専用AssetのWindowsビルド・結合は未検証のため、失敗した段階で停止してください。
-
-### docker-only
-
-シミュレータ、Dobot Native Asset と ROS 2 を同一の Linux Container 内で実行します。Host へ Python、CMake、ROS 2 などを導入せずに仮想サービスを確認する構成です。ネイティブ Ubuntu でも同じ Container 内手順を利用でき、macOS／Windows Docker Desktop では headless 実行を使用します。
+段階2の `host-ros2` で箱庭動作を確認した後に、公式実機 driver を**追加ビルド**し、`real`（実機のみ）または `both`（実機と箱庭）を選びます。実機の結合は未検証です。公式デモは50°の絶対移動を含むため実機へ送らず、現在姿勢からの安全な小動作で確認します。
 
 ## クイックスタート
 
@@ -245,26 +245,31 @@ git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 
 この時点では2リポジトリだけで構いません。標準配置では、後続のprofileがこの兄弟配置を自動検出します。Nova5が必要とする他のリポジトリは、Recipeの`configure`またはROS 2 workspaceの`build`が自動取得します。
 
-### 箱庭単体で確認するユーザー：host-standalone
+### 段階1：箱庭単体で確認する（ROS 2なし）
+
+#### Ubuntu：host-standalone
 
 1. [箱庭単体セットアップ](docs/procedures/host-standalone/setup.md)
 2. [箱庭単体ビルド](docs/procedures/host-standalone/build.md)
 3. [箱庭単体の起動・動作確認](docs/procedures/host-standalone/operation.md)
 
-### Windows nativeで箱庭単体を確認するユーザー
+#### Windows native：windows-host-standalone
 
 1. [Windows native箱庭単体セットアップ](docs/procedures/windows-host-standalone/setup.md)
 2. [Windows native箱庭単体ビルド](docs/procedures/windows-host-standalone/build.md)
 3. [Windows native箱庭単体の起動・動作確認](docs/procedures/windows-host-standalone/operation.md)
 
-### Ubuntu HostだけでROS 2連携するユーザー：host-ros2
+### 段階2：ROS 2から箱庭を動かす
+
+以下から実行環境を1つ選び、setup → build → operation の順に進みます。共通のゴールは **実機を接続せず、公式 `dobot_demo demo` を箱庭で動かすこと**です。
+
+#### Ubuntu Host：host-ros2
 
 1. [Host ROS 2連携セットアップ](docs/procedures/host-ros2/setup.md)
 2. [Host ROS 2連携ビルド](docs/procedures/host-ros2/build.md)
 3. [Host ROS 2連携の起動・動作確認](docs/procedures/host-ros2/operation.md)
-4. [操作と安全上の警告（real／both は発展）](docs/procedures/ros2/arm-operations.md)
 
-### macOSユーザー：host+docker
+#### macOS Host＋Docker：host+docker
 
 macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノードをDocker Containerで実行します。HostとDockerはTCPで接続します。
 
@@ -274,7 +279,7 @@ macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノード
 
 人が操作する場合はHost上のMuJoCo Viewerを利用できます。CIや画面のない自動確認ではheadlessを選択します。
 
-### Windowsユーザー：host+DockerでROS 2連携
+#### Windows Host＋Docker：windows-host-docker
 
 Windows 11 の native Runtime と ROS 2 Jazzy Docker Desktop の構成です。Dobot 仮想サービスは基本経路ですが、Windows native のビルドと結合は未検証です。各段階の確認に失敗したら先へ進まないでください。
 
@@ -282,7 +287,7 @@ Windows 11 の native Runtime と ROS 2 Jazzy Docker Desktop の構成です。D
 2. [Windows host+Dockerビルド](docs/procedures/windows-host-docker/build.md)
 3. [Windows host+Docker起動・動作確認](docs/procedures/windows-host-docker/operation.md)
 
-### Host環境を汚さず試したいユーザー：docker-only
+#### Ubuntu／macOS／Windows Host：docker-only
 
 HostへCPython 3.12、CMake、ROS 2などを導入せず、GitとDockerだけで動作確認したい場合はdocker-onlyを選択します。Nova5とROS 2を同じ1つのUbuntu Container内で実行します。
 
@@ -290,7 +295,11 @@ HostへCPython 3.12、CMake、ROS 2などを導入せず、GitとDockerだけで
 2. [docker-onlyビルド](docs/procedures/docker-only/build.md)
 3. [docker-only起動・動作確認](docs/procedures/docker-only/operation.md)
 
-native Linux HostではViewerを利用できます。macOS Docker Desktopではnative architectureのheadless実行を使用します。
+native Linux HostではViewerを利用できます。macOS Docker Desktopではnative architectureのheadless実行を使用します。Windows Hostからの Bash 手順は未検証です。
+
+### 段階3：Ubuntu host-ros2 で実機にも接続する（発展）
+
+段階2の `host-ros2` の箱庭デモまで完了した場合のみ、[実機 driver の追加と `real`／`both` への切り替え](docs/procedures/host-ros2/real.md)へ進みます。実機で無改変の公式デモは実行しません。
 
 ## リポジトリ構成
 

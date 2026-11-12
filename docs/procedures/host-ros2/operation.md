@@ -57,7 +57,7 @@ source "$DOBOT_WORK/ros2/activate.bash"
 source "$DOBOT_WORK/dobot-ros/install/setup.bash"
 source "$DOBOT_WORK/dobot-types/activate.bash"
 source "$DOBOT_WORK/dobot-apps/install/setup.bash"
-ros2 launch hakoniwa_dobot dobot.launch.py backend:=virtual \
+ros2 launch hakoniwa_dobot dobot.launch.py \
   service_binding:="$DOBOT_WORK/dobot-services/dobot-services.json" \
   offset_dir:="$DOBOT_WORK/dobot-types/pdu/offset" \
   rpc_output:="$DOBOT_WORK/dobot-services/rpc" \
@@ -117,7 +117,7 @@ ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{
 ros2 run hakoniwa_arm_samples control
 ```
 
-dry-run で現在姿勢と J1 +3° の目標を確認してから `ros2 run hakoniwa_arm_samples control --execute --delta-deg 3` を実行します。Viewer と monitor の変化を確認します。公式 `ros2 run dobot_demo demo` も **virtual 限定**で実行できますが、50° の動作を含みます。[安全上の警告と API の制限](../ros2/arm-operations.md)を読み、実機・both では実行しないでください。
+dry-run で現在姿勢と J1 +3° の目標を確認してから `ros2 run hakoniwa_arm_samples control --execute --delta-deg 3` を実行します。Viewer と monitor の変化を確認します。続いて箱庭だけで公式 `ros2 run dobot_demo demo` を実行し、Viewer と monitor で連続する移動を確認します。50° の絶対移動を含むため、[安全上の警告と API の制限](../ros2/arm-operations.md)を先に読み、実機が同じ ROS domain にいないことを確認してください。
 
 ## 5. 終了する
 
@@ -138,6 +138,6 @@ python tools/recipe/nova5.py status
 
 `status`が`TERMINATED`を返せば終了完了です。
 
-## 発展：real／both
+## 次の段階：実機でも動かす
 
-virtual で確認した後にのみ実機・箱庭の初期姿勢、安全対策と実機 IP を確認してください。`real` は箱庭 Asset を起動せず `ros2 launch hakoniwa_dobot dobot.launch.py backend:=real robot_ip:=192.168.5.1`、`both` は上記 virtual launch の `backend:=both robot_ip:=192.168.5.1` への変更です（IP は実機に合わせる）。`both` の monitor は `/real/joint_states_robot` と `/hakoniwa/joint_states_robot` を別々に観察します。実機 driver は1つだけ起動します。**公式 demo は real／both で禁止**。応答受理・同時配送には到達・原子性の保証がなく、Stop は非常停止ではありません。詳細は[安全上の警告](../ros2/arm-operations.md)と[公式 API の構成](../../../ros2_packages/hakoniwa_dobot/README.md)を参照してください。
+箱庭の確認を完了した Ubuntu host-ros2 環境からのみ、[実機 driver の追加と `real`／`both` への切り替え](real.md)へ進みます。公式デモの50°絶対移動は実機へ送らないでください。
