@@ -116,7 +116,7 @@ pwd
 
 ### 4.2 Dobot / ROS workspace とサービス binding を build する
 
-macOS Docker Desktop では Host の RPC TCP 54020 に `host.docker.internal` で接続します。Linux Host の `docker/run.bash` 既定 host network では `127.0.0.1` に変更します。[Dobot 共通ビルド手順](../ros2/dobot-build.md)の1・2を、Container の ROS Bash で次の設定後に実行してください。公式 checkout と成果物は Host と共有されるため、Native 側でも読めます。
+macOS Docker Desktop では Host の RPC TCP 54020 に `host.docker.internal` で接続します。Linux Host の `docker/run.bash` 既定 host network では `127.0.0.1` に変更します。次の設定を行い、**同じ `docker-ros-bridge` 端末で**[Dobot 共通ビルド手順](../ros2/dobot-build.md)の **1 → 2 だけ**を順に実行してください。共通手順3は Container では実行せず、このページの手順5で Host に戻って行います。公式 checkout と成果物は Host と共有されるため、Native 側でも読めます。
 
 実行するコマンド（`docker-ros-bridge`）:
 ```bash
@@ -125,17 +125,36 @@ export ROS_DISTRO=jazzy
 export DOBOT_RPC_ADDRESS=host.docker.internal
 ```
 
-Humble では `ROS_DISTRO=humble` に変更します。生成結果で `dobot_demo demo` と `hakoniwa_dobot configure` が表示され、service / endpoint JSON が存在することを確認します。Docker Desktop 側の Host Firewall で TCP 54020 を使用できることも確認してください。
+Humble では `ROS_DISTRO=humble` に変更します。共通手順1・2の完了後、生成結果で `dobot_demo demo` と `hakoniwa_dobot configure` が表示され、次の成果物がすべて存在することを確認します。
+
+実行する確認コマンド（`docker-ros-bridge`。共通手順1・2の完了後）:
+```bash
+ls -l "$DOBOT_WORK/dobot-ros/install/setup.bash" \
+  "$DOBOT_WORK/dobot-apps/install/setup.bash" \
+  "$DOBOT_WORK/dobot-types/pdu/types/dobot_msgs_v4_msgs/pdu_cpptype_conv_ServoJRequestPacket.hpp" \
+  "$DOBOT_WORK/dobot-services/dobot-services.json" \
+  "$DOBOT_WORK/dobot-services/rpc/endpoints/dobot_virtual.json"
+```
+
+一つでも見つからなければ手順5へ進まず、共通手順1・2の失敗を解消してください。Docker Desktop 側の Host Firewall で TCP 54020 を使用できることも確認してください。
 
 ## 5. Host Native RPC / Asset をビルドし Launcher を切り替える
 
-Host の `host-hako`（Robot Arm repository root）で、[共通ビルド手順3](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)を次の設定後に実行します。Container の ROS shell に Foundation を source しないでください。
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | Host 側の `host-hako`。手順1・2で使った端末へ戻る。`docker-ros-bridge` では実行しない。 |
+| 実行ディレクトリ | Host 上の `hakoniwa-robot-arm` repository root |
+| この作業の入力成果物 | 手順4.2で共通手順1・2を完了して生成した `dobot-types` とサービス binding、Host 側の Foundation |
+| この作業のゴール | Host の Native RPC / Dobot Asset をビルドし、Launcher を切り替える。 |
 
+手順4.2の完了後、**Host の `host-hako` に戻り**ます。端末を閉じていた場合は[セットアップの手順2](setup.md#2-host-hako端末を開く)に従って開き直してください。Host 上の Robot Arm repository root にいることを確認し、次の設定を実行してから[共通ビルド手順3](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)のコマンドを **同じ `host-hako` で**実行します。これは共通手順3の前に別途行うビルドではなく、共通手順3の準備と実行です。Container の ROS shell に Foundation を source しないでください。
+
+実行する設定コマンド（Host の `host-hako`）:
 ```bash
 export DOBOT_WORK="$(realpath ../work-host)"
 test -d "$DOBOT_WORK/foundation/install/include"
 ```
 
-`robot-arm-dobot-asset` と Launcher backup を確認してください。Container は終了せず `docker-ros-bridge` として維持します。Host と Container の絶対パスが違うため、Host の Launcher に `/workspace/...` を書き込まないでください。
+`test -d` が成功しなければ共通手順3へ進まず、Host 側の Foundation と `DOBOT_WORK` を確認してください。共通手順3の完了後に `robot-arm-dobot-asset` と Launcher backup を確認してください。Container は終了せず `docker-ros-bridge` として維持します。Host と Container の絶対パスが違うため、Host の Launcher に `/workspace/...` を書き込まないでください。
 
 次は[host+docker起動・動作確認](operation.md)へ進んでください。
