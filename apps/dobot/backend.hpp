@@ -16,17 +16,7 @@
 #include <sstream>
 #include <thread>
 #include <unordered_map>
-// Registry's C++ string[] template currently uses cpp-named primitive helpers
-// while the common header exports ros-named helpers with the same std::string API.
 #include "pdu_primitive_ctypes_conv.hpp"
-inline int hako_convert_pdu2cpp_array_string_varray(const Hako_cstring* src,
-        std::vector<std::string>& dst, int n) {
-    return hako_convert_pdu2ros_array_string_varray(src, dst, n);
-}
-inline int hako_convert_cpp2pdu_array_string_varray(const std::vector<std::string>& src,
-        Hako_cstring* dst) {
-    return hako_convert_ros2pdu_array_string_varray(src, dst);
-}
 // Generated from the installed official .srv files by tools/dobot/generate_types.py.
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_RequestControlRequestPacket.hpp"
 #include "dobot_msgs_v4_msgs/pdu_cpptype_conv_RequestControlResponsePacket.hpp"
