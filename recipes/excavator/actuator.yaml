@@ -1,0 +1,29 @@
+actuators:
+  - type: position
+    name: base_chassis_joint_motor
+    joint: base_chassis_joint
+    ctrllimited: true
+    ctrlrange: [-3.1416, 3.1416]
+    kp: 10000000.0
+    dampratio: 1.0
+  - type: position
+    name: chassis_boom_joint_motor
+    joint: chassis_boom_joint
+    ctrllimited: true
+    ctrlrange: [-0.5585, 1.2415]
+    kp: 10000000.0
+    dampratio: 1.0
+  - type: position
+    name: boom_stick_joint_motor
+    joint: boom_stick_joint
+    ctrllimited: true
+    ctrlrange: [-0.8179, 1.0821]
+    kp: 5000000.0
+    dampratio: 1.0
+  - type: position
+    name: stick_bucket_joint_motor
+    joint: stick_bucket_joint
+    ctrllimited: true
+    ctrlrange: [-2.2689, 0.0]
+    kp: 2000000.0
+    dampratio: 1.0

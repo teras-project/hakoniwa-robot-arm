@@ -1,0 +1,83 @@
+id: excavator-joint-trajectory-control
+title: MathScavator9000 Foundation-managed JointTrajectory Runtime
+recipe_version: 1.0
+
+goal:
+  user_request: 油圧ショベルを箱庭・MuJoCo上でJointTrajectoryにより動かしたい
+  description: Run the mobile MathScavator9000 with the dedicated excavator asset, common PDU contracts, and selectable Auto or Manual control.
+
+feasibility:
+  status: feasible
+  confidence: high
+
+validation:
+  status: verified
+  verified_at: 2026-11-02
+  summary: On a macOS host, WSL2 Ubuntu 24.04, and Windows 11 native, the headless mobile excavator completed six-wheel differential Twist drive and stop, and remained numerically stable; on the macOS host it also completed a four-joint JointTrajectory and emitted JointState. Mobile Viewer display, Ubuntu native, Docker, and ROS 2 paths are not verified. The digging worksite is experimental and requires an accepted bucket-collision calibration.
+
+foundation_contract:
+  mode: required
+  reason: Runtime execution requires Core SHM, hako-cmd, Endpoint callback transport, and Launcher.
+
+foundation_requirements:
+  hakoniwa-core-pro:
+    capabilities: {shared_memory: true, hako_cmd: true, python_binding: true, callback_assets_shared: true, core_shared: true}
+  hakoniwa-pdu-endpoint:
+    capabilities: {hakoniwa_core: true, core_callback: true, python_binding: true}
+  hakoniwa-pdu-bridge-core:
+    capabilities: {hakoniwa_app: true, web_bridge: true}
+  hakoniwa-pdu-python:
+    version: {min: 1.6.5}
+    capabilities: {hako_launcher: true, launcher_background_lifecycle: true, shm_backend: true}
+
+recipe_local_requirements_schema_version: 1
+recipe_local_requirements:
+  hakoniwa-business-pack:
+    root: {default_path: ../hakoniwa-business-pack, override_env: HAKONIWA_COMPOSER, relative_to: recipe_repository}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-business-pack.git", revision: main}
+    required_artifacts:
+      - {path: tools/foundation.py, kind: file}
+  hakoniwa-mujoco-robots:
+    root: {default_path: ../hakoniwa-mujoco-robots, override_env: HAKONIWA_MUJOCO_ROBOTS_ROOT, relative_to: recipe_repository}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-mujoco-robots.git", revision: main}
+    required_artifacts:
+      - {path: src/CMakeLists.txt, kind: file}
+  hakoniwa-robot-runtime:
+    root: {default_path: ../hakoniwa-robot-runtime, override_env: HAKONIWA_ROBOT_RUNTIME_ROOT, relative_to: recipe_repository}
+    source: {type: git, url: "https://github.com/hakoniwalab/hakoniwa-robot-runtime.git", revision: main}
+    required_artifacts:
+      - {path: include/hakoniwa/robot_runtime/factory/manifest_factory.hpp, kind: file}
+      - {path: src/runtime/actuator_runtime.cpp, kind: file}
+
+artifact_sets:
+  physics_artifacts: {status: verified, artifacts: [$HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.runtime.xml, $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.mobile.xml, $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.soil.xml]}
+  visualization_artifacts: {status: not_verified, artifacts: [MuJoCo viewer, transparent bucket proxy calibration viewer, headless mode]}
+  pdu_artifacts: {status: verified, artifacts: [JointTrajectory input, JointState output]}
+  runtime_artifacts: {status: verified, artifacts: [hakoniwa-robot-runtime, robot-excavator-hakoniwa-asset, generated Launcher configuration]}
+
+artifacts:
+  - name: Excavator Asset Manifest
+    owner: hakoniwa-robot-arm
+    path: recipes/excavator/asset-manifest.json
+    purpose: Select the verified mobile model and four-axis runtime bindings.
+  - name: Excavator Digging Worksite Manifest
+    owner: hakoniwa-robot-arm
+    path: recipes/excavator/asset-manifest-digging.json
+    purpose: Explicitly select the accepted HField, simplified soil, and bucket-proxy PoC variant.
+
+acceptance:
+  verified_at: 2026-08-29
+  platform: macOS arm64
+  automatic_command: python tools/recipe/excavator.py validate-bucket
+  observed:
+    - the automatic one-sphere settle, side-containment, slow-curl hold, and dump stages passed
+  scope: The automatic validator is a collision regression check for the accepted proxy. The full digging worksite remains experimental, and mobile-model Viewer display is not verified.
+
+current_soil_candidate:
+  particle_count: 50
+  particle_diameter_m: 0.36
+  status: pending_manual_acceptance
+  note: The accepted bucket proxy is unchanged; verify PS5 responsiveness, scooping, retention, dumping, and RTF with the current slightly larger particles.
+
+missing_pieces:
+  - Granular soil is a simplified rigid-sphere PoC, not a soil-mechanics model.

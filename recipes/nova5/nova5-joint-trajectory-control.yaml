@@ -26,6 +26,7 @@ foundation_requirements:
       hako_cmd: true
       python_binding: true
       callback_assets_shared: true
+      core_shared: true
   hakoniwa-pdu-endpoint:
     capabilities: {hakoniwa_core: true, core_callback: true, python_binding: true}
   hakoniwa-pdu-bridge-core:

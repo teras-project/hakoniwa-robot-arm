@@ -1,0 +1,4 @@
+PyYAML==6.0.3
+mujoco==3.10.0
+numpy==2.5.1
+trimesh==4.12.2

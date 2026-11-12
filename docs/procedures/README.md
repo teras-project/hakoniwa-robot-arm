@@ -9,6 +9,8 @@
 | host-standalone（Ubuntu／macOS） | [setup](host-standalone/setup.md) | [build](host-standalone/build.md) | [operation](host-standalone/operation.md) |
 | host-standalone + PS5 gamepad（Ubuntu／macOS） | [setup](host-standalone/setup-gamepad.md) | [build](host-standalone/build-gamepad.md) | [operation](host-standalone/operation-gamepad.md) |
 | windows-host-standalone（Windows native） | [setup](windows-host-standalone/setup.md) | [build](windows-host-standalone/build.md) | [operation](windows-host-standalone/operation.md) |
+| Excavator host-standalone（macOS／Ubuntu 24.04／WSL2） | [setup](excavator/host-standalone/setup.md) | [build](excavator/host-standalone/build.md) | [operation](excavator/host-standalone/operation.md) |
+| Excavator windows-host-standalone | [setup](excavator/windows-host-standalone/setup.md) | [build](excavator/windows-host-standalone/build.md) | [operation](excavator/windows-host-standalone/operation.md) |
 
 ## 段階2：ROS 2から箱庭を操作
 

@@ -11,6 +11,7 @@
 | DOBOT Nova5 | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）の従来経路で動作確認済み。Dobot 仮想サービス経路の検証状況は[こちら](ros2_packages/hakoniwa_dobot/README.md#検証済みと未検証)。 |
 | FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
 | SO-101 follower | ソースとツールを公開。動作確認中。 |
+| MathScavator9000 Excavator | macOS host、WSL2 Ubuntu 24.04、Windows 11 native（いずれもheadless）で走行を動作確認済み。Viewer表示とその他の環境は未確認、掘削は実験的。詳細は[Recipe](recipes/excavator/README.md)。 |
 
 ロボットの種類毎の設定や実行手順は[対応ロボット](docs/reference/robots.md)を参照してください。
 
@@ -96,7 +97,7 @@ flowchart LR
 - [Runtime-owned JSON Schemas](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/main/schemas): Runtimeが所有する機械可読な設定Schema
 - [Hakoniwa PDU Endpoint Schemas](https://github.com/hakoniwalab/hakoniwa-pdu-endpoint/tree/main/config/schema): PDU Definition、PDU Types、Endpoint、Cache、Comm形式の正本
 
-具体的な設定例として、Nova5では次のファイルを使用します。FR5／SO-101にも`recipes/<robot>/`以下に同じ構成の設定があります。
+具体的な設定例として、Nova5では次のファイルを使用します。FR5／SO-101／MathScavator9000にも`recipes/<robot>/`以下に機種固有の設定があります。
 
 | 設定 | Nova5の設定ファイル | 主な役割 |
 | --- | --- | --- |
@@ -115,7 +116,7 @@ flowchart LR
 
 上流のURDF、Xacro、MJCF、mesh、CAD、textureなどのRobot Model本体と、Forgeで生成した派生成果物は、本リポジトリへ同梱・再配布しません。利用者自身が固定revisionから取得し、`$HAKONIWA_WORK_DIR/model-forge/`以下へ生成します。本リポジトリが管理するのは、取得・変換の定義、箱庭固有の設定、およびライセンス調査の記録です。
 
-各モデルの取得元、固定revision、確認したライセンス宣言、再配布上の注意は、[Robot Modelのライセンス情報](docs/license/robot-models.md)を参照してください。この台帳にはNova5、FR5、SO-101の調査結果を掲載しています。本リポジトリのApache License 2.0が、第三者モデルまたはその派生成果物へ自動的に適用されるものではありません。
+各モデルの取得元、固定revision、確認したライセンス宣言、再配布上の注意は、[Robot Modelのライセンス情報](docs/license/robot-models.md)を参照してください。この台帳にはNova5、FR5、SO-101、MathScavator9000の調査結果を掲載しています。本リポジトリのApache License 2.0が、第三者モデルまたはその派生成果物へ自動的に適用されるものではありません。
 
 モデルごとの`source.yaml`と`LICENSE_INFO.yaml`は、次のように責務を分けています。変換・正規化の手順は、対応するForge Recipeとツールで管理します。
 
@@ -372,7 +373,7 @@ hakoniwa-robot-arm-workspace/
 - [環境別の詳細利用ガイド](docs/README.md)
 - [Nova5実行Recipe](recipes/nova5/nova5-joint-trajectory-control.yaml)
 - [Nova5モデルForge Recipe](recipes/nova5/nova5-model-forge.yaml)
-- [Robot Modelのライセンス情報（Nova5／FR5／SO-101）](docs/license/robot-models.md)
+- [Robot Modelのライセンス情報（Nova5／FR5／SO-101／MathScavator9000）](docs/license/robot-models.md)
 - [ROS 2 Bridge Recipe](recipes/ros2/arm-ros2-topic-bridge.yaml)
 - [Docker実行設定](docker/env.bash)
 

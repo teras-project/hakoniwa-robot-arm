@@ -1,0 +1,22 @@
+robot: MathScavator9000 Excavator
+upstream:
+  repository: https://github.com/mathworks-robotics/autonomous-excavator
+  branch: main
+  revision: aa35f433319895b3dbea0352a5c9495a23ef4c8e
+  model: ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/urdf/MathScavator9000_flat.SLDASM.urdf
+  meshes: ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/meshes/
+
+license_review:
+  status: redistributable_with_bsd_3_clause_conditions
+  evidence: $HAKONIWA_WORK_DIR/model-forge/excavator/install/LICENSE
+  note: Retain the upstream license and do not imply MathWorks endorsement.
+
+normalization:
+  oversized_mesh: base_chassis_link.STL
+  source_triangle_count: 233361
+  operation: Lossless binary STL to indexed OBJ conversion without geometric decimation.
+  reason: MuJoCo accepts at most 200000 faces in an STL file, while OBJ supports the materialized mesh.
+
+scope:
+  included: [fixed crawler base, upper rotation, boom, stick, bucket, joint trajectory, joint states]
+  excluded: [crawler locomotion, hydraulic cylinder dynamics, soil particles, digging mechanics]

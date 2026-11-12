@@ -1,0 +1,67 @@
+schema_version: 1
+robot:
+  id: excavator
+  name: MathScavator9000 Excavator
+reviewed_at: 2026-08-28
+
+source:
+  repository: https://github.com/mathworks-robotics/autonomous-excavator
+  revision: aa35f433319895b3dbea0352a5c9495a23ef4c8e
+  manifest: sources/models/excavator/source.yaml
+  upstream_paths:
+    - license.txt
+    - ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/package.xml
+    - ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/urdf/
+    - ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/meshes/
+
+observed_license_declarations:
+  - scope: pinned upstream repository and excavator CAD/URDF assets
+    declared: BSD 3-Clause License
+    spdx_expression: BSD-3-Clause
+    copyright: Copyright (c) 2024, The MathWorks, Inc.
+    evidence: $HAKONIWA_WORK_DIR/model-forge/excavator/install/LICENSE
+  - scope: generated ROS description package metadata
+    declared: BSD
+    spdx_expression: BSD-3-Clause
+    evidence: $HAKONIWA_WORK_DIR/model-forge/excavator/install/model/package.xml
+    note: The repository-level BSD-3-Clause text is retained as the applicable license evidence.
+
+covered_local_artifacts:
+  upstream_material:
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/LICENSE
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/model/package.xml
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/model/meshes/
+  derived_material:
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/model/urdf/excavator.urdf
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.xml
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.actuated.xml
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.stabilized.xml
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.runtime.xml
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/excavator.mobile.xml
+    - $HAKONIWA_WORK_DIR/model-forge/excavator/install/SHA256SUMS
+
+local_changes:
+  - Converted the 233361-face base_chassis_link binary STL losslessly to indexed OBJ to satisfy MuJoCo's STL face limit.
+  - Converted the normalized four-joint URDF into MJCF.
+  - Added position actuators, implicitfast integration, and adjacent-body contact exclusions.
+  - Added a free base, floor, and six hidden wheel contacts for simplified differential crawler motion while retaining boom, stick, and bucket collision.
+  - Added a collision-safe home keyframe plus reproducible yellow construction-vehicle material, daylight sky, work-site lighting, and brown floor presentation to the derived MJCF.
+  - Added Hakoniwa manifests, PDU bindings, dedicated excavator Runtime, Launcher recipe, and arm/drive demos outside this directory.
+
+redistribution:
+  status: conditional
+  rationale: >-
+    The pinned repository grants redistribution and modification under BSD-3-Clause.
+    Distribution must retain the copyright notice, license conditions, and disclaimer,
+    and must not use the MathWorks name to endorse derived products.
+  permitted_use_in_this_repository: redistributable_with_bsd_3_clause_conditions
+  required_actions:
+    - Include the Forge install LICENSE with source and binary deliveries containing the model.
+    - Retain the MathWorks copyright notice, conditions, and disclaimer.
+    - Do not use The MathWorks, Inc. or contributor names to endorse the derived product.
+    - Recheck this inventory when changing the pinned revision or source closure.
+
+notes:
+  - MATLAB, Simulink, Simscape, and Unreal are not required to run the materialized Hakoniwa model.
+  - MathScavator9000 is an example model and is not represented as a specific commercial excavator.
+  - This inventory records repository evidence and is not legal advice.

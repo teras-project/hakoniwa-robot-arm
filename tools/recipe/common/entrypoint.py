@@ -196,11 +196,14 @@ def run_arm_recipe(
     argv: list[str] | None = None,
 ) -> int:
     arm.select_robot(robot_id, robot_label)
+    os.environ["HAKO_ARM_BUILD_EXCAVATOR"] = (
+        "ON" if robot_id == "excavator" else "OFF"
+    )
     effective_argv = list(sys.argv[1:] if argv is None else argv)
     gamepad_configure = _is_gamepad_configure(effective_argv)
 
     profile_path: Path | None = None
-    if gamepad_configure:
+    if robot_id != "excavator" and gamepad_configure:
         try:
             profile_path, profile_label = resolve_dualsense_profile(arm.arm_root())
         except UnsupportedGamepadPlatform as error:

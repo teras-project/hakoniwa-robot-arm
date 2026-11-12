@@ -1,0 +1,6 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-actuator.schema.json",
+  "spec": {"joint_name": "stick_bucket_joint", "type": "position", "limit": {"lower": -2.2689, "upper": 0.0}},
+  "mjcf_binding": {"actuator_name": "stick_bucket_joint_motor"},
+  "pdu_config": {"update_rate_hz": 50.0}
+}

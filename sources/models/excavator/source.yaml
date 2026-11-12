@@ -1,0 +1,15 @@
+name: excavator
+
+repo: https://github.com/mathworks-robotics/autonomous-excavator
+branch: main
+revision: aa35f433319895b3dbea0352a5c9495a23ef4c8e
+
+files:
+  - license.txt
+  - ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/package.xml
+  - ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/urdf/
+  - ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/meshes/
+
+forge:
+  package_root: ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat
+  entry_urdf: ExcavatorCADFiles/URDF_MathScavator9000_flat/MathScavator9000_flat/urdf/MathScavator9000_flat.SLDASM.urdf

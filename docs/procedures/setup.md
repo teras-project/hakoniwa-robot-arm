@@ -10,6 +10,8 @@
 | --- | --- | --- | --- | --- |
 | host-standalone | Ubuntu／macOSでROS 2を使わず箱庭単体で確認する | Host | 使用しない | [setup](host-standalone/setup.md) |
 | windows-host-standalone | Windows nativeで箱庭単体を確認する | Windows Host | 使用しない | [setup](windows-host-standalone/setup.md) |
+| Excavator host-standalone | macOS／Ubuntu 24.04／WSL2でExcavatorをheadless確認する | Host | 使用しない | [setup](excavator/host-standalone/setup.md) |
+| Excavator windows-host-standalone | Windows nativeでExcavatorをheadless確認する | Windows Host | 使用しない | [setup](excavator/windows-host-standalone/setup.md) |
 | windows-host-docker | WindowsでMuJoCo ViewerとROS 2連携を確認する | Windows Host | Docker Desktop | [setup](windows-host-docker/setup.md) |
 | host-ros2 | Ubuntu HostだけでROS 2連携まで確認する | Host | 同じUbuntu Host | [setup](host-ros2/setup.md) |
 | host+docker | macOSからROS 2を使う、またはUbuntuでROS 2環境を分離する | Host | Docker Container | [setup-host-docker.md](host-docker/setup.md) |
@@ -52,6 +54,8 @@ python3.12 tools/recipe.py plan \
 
 - [箱庭単体セットアップ](host-standalone/setup.md)
 - [Windows native箱庭単体セットアップ](windows-host-standalone/setup.md)
+- [Excavator 箱庭単体セットアップ](excavator/host-standalone/setup.md)
+- [Excavator Windows native箱庭単体セットアップ](excavator/windows-host-standalone/setup.md)
 - [Windows host+Dockerセットアップ](windows-host-docker/setup.md)
 - [Host ROS 2連携セットアップ](host-ros2/setup.md)
 - [host+dockerセットアップ](host-docker/setup.md)

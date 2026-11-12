@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../schemas/components/excavator-controller.schema.json",
+  "spec": {
+    "manual_timeout_sec": 0.5,
+    "manual_joint_velocity_pdu": "manual_joint_velocity",
+    "manual_cmd_vel_pdu": "manual_cmd_vel",
+    "manual_joint_velocity_limits_rad_s": [0.5, 0.35, 0.35, 0.5],
+    "manual_joint_actuator_components": [
+      "manual_base_chassis_joint",
+      "manual_chassis_boom_joint",
+      "manual_boom_stick_joint",
+      "manual_stick_bucket_joint"
+    ]
+  }
+}

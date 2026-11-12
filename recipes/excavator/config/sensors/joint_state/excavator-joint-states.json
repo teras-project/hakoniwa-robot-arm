@@ -1,0 +1,26 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/joint-state-output.schema.json",
+  "spec": {
+    "type": "joint_state",
+    "name": "joint_states",
+    "joints": [
+      {"name": "base_chassis_joint"},
+      {"name": "chassis_boom_joint"},
+      {"name": "boom_stick_joint"},
+      {"name": "stick_bucket_joint"}
+    ]
+  },
+  "mjcf_binding": {
+    "joints": [
+      {"name": "base_chassis_joint", "mjcf_joint": "base_chassis_joint"},
+      {"name": "chassis_boom_joint", "mjcf_joint": "chassis_boom_joint"},
+      {"name": "boom_stick_joint", "mjcf_joint": "boom_stick_joint"},
+      {"name": "stick_bucket_joint", "mjcf_joint": "stick_bucket_joint"}
+    ]
+  },
+  "pdu_config": {
+    "pdu_name": "joint_states",
+    "update_rate_hz": 50.0,
+    "message_type": "sensor_msgs/JointState"
+  }
+}
