@@ -35,6 +35,9 @@ void run_mujoco_viewer(
                 actions.print_help();
             }
         });
+    if (actions.idle) {
+        viewer.SetIdleCallback(actions.idle);
+    }
     viewer.Run();
 #else
     (void)model;

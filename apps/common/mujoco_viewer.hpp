@@ -16,6 +16,9 @@ struct ViewerActions {
     std::function<void()> toggle_pause;
     std::function<void()> reset;
     std::function<void()> print_help;
+    /// Optional: called on each viewer pass outside the viewer's MuJoCo mutex
+    /// (serves camera render requests on the main thread).
+    std::function<void()> idle;
 };
 
 /** Runs the optional desktop viewer against externally owned MuJoCo state. */

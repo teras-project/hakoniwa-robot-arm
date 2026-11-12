@@ -131,6 +131,7 @@ ${_hako_sensor_registrations}    return true;
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_point_cloud_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_range_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_depth_image_publisher.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_compressed_image_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_magnetic_field_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_fluid_pressure_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_nav_sat_fix_publisher.cpp
@@ -260,7 +261,12 @@ if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/physics/mujoco/mujoco_sensor_stage.cpp)
     # The world's ray caster for range sensors (hakoniwa-mujoco-robots).
     target_compile_definitions(hako-robot-arm-mujoco-adapter PRIVATE
-        HAKO_MUJOCO_ROBOTS_ENABLE_RAY_CASTER)
+        HAKO_MUJOCO_ROBOTS_ENABLE_RAY_CASTER
+        HAKO_MUJOCO_ROBOTS_ENABLE_IMAGE_RENDERER)
+    # The image renderer draws with OpenGL through GLFW: the GLFW headers of the
+    # viewer library (the application already links that library).
+    target_include_directories(hako-robot-arm-mujoco-adapter SYSTEM PRIVATE
+        $<TARGET_PROPERTY:mujoco-common,INTERFACE_INCLUDE_DIRECTORIES>)
 endif()
 target_compile_features(hako-robot-arm-mujoco-adapter PUBLIC cxx_std_20)
 target_include_directories(hako-robot-arm-mujoco-adapter PUBLIC
@@ -298,9 +304,13 @@ if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/point_cloud2_pdu_writer.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/range_pdu_writer.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/depth_image_pdu_writer.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/compressed_image_pdu_writer.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/magnetic_field_pdu_writer.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/fluid_pressure_pdu_writer.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/adapters/endpoint/nav_sat_fix_pdu_writer.cpp)
+    # JPEG for sensor_msgs/CompressedImage (stb_image_write, vendored in the Runtime).
+    target_include_directories(hako-robot-arm-endpoint-adapter SYSTEM PRIVATE
+        ${HAKO_ROBOT_RUNTIME_SOURCE_DIR}/third_party)
 endif()
 target_compile_features(hako-robot-arm-endpoint-adapter PUBLIC cxx_std_20)
 target_include_directories(hako-robot-arm-endpoint-adapter PUBLIC

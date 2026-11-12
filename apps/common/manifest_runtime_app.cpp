@@ -1,6 +1,10 @@
 #include "manifest_runtime_app.hpp"
 
 #include "mujoco_viewer.hpp"
+#if defined(HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR) && HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR
+// Camera sensors draw on the main thread through the render server.
+#include "physics/render_server.hpp"
+#endif
 
 #include "hakoniwa/robot_runtime/factory/manifest_factory.hpp"
 
@@ -69,6 +73,11 @@ int run_manifest_runtime_app(
                     [&runtime_runner]() { runtime_runner->toggle_pause(); },
                     [&runtime_runner]() { runtime_runner->request_reset(); },
                     []() { print_viewer_help(); },
+#if defined(HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR) && HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR
+                    []() { hako::robots::physics::impl::RenderServer::instance().process_pending(); },
+#else
+                    {},
+#endif
                 });
         } catch (const std::exception& error) {
             std::cerr << "[ERROR] Viewer failed: "
@@ -77,8 +86,21 @@ int run_manifest_runtime_app(
         }
         runtime_runner->request_stop();
     }
+#if defined(HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR) && HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR
+    else {
+        // No viewer: the main thread serves camera render requests until the
+        // runner stops. Without cameras it only waits.
+        hako::robots::physics::impl::RenderServer::instance().run(runtime_runner->running());
+    }
+    // A step still waiting for an image must not wait forever once nobody serves.
+    hako::robots::physics::impl::RenderServer::instance().shutdown();
+#endif
 
     const int runner_result = runtime_runner->wait();
+#if defined(HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR) && HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR
+    // Graphics resources are freed on the thread that made them.
+    hako::robots::physics::impl::RenderServer::instance().release_drawers();
+#endif
     return runner_result == 0 && !viewer_failed ? 0 : 1;
 }
 
