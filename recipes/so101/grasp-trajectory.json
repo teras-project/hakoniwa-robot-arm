@@ -1,0 +1,23 @@
+{
+  "joint_names": ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper"],
+  "points": [
+    {"time_from_start": 0.0, "positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+    {"time_from_start": 1.5, "positions": [-0.0033, 0.391, -0.3911, 1.571, 0.0, 1.2]},
+    {"time_from_start": 3.0, "positions": [-0.0033, 0.4409, -0.1384, 1.2683, 0.0, 1.2]},
+    {"time_from_start": 3.8, "positions": [-0.0033, 0.4409, -0.1384, 1.2683, 0.0, 1.2]},
+    {"time_from_start": 4.6, "positions": [-0.0033, 0.4409, -0.1384, 1.2683, 0.0, 0.15]},
+    {"time_from_start": 5.2, "positions": [-0.0033, 0.4409, -0.1384, 1.2683, 0.0, 0.15]},
+    {"time_from_start": 6.8, "positions": [-0.0033, 0.3999, -0.479, 1.6499, 0.0, 0.15]},
+    {"time_from_start": 8.0, "positions": [-0.0033, 0.3999, -0.479, 1.6499, 2.4, 0.15]},
+    {"time_from_start": 9.4, "positions": [-0.0033, 0.3999, -0.479, 1.6499, -2.4, 0.15]},
+    {"time_from_start": 10.6, "positions": [-0.0033, 0.3999, -0.479, 1.6499, 0.0, 0.15]},
+    {"time_from_start": 12.4, "positions": [-0.9227, 0.5593, -0.6551, 1.6581, 0.0, 0.15]},
+    {"time_from_start": 13.6, "positions": [-0.9227, 0.5692, -0.3587, 1.3603, 0.0, 0.15]},
+    {"time_from_start": 14.2, "positions": [-0.9227, 0.5692, -0.3587, 1.3603, 0.0, 0.15]},
+    {"time_from_start": 15.0, "positions": [-0.9227, 0.5692, -0.3587, 1.3603, 0.0, 1.2]},
+    {"time_from_start": 15.6, "positions": [-0.9227, 0.5692, -0.3587, 1.3603, 0.0, 1.2]},
+    {"time_from_start": 16.8, "positions": [-0.9227, 0.5593, -0.6551, 1.6581, 0.0, 1.2]},
+    {"time_from_start": 18.3, "positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+    {"time_from_start": 19.0, "positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}
+  ]
+}

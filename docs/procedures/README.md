@@ -29,6 +29,10 @@ ROS launch の既定は箱庭（`virtual`）です。Windows native Host + Docke
 
 段階2の host-ros2 を完了後、[実機 driver の追加と `real`／`both` への切り替え](host-ros2/real.md)へ進みます。公式デモの絶対角移動を実機へ送らないでください。
 
+## デモ
+
+- [SO-101 キューブ把持デモ](so101-grasp-demo.md)（host-standalone。キューブをつかんで持ち上げ、横へ置く）
+
 ## ROS 2操作
 
 - [ROS 2によるアーム操作](ros2/arm-operations.md)

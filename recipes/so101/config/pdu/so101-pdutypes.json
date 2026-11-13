@@ -1,6 +1,6 @@
 [
   {"channel_id": 0, "pdu_size": 2048, "name": "joint_states", "type": "sensor_msgs/JointState"},
-  {"channel_id": 1, "pdu_size": 4096, "name": "joint_trajectory", "type": "trajectory_msgs/JointTrajectory"},
+  {"channel_id": 1, "pdu_size": 8192, "name": "joint_trajectory", "type": "trajectory_msgs/JointTrajectory"},
   {"channel_id": 2, "pdu_size": 32, "name": "actuator/shoulder_pan/command", "type": "std_msgs/Float64"},
   {"channel_id": 3, "pdu_size": 32, "name": "actuator/shoulder_lift/command", "type": "std_msgs/Float64"},
   {"channel_id": 4, "pdu_size": 32, "name": "actuator/elbow_flex/command", "type": "std_msgs/Float64"},

@@ -64,6 +64,23 @@ def apply_robot_visual(root: ET.Element, config: dict) -> None:
         )
 
 
+def contact_attributes(item: dict, name: str) -> dict[str, str]:
+    """Optional contact softness of a geom (MuJoCo solref and solimp).
+
+    MuJoCo's default contact is soft: a gripper squeezing an object at its
+    servo's torque limit sinks millimetres into it. A stiffer contact on the
+    surfaces that grasp keeps that penetration small. solref's time constant
+    should stay at least twice the physics step.
+    """
+    attributes = {}
+    if "solref" in item:
+        attributes["solref"] = vector(item["solref"], 2, f"{name}.solref")
+    if "solimp" in item:
+        values = item["solimp"]
+        attributes["solimp"] = vector(values, len(values) if len(values) in (3, 5) else 3, f"{name}.solimp")
+    return attributes
+
+
 def apply_robot_collision_pads(root: ET.Element, config: dict) -> None:
     """Attach Recipe-owned primitive contact pads to named robot bodies."""
     pads = config.get("robot_collision_pads", [])
@@ -122,6 +139,7 @@ def apply_robot_collision_pads(root: ET.Element, config: dict) -> None:
                 "contype": "1",
                 "conaffinity": "1",
                 "group": "1" if pad.get("visible", False) else "3",
+                **contact_attributes(pad, name),
             },
         )
         first_child_body = next(
@@ -129,6 +147,28 @@ def apply_robot_collision_pads(root: ET.Element, config: dict) -> None:
             len(body),
         )
         body.insert(first_child_body, geom)
+
+
+def apply_physics(root: ET.Element, config: dict) -> None:
+    """Apply optional solver settings needed by the workspace objects.
+
+    noslip_iterations runs MuJoCo's noslip solver after the main solver. It
+    removes the slow creep that soft contacts otherwise allow, so a held
+    object does not slide out of the gripper.
+    """
+    physics = config.get("physics")
+    if physics is None:
+        return
+    noslip = physics.get("noslip_iterations")
+    if noslip is None:
+        return
+    if not isinstance(noslip, int) or isinstance(noslip, bool) or noslip < 0:
+        raise ValueError("physics.noslip_iterations must be a non-negative integer")
+    option = root.find("option")
+    if option is None:
+        option = ET.Element("option")
+        root.insert(1, option)
+    option.set("noslip_iterations", str(noslip))
 
 
 def materialize(source: Path, config_path: Path, output: Path) -> None:
@@ -145,6 +185,7 @@ def materialize(source: Path, config_path: Path, output: Path) -> None:
 
     apply_robot_visual(root, config)
     apply_robot_collision_pads(root, config)
+    apply_physics(root, config)
 
     visual_config = config["visual"]
     visual = root.find("visual")
@@ -289,6 +330,7 @@ def materialize(source: Path, config_path: Path, output: Path) -> None:
                 "condim": "4",
                 "contype": "1",
                 "conaffinity": "1",
+                **contact_attributes(dynamic_object, name),
             },
         )
 
