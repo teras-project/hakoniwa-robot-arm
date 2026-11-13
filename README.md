@@ -1,241 +1,258 @@
 # hakoniwa-robot-arm
 
-`hakoniwa-robot-arm` は、URDF / Xacro で記述されたROSロボットモデルをもとに、箱庭上でロボットアームシミュレータを構築・実行するためのシミュレーション開発基盤です。
+English | [日本語](README.ja.md)
 
-ロボットモデルをMuJoCo形式へ変換し、[箱庭ロボットランタイム](https://github.com/hakoniwalab/hakoniwa-robot-runtime)と組み合わせることで、実機を使用せずに関節制御や状態取得を行えます。Nova5 は箱庭単体、ROS 2 からの箱庭操作、Ubuntu host-ros2 での実機接続の3段階で利用できます。ROS 2 では Dobot 公式 `dobot_msgs_v4/srv/*` サービスと `/joint_states_robot` を使い、箱庭に対して無改変の公式デモを実行します。
+<table>
+  <tr>
+    <td align="center"><img src="docs/media/nova5.gif" width="270" alt="DOBOT Nova5 following a joint trajectory"></td>
+    <td align="center"><img src="docs/media/so101-pick-and-place.gif" width="270" alt="SO-101 picking up a cube and placing it to the side"></td>
+    <td align="center"><img src="docs/media/excavator.gif" width="270" alt="MathScavator9000 excavator digging"></td>
+  </tr>
+  <tr>
+    <td align="center">DOBOT Nova5: joint trajectory</td>
+    <td align="center">SO-101: cube pick and place</td>
+    <td align="center">Excavator: digging (experimental)</td>
+  </tr>
+</table>
 
-現在の対応状況：
+`hakoniwa-robot-arm` is a simulation development platform for building and running robot arm simulators on Hakoniwa, from ROS robot models described in URDF / Xacro.
 
-| Robot | 状況 |
+It converts a robot model to MuJoCo and combines it with the [Hakoniwa Robot Runtime](https://github.com/hakoniwalab/hakoniwa-robot-runtime), so you can control the joints and read their state without the real robot. Nova5 can be used in three stages: Hakoniwa alone, Hakoniwa driven from ROS 2, and a real robot connected from Ubuntu host-ros2. From ROS 2, the official Dobot services `dobot_msgs_v4/srv/*` and `/joint_states_robot` are used, and the official demo runs unmodified against Hakoniwa.
+
+Current status:
+
+| Robot | Status |
 | --- | --- |
-| DOBOT Nova5 | Ubuntu 24.04 native host-ros2、Windows 11 native host-standalone／host+Docker（Jazzy）、macOS host+docker（Jazzy）、Linux arm64 docker-only（Humble／Jazzy）の従来経路で動作確認済み。Dobot 仮想サービス経路の検証状況は[こちら](ros2_packages/hakoniwa_dobot/README.md#検証済みと未検証)。 |
-| FAIRINO FR5 | ソースとツールを公開。動作確認中。 |
-| SO-101 follower | ソースとツールを公開。動作確認中。 |
-| MathScavator9000 Excavator | macOS host、WSL2 Ubuntu 24.04、Windows 11 native（いずれもheadless）で走行を動作確認済み。Viewer表示とその他の環境は未確認、掘削は実験的。詳細は[Recipe](recipes/excavator/README.md)。 |
+| DOBOT Nova5 | Verified on the earlier path with Ubuntu 24.04 native host-ros2, Windows 11 native host-standalone / host+Docker (Jazzy), macOS host+docker (Jazzy) and Linux arm64 docker-only (Humble / Jazzy). For the verification status of the Dobot virtual service path, see [here](ros2_packages/hakoniwa_dobot/README.md#検証済みと未検証) (Japanese). |
+| FAIRINO FR5 | Sources and tools published. Being verified. |
+| SO-101 follower | Sources and tools published. Being verified. |
+| MathScavator9000 Excavator | Driving verified on a macOS host, WSL2 Ubuntu 24.04 and Windows 11 native (all headless). The Viewer and other environments are not verified; digging is experimental. See the [Recipe](recipes/excavator/README.md). |
 
-ロボットの種類毎の設定や実行手順は[対応ロボット](docs/reference/robots.md)を参照してください。
+For the settings and procedures of each robot, see [Supported robots](docs/reference/robots.md).
 
-## 初めての方へ
+Most documents under `docs/` are in Japanese.
 
-最初に、[クイックスタート](#クイックスタート)の「checkout用workspaceを作る」から開始してください。手動でcloneするのは、同じ親ディレクトリに置く次の2リポジトリだけです。
+## Getting started
 
-- `hakoniwa-business-pack` — Composer、Workspace、Foundationを提供します。
-- `hakoniwa-robot-arm` — ロボット固有のRecipe、設定、アプリケーションを提供します。
+Start from "Create the checkout workspace" in [Quick start](#quick-start). You clone only the following two repositories by hand, side by side in the same parent directory:
 
-その他の依存リポジトリとRobot Modelは、後続のRecipe操作で必要に応じて取得します。2リポジトリのclone後に、利用する環境に応じてhost-standalone、windows-host-standalone、windows-host-docker、host-ros2、host+docker、docker-onlyの手順を選んでください。
+- `hakoniwa-business-pack` — provides the Composer, the Workspace and the Foundation.
+- `hakoniwa-robot-arm` — provides the robot-specific Recipes, settings and applications.
 
-## ドキュメント
+The other repositories and the robot models are fetched later by the Recipe steps, as needed. After cloning the two repositories, choose the procedure for your environment: host-standalone, windows-host-standalone, windows-host-docker, host-ros2, host+docker or docker-only.
 
-ドキュメントは用途別に分けています。最初は[利用ガイド](docs/README.md)から、利用する環境の手順を選んでください。
+## Documentation
 
-- [実行手順](docs/procedures/README.md): setup、build、operation、ROS 2操作
-- [設計文書](docs/design/README.md): Recipe、profile、生成物、ROS 2接続
-- [参照資料](docs/reference/README.md): 対応ロボット、Model Forge
-- [ライセンス情報](docs/license/README.md): 依存OSS、Robot Model、再配布方針
+The documents are split by purpose. Start from the [user guide](docs/README.md) and choose the procedure for your environment.
 
-## できること
+- [Procedures](docs/procedures/README.md): setup, build, operation, ROS 2 operations
+- [Design documents](docs/design/README.md): Recipes, profiles, generated files, the ROS 2 connection
+- [Reference](docs/reference/README.md): supported robots, Model Forge
+- [License information](docs/license/README.md): dependencies, robot models, redistribution policy
 
-- URDF / Xacroで記述されたロボットモデルをMuJoCo形式へ変換
-- MuJoCoによるロボットアームの物理シミュレーション
-- 箱庭ロボットランタイムによる関節制御
-- [Dobot公式ROS 2サービスを使ったNova5操作](docs/procedures/ros2/arm-operations.md)（箱庭が既定、Ubuntu host-ros2 の実機 `real`／`both` は発展構成）
-- ROS 2 `/joint_states_robot` による状態取得
-- 公式 `dobot_demo/demo.py` を変更せず virtual で実行（実機・both では 50° 動作に注意し実行しない）
-- Dockerを利用したROS 2実行環境
-- Host上のMuJoCo Viewerを利用したシミュレーション可視化
+## What you can do
 
-## アーキテクチャ
+- Convert robot models described in URDF / Xacro to MuJoCo
+- Simulate the physics of a robot arm in MuJoCo
+- Control the joints through the Hakoniwa Robot Runtime
+- [Operate Nova5 with the official Dobot ROS 2 services](docs/procedures/ros2/arm-operations.md) (Hakoniwa by default; the real robot, `real` / `both`, on Ubuntu host-ros2 is an advanced setup)
+- Read the state through ROS 2 `/joint_states_robot`
+- Run the official `dobot_demo/demo.py` unmodified in `virtual` mode (do not run it with the real robot or `both`: it includes a 50° motion)
+- A ROS 2 environment in Docker
+- Watch the simulation in the MuJoCo Viewer on the host
 
-シミュレータ側と ROS 2 側を TCP で分離します。Dobot 公式 ROS サービスは Service Bridge → PDU-RPC → Dobot Native Asset に接続し、関節状態は既存 TCP/PDU Bridge から `/joint_states_robot` へ remap します。ROS のサービス／topic は ROS 2 側で終端します。
+## Architecture
+
+The simulator side and the ROS 2 side are separated by TCP. The official Dobot ROS services go through the Service Bridge and PDU-RPC to the Dobot Native Asset; the joint states go from the existing TCP/PDU Bridge to `/joint_states_robot` (remapped). ROS services and topics end on the ROS 2 side.
 
 ```mermaid
 flowchart LR
-  subgraph SIM["シミュレータ側<br/>Host / Docker"]
-    SimApp["Dobot Native Asset<br/>MuJoCo + 箱庭ロボットランタイム"]
-    Core["箱庭コア機能<br/>(SHM)"]
-    PduBridge["箱庭PDU<br/>TCP Bridge (状態)"]
+  subgraph SIM["Simulator side<br/>Host / Docker"]
+    SimApp["Dobot Native Asset<br/>MuJoCo + Hakoniwa Robot Runtime"]
+    Core["Hakoniwa core<br/>(SHM)"]
+    PduBridge["Hakoniwa PDU<br/>TCP Bridge (state)"]
     Rpc["PDU-RPC server<br/>TCP 54020"]
     SimApp -->|"JointState PDU"| Core
     Core --> PduBridge
     Rpc -->|"Dobot request"| SimApp
   end
 
-  subgraph ROS["ROS 2側（Humble / Jazzy）<br/>Ubuntu / Docker"]
-    RosBridge["箱庭 ROS topic Bridge"]
+  subgraph ROS["ROS 2 side (Humble / Jazzy)<br/>Ubuntu / Docker"]
+    RosBridge["Hakoniwa ROS topic Bridge"]
     Service["Dobot Service Bridge"]
-    ControlNode["制御ノード"]
-    MonitorNode["監視ノード"]
+    ControlNode["Control node"]
+    MonitorNode["Monitor node"]
     ControlNode -->|"/dobot_bringup_ros2/srv/*<br/>dobot_msgs_v4/srv/*"| Service
     RosBridge -->|"/joint_states_robot<br/>sensor_msgs/msg/JointState"| MonitorNode
   end
 
-  PduBridge -->|"TCP（既定ポート: 54001）"| RosBridge
-  Service -->|"TCP（既定ポート: 54020）"| Rpc
+  PduBridge -->|"TCP (default port 54001)"| RosBridge
+  Service -->|"TCP (default port 54020)"| Rpc
 ```
 
-### シミュレータの構成
+### Simulator side
 
-シミュレータ側では、MuJoCo と箱庭ロボットランタイムが物理シミュレーション、Dobot サービスの受付、関節状態の出力を行います。PDU-RPC はサービス要求を Native Asset に送り、箱庭 PDU TCP Bridge は SHM 上の関節状態を ROS 2 側へ中継します。Viewer と headless を選択できます。
+On the simulator side, MuJoCo and the Hakoniwa Robot Runtime simulate the physics, receive the Dobot services and output the joint states. PDU-RPC sends the service requests to the Native Asset, and the Hakoniwa PDU TCP Bridge relays the joint states in shared memory to the ROS 2 side. You can run with the Viewer or headless.
 
-### ROS 2側の構成
+### ROS 2 side
 
-`dobot.launch.py` は既定で箱庭の Service Bridge と topic Bridge を同時に起動します。制御には `dobot_msgs_v4/srv/GetAngle`、`MovJ`、`ServoJ` など、観測には `sensor_msgs/msg/JointState` を使用します。仮想 `MovL` の joint mode は関節空間の近似で Cartesian 直線ではなく、仮想 `DO` は 1～24 の状態／パルスのみで物理グリッパーはありません。[対応 API と安全上の注意](docs/procedures/ros2/arm-operations.md)を参照してください。
+By default, `dobot.launch.py` starts the Hakoniwa Service Bridge and topic Bridge together. Control uses `dobot_msgs_v4/srv/GetAngle`, `MovJ`, `ServoJ` and others; observation uses `sensor_msgs/msg/JointState`. The joint mode of the virtual `MovL` is an approximation in joint space, not a Cartesian straight line, and the virtual `DO` provides only the state / pulses of outputs 1 to 24, with no physical gripper. See [Supported APIs and safety notes](docs/procedures/ros2/arm-operations.md).
 
-### 箱庭ロボットランタイム
+### Hakoniwa Robot Runtime
 
-箱庭ロボットランタイムは、ロボットごとの挙動や通信構成を定義ファイルから組み立てる共通基盤です。主に以下を入力として、物理モデル、制御入力、状態出力、通信経路を構成します。
+The Hakoniwa Robot Runtime is a common base that assembles each robot's behaviour and communication from definition files. Mainly from the following inputs, it builds the physical model, control inputs, state outputs and communication paths:
 
-- 箱庭アセットマニフェスト
-- MuJoCoモデル（MJCF）
-- PDU定義とPDU通信定義
-- アクチュエータ、コントローラ、センサ設定
+- the Hakoniwa asset manifest
+- the MuJoCo model (MJCF)
+- PDU definitions and PDU communication definitions
+- actuator, controller and sensor settings
 
-本リポジトリは各対応ロボット用の設定値と設定ファイルの組み合わせを所有し、各項目の意味、参照関係、検証規則は`hakoniwa-robot-runtime`を正本とします。通常利用ではこれらの設定を変更する必要はありませんが、ロボット構成や制御方法を変更する場合は、次の文書を参照してください。
+This repository owns the values and the combination of settings files for each supported robot; the meaning of each item, the references between them and the validation rules are defined in `hakoniwa-robot-runtime`. Normal use needs no change to these settings. To change a robot's configuration or control method, see:
 
-- [Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/configuration.md): Asset Manifest、Runtime、actuator、controller、state-output、PDU、Endpointの設定仕様と参照関係
-- [Robot Runtime Design](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/design.md): Runtimeの責務、内部構成、Adapterとの境界
-- [Runtime-owned JSON Schemas](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/main/schemas): Runtimeが所有する機械可読な設定Schema
-- [Hakoniwa PDU Endpoint Schemas](https://github.com/hakoniwalab/hakoniwa-pdu-endpoint/tree/main/config/schema): PDU Definition、PDU Types、Endpoint、Cache、Comm形式の正本
+- [Robot Runtime Configuration](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/configuration.md): settings and references of the asset manifest, runtime, actuators, controllers, state outputs, PDUs and endpoints
+- [Robot Runtime Design](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/design.md): the runtime's responsibilities, internal structure and boundary with the adapters
+- [Runtime-owned JSON Schemas](https://github.com/hakoniwalab/hakoniwa-robot-runtime/tree/main/schemas): machine-readable settings schemas owned by the runtime
+- [Hakoniwa PDU Endpoint Schemas](https://github.com/hakoniwalab/hakoniwa-pdu-endpoint/tree/main/config/schema): the reference for PDU definitions, PDU types, endpoints, caches and communication formats
 
-具体的な設定例として、Nova5では次のファイルを使用します。FR5／SO-101／MathScavator9000にも`recipes/<robot>/`以下に機種固有の設定があります。
+As a concrete example, Nova5 uses the following files. FR5 / SO-101 / MathScavator9000 have their own settings under `recipes/<robot>/`.
 
-| 設定 | Nova5の設定ファイル | 主な役割 |
+| Setting | Nova5 file | Main role |
 | --- | --- | --- |
-| Asset Manifest | [`recipes/nova5/asset-manifest.json`](recipes/nova5/asset-manifest.json) | モデル、PDU、Endpoint、Runtime componentを束ねる入口 |
-| Runtime | [`recipes/nova5/config/runtime.json`](recipes/nova5/config/runtime.json) | actuator Runtimeの共通設定とcommand timeout |
-| MuJoCo actuator | [`recipes/nova5/actuator.yaml`](recipes/nova5/actuator.yaml) | position actuatorの`kp`、`dampratio`、`ctrlrange`。ゲイン変更は再Forgeが必須。調整手順は[Model Forge](docs/reference/model-forge.md#4-kpとdampratioの調整)を参照 |
-| Actuator / Controller / State Output | [`recipes/nova5/config/`](recipes/nova5/config) | joint binding、軌道制御、関節状態出力 |
-| PDU Definition / Types | [`recipes/nova5/config/pdu/`](recipes/nova5/config/pdu) | Nova5が使用するPDU robot、channel、message type |
-| Endpoint | [`recipes/nova5/config/endpoint/nova5_endpoint.json`](recipes/nova5/config/endpoint/nova5_endpoint.json) | PDU Definitionと通信backendの選択 |
+| Asset Manifest | [`recipes/nova5/asset-manifest.json`](recipes/nova5/asset-manifest.json) | The entry that ties together the model, PDUs, endpoint and runtime components |
+| Runtime | [`recipes/nova5/config/runtime.json`](recipes/nova5/config/runtime.json) | Common settings of the actuator runtime and the command timeout |
+| MuJoCo actuator | [`recipes/nova5/actuator.yaml`](recipes/nova5/actuator.yaml) | `kp`, `dampratio` and `ctrlrange` of the position actuators. A gain change needs a new Forge; for tuning, see [Model Forge](docs/reference/model-forge.md#4-kpとdampratioの調整) (Japanese) |
+| Actuator / Controller / State Output | [`recipes/nova5/config/`](recipes/nova5/config) | Joint binding, trajectory control, joint state output |
+| PDU Definition / Types | [`recipes/nova5/config/pdu/`](recipes/nova5/config/pdu) | The PDU robot, channels and message types Nova5 uses |
+| Endpoint | [`recipes/nova5/config/endpoint/nova5_endpoint.json`](recipes/nova5/config/endpoint/nova5_endpoint.json) | The PDU definition and the choice of communication backend |
 
-`nova5.py configure`がwork側へ生成する`launcher.json`や、Forgeが生成するMJCFは手作業で編集しません。Dobot構成は[専用の変換ツール](docs/procedures/ros2/dobot-build.md)を使ってLauncherを切り替え、再configure後は再適用します。変更対象ごとのForge／configure／buildの区別、生成先、反映確認は[設定変更と反映方法](docs/design/configuration-workflow.md)を参照してください。
+Do not edit by hand the `launcher.json` that `nova5.py configure` generates in the work directory, or the MJCF that Forge generates. The Dobot configuration switches the launcher with a [dedicated conversion tool](docs/procedures/ros2/dobot-build.md); apply it again after each configure. For which changes need Forge, configure or build, where things are generated and how to check a change, see [Configuration workflow](docs/design/configuration-workflow.md).
 
-## ライセンスとRobot Model
+## License and robot models
 
-別途ライセンス表示のある第三者成果物を除き、本リポジトリ自身のソースコード、設定、ツール、文書には、ルートの[Apache License 2.0](LICENSE)が適用されます。利用するHakoniwa OSSと外部OSSには、それぞれのライセンスが適用されます。詳細は[依存コンポーネントのライセンス一覧](docs/license/dependencies.md)を参照してください。
+Except for third-party works with their own license notices, the [Apache License 2.0](LICENSE) at the root applies to this repository's own source code, settings, tools and documents. The Hakoniwa OSS and external OSS it uses are under their own licenses; see the [dependency license list](docs/license/dependencies.md).
 
-上流のURDF、Xacro、MJCF、mesh、CAD、textureなどのRobot Model本体と、Forgeで生成した派生成果物は、本リポジトリへ同梱・再配布しません。利用者自身が固定revisionから取得し、`$HAKONIWA_WORK_DIR/model-forge/`以下へ生成します。本リポジトリが管理するのは、取得・変換の定義、箱庭固有の設定、およびライセンス調査の記録です。
+The robot models themselves (upstream URDF, Xacro, MJCF, meshes, CAD, textures) and the derivatives Forge generates are not included in or redistributed from this repository. Users fetch them from fixed revisions and generate them under `$HAKONIWA_WORK_DIR/model-forge/`. This repository keeps only the definitions for fetching and converting them, the Hakoniwa-specific settings and the records of the license investigation.
 
-各モデルの取得元、固定revision、確認したライセンス宣言、再配布上の注意は、[Robot Modelのライセンス情報](docs/license/robot-models.md)を参照してください。この台帳にはNova5、FR5、SO-101、MathScavator9000の調査結果を掲載しています。本リポジトリのApache License 2.0が、第三者モデルまたはその派生成果物へ自動的に適用されるものではありません。
+For each model's source, fixed revision, the license declarations found and the notes on redistribution, see [Robot model license information](docs/license/robot-models.md). It covers Nova5, FR5, SO-101 and MathScavator9000. The Apache License 2.0 of this repository does not automatically apply to third-party models or their derivatives.
 
-モデルごとの`source.yaml`と`LICENSE_INFO.yaml`は、次のように責務を分けています。変換・正規化の手順は、対応するForge Recipeとツールで管理します。
+Each model's `source.yaml` and `LICENSE_INFO.yaml` divide the responsibilities as follows. The conversion and normalization steps are kept in the corresponding Forge Recipe and tools.
 
-| ファイル | 責務 |
+| File | Responsibility |
 | --- | --- |
-| `source.yaml` | Forgeが取得する上流repository、固定revision、対象ファイルを指定する取得定義 |
-| `LICENSE_INFO.yaml` | 固定revisionで確認したライセンス根拠、未確定事項、再配布の判定と必要な対応を記録する調査台帳 |
+| `source.yaml` | The fetch definition: the upstream repository, the fixed revision and the files Forge fetches |
+| `LICENSE_INFO.yaml` | The investigation record: the license evidence found at the fixed revision, open points, the redistribution decision and what it requires |
 
-これらはモデル本体を含まず、また法的助言ではありません。上流モデルまたはForge生成物を外部へ再配布する前には、対象モデルの台帳と上流のライセンス本文・NOTICE・package metadataを確認してください。
+These files contain no model and are not legal advice. Before redistributing an upstream model or a Forge output, check the model's record and the upstream license text, NOTICE and package metadata.
 
-## 箱庭Business Packとの関係
+## Relation to the Hakoniwa Business Pack
 
-[hakoniwa-business-pack](https://github.com/hakoniwalab/hakoniwa-business-pack)は、箱庭シミュレーションに必要な依存関係、共通実行環境、ビルド手順を管理するComposerです。本リポジトリはロボット固有のモデル、設定、アプリケーションを提供し、環境の構築と分離にはBusiness PackのWorkspace、Foundation、Recipeの仕組みを利用します。
+[hakoniwa-business-pack](https://github.com/hakoniwalab/hakoniwa-business-pack) is the Composer that manages the dependencies, the common runtime environment and the build steps of Hakoniwa simulations. This repository provides the robot-specific models, settings and applications, and uses the Business Pack's Workspace, Foundation and Recipe mechanisms to build and separate the environments.
 
 ```mermaid
 flowchart LR
-  Recipe["Recipe<br/>必要条件と構築手順"] --> Composer["Business Pack<br/>Composer"]
-  Composer --> Sources["依存リポジトリ<br/>clone / revision解決"]
-  Composer --> Foundation["Foundation<br/>共通実行環境"]
-  Composer --> Work["Workspace<br/>生成物の分離"]
+  Recipe["Recipe<br/>requirements and build steps"] --> Composer["Business Pack<br/>Composer"]
+  Composer --> Sources["Dependency repositories<br/>clone / revision resolution"]
+  Composer --> Foundation["Foundation<br/>common runtime"]
+  Composer --> Work["Workspace<br/>separated outputs"]
   Foundation --> Arm["Nova5<br/>configure / build / start"]
   Work --> Arm
 ```
 
 ### Workspace
 
-Workspaceは、使用するFoundationと生成物を他の作業環境から分離するための実行環境です。`workspace.py enter --workdir <path>`で専用シェルへ入り、選択したパスが`HAKONIWA_WORK_DIR`に設定されます。子シェルの開始ディレクトリは`hakoniwa-business-pack`のリポジトリルート（`tools/`ディレクトリがある場所）です。Foundation、Forge、Recipeのビルド、設定、ログ、セッションは、作業ディレクトリではなく選択したworkディレクトリ以下へ生成されます。
+A Workspace separates the Foundation in use and the generated files from other working environments. `workspace.py enter --workdir <path>` opens a dedicated shell and sets the chosen path as `HAKONIWA_WORK_DIR`. The child shell starts at the root of the `hakoniwa-business-pack` repository (where the `tools/` directory is). The Foundation, Forge and Recipe builds, settings, logs and sessions are generated under the chosen work directory, not the current directory.
 
 ### Foundation
 
-Foundationは、複数のシミュレーションで再利用する箱庭の共通実行環境です。Nova5では、箱庭コア、PDU Endpoint、PDU Bridge、Python API、Launcher、および実行時設定を`HAKONIWA_WORK_DIR/foundation/`以下へ構築します。
+The Foundation is Hakoniwa's common runtime environment, reused by several simulations. For Nova5, the Hakoniwa core, the PDU Endpoint, the PDU Bridge, the Python API, the Launcher and the runtime settings are built under `HAKONIWA_WORK_DIR/foundation/`.
 
 ### Recipe
 
-Recipeは、「何が必要で、どのrevisionを使い、何を構築・検証するか」を記述したYAMLファイルです。Business Packの`tools/recipe.py`はRecipeを読み、次の処理を行います。
+A Recipe is a YAML file that describes what is needed, which revisions to use, and what to build and check. The Business Pack's `tools/recipe.py` reads a Recipe and does the following:
 
-- `plan`: clone、checkout、再利用、Foundationビルドの予定を表示
-- `configure`: 依存リポジトリを準備し、必要なFoundationとPython依存を構築
-- `doctor`: FoundationとRecipe依存が実行可能な状態か検査
+- `plan`: shows the planned clones, checkouts, reuse and Foundation builds
+- `configure`: prepares the dependency repositories and builds the required Foundation and Python dependencies
+- `doctor`: checks that the Foundation and the Recipe's dependencies are ready to run
 
-本リポジトリの`tools/recipe/<robot>.py`は、その環境を利用して各ロボット固有のForge、configure、build、start、stopを実行します。対応するentrypointと置換方法は[対応ロボット](docs/reference/robots.md)を参照してください。
+This repository's `tools/recipe/<robot>.py` uses that environment to run each robot's Forge, configure, build, start and stop. For the entry points and how to swap them, see [Supported robots](docs/reference/robots.md).
 
-## 動作確認環境
+## Verified environments
 
-| 項目           | 確認環境                                |
-| ------------ | ----------------------------------- |
-| Host OS      | macOS（Apple Silicon） / Ubuntu 24.04 / Windows 11（native host-only／host+Docker） |
-| ROS 2        | Humble / Jazzy                      |
-| MuJoCo       | 3.16.0                              |
-| 箱庭側 Python   | 3.12                                |
-| Build System | CMake / colcon                      |
-
-macOS の host+docker では ROS 2 を Docker Container 上で、箱庭の Native Asset を Host 上で実行します。Windows 11 の箱庭単体 Runtime と旧 ROS topic 経路は確認済みですが、[Dobot Native Asset / RPC を使う Windows host+Docker 手順](docs/procedures/windows-host-docker/build.md)は未検証です。各段階の成功判定を確認して進んでください。既存の動作確認実績を新サービス経路の検証済みと混同しないでください。
-
-Ubuntu 24.04 native host-ros2 の従来経路は動作確認済みです。Dobot 仮想サービス経路の各 platform の検証状況は[Dobot の説明](ros2_packages/hakoniwa_dobot/README.md)を参照してください。
-
-## 前提ソフトウェア
-
-選択する利用構成に応じて、Hostへ以下をインストールしてください。
-
-| ソフトウェア | 用途 |
+| Item | Verified with |
 | --- | --- |
-| Git | すべての構成で、本リポジトリとBusiness Packを取得するために使用 |
-| CPython 3.12 | host-standalone／host-ros2／host+dockerで、Business Pack、Foundation、Recipeツールを実行。`python3.12`コマンドで起動できること |
-| CMakeとC/C++ビルド環境 | host-standalone／host-ros2／host+dockerで、FoundationとNova5シミュレータをビルド |
-| Docker | host+dockerまたはdocker-only構成でのROS 2実行 |
+| Host OS | macOS (Apple Silicon) / Ubuntu 24.04 / Windows 11 (native host-only / host+Docker) |
+| ROS 2 | Humble / Jazzy |
+| MuJoCo | 3.16.0 |
+| Python on the Hakoniwa side | 3.12 |
+| Build system | CMake / colcon |
 
-macOSではXcode Command Line Tools、UbuntuではC/C++コンパイラを含む標準的なビルド環境も必要です。
+With macOS host+docker, ROS 2 runs in a Docker container and the Hakoniwa Native Asset runs on the host. On Windows 11, the Hakoniwa-only runtime and the earlier ROS topic path are verified, but the [Windows host+Docker procedure with the Dobot Native Asset / RPC](docs/procedures/windows-host-docker/build.md) is not verified. Check the success criteria of each stage before going on, and do not take the earlier verification as verification of the new service path.
 
-すべての構成でGitを確認します。
+The earlier path with Ubuntu 24.04 native host-ros2 is verified. For the verification status of the Dobot virtual service path on each platform, see the [Dobot notes](ros2_packages/hakoniwa_dobot/README.md) (Japanese).
+
+## Prerequisites
+
+Install the following on the host, according to the configuration you choose.
+
+| Software | Use |
+| --- | --- |
+| Git | All configurations: to fetch this repository and the Business Pack |
+| CPython 3.12 | host-standalone / host-ros2 / host+docker: to run the Business Pack, the Foundation and the Recipe tools. It must start as `python3.12` |
+| CMake and a C/C++ toolchain | host-standalone / host-ros2 / host+docker: to build the Foundation and the Nova5 simulator |
+| Docker | host+docker or docker-only: to run ROS 2 |
+
+macOS also needs the Xcode Command Line Tools, and Ubuntu a standard build environment with a C/C++ compiler.
+
+Check Git in every configuration:
 
 ```bash
 git --version
 ```
 
-host-standalone、host-ros2、host+dockerのいずれかを選ぶ場合は、Host側のPythonとビルド環境も確認します。
+For host-standalone, host-ros2 or host+docker, also check Python and the build environment on the host:
 
 ```bash
 python3.12 --version
 cmake --version
 ```
 
-host+dockerまたはdocker-onlyを選ぶ場合は、追加でDockerを確認します。
+For host+docker or docker-only, also check Docker:
 
 ```bash
 docker --version
 ```
 
-## 利用構成
+## Configurations
 
-### 段階1：ROS 2を使わず箱庭単体で動かす
+### Stage 1: Hakoniwa alone, without ROS 2
 
-同じ Nova5 モデルを箱庭 Runtime と MuJoCo Viewer で動かし、箱庭 PDU と独自の軌道スクリプトを使います。公式 ROS サービスや Dobot 用 PDU-RPC は不要です。
+The same Nova5 model runs in the Hakoniwa Runtime and the MuJoCo Viewer, with Hakoniwa PDUs and its own trajectory scripts. Neither the official ROS services nor the PDU-RPC for Dobot are needed.
 
-| 環境 | 構成 |
+| Environment | Configuration |
 | --- | --- |
-| Ubuntu／macOS Host | `host-standalone`（Bash。macOS は Homebrew で前提を準備） |
-| Windows 11 native Host | `windows-host-standalone`（PowerShell） |
+| Ubuntu / macOS host | `host-standalone` (Bash; on macOS the prerequisites come from Homebrew) |
+| Windows 11 native host | `windows-host-standalone` (PowerShell) |
 
-### 段階2：ROS 2から箱庭を動かす
+### Stage 2: Hakoniwa driven from ROS 2
 
-環境は異なりますが、いずれも箱庭側の Nova5 と ROS 2 側の Dobot 公式サービスを接続し、**箱庭だけで**無改変の `dobot_demo demo` を動かします。ROS launch の既定は箱庭（`virtual`）で、利用者が実機モードを選ぶ必要はありません。公式ソースから `dobot_msgs_v4` と `dobot_demo` をビルドし、箱庭との通信に必要な `dobot-types` を生成します。実機 driver はビルドしません。
+The environments differ, but all of them connect the Nova5 on the Hakoniwa side with the official Dobot services on the ROS 2 side, and run the unmodified `dobot_demo demo` **on Hakoniwa only**. The ROS launch defaults to Hakoniwa (`virtual`), so users do not have to choose a real-robot mode. `dobot_msgs_v4` and `dobot_demo` are built from the official sources, and the `dobot-types` needed to talk to Hakoniwa are generated. The real-robot driver is not built.
 
-| 環境 | 構成 |
+| Environment | Configuration |
 | --- | --- |
-| Ubuntu Host（ROS 2と箱庭を同じHostで実行） | `host-ros2` |
-| macOS Host＋Ubuntu ROS 2 Container | `host+docker` |
-| Windows 11 native Host＋Ubuntu ROS 2 Container | `windows-host-docker`（Dobot Native Asset／RPCのビルド・結合は未検証） |
-| Ubuntu／macOS／Windows Host＋単一 Ubuntu Container | `docker-only`（macOS／Windowsではheadless。Windows Hostからの Bash 手順は未検証） |
+| Ubuntu host (ROS 2 and Hakoniwa on the same host) | `host-ros2` |
+| macOS host + Ubuntu ROS 2 container | `host+docker` |
+| Windows 11 native host + Ubuntu ROS 2 container | `windows-host-docker` (the build and integration of the Dobot Native Asset / RPC are not verified) |
+| Ubuntu / macOS / Windows host + a single Ubuntu container | `docker-only` (headless on macOS / Windows; the Bash procedure from a Windows host is not verified) |
 
-### 段階3：Ubuntu host-ros2から実機にも接続する（発展）
+### Stage 3: also connect the real robot from Ubuntu host-ros2 (advanced)
 
-段階2の `host-ros2` で箱庭動作を確認した後に、公式実機 driver を**追加ビルド**し、`real`（実機のみ）または `both`（実機と箱庭）を選びます。Ubuntu Native での実機動作は確認済みです。公式デモは50°の絶対移動を含むため実機へ送らず、現在姿勢からの小動作で確認します。
+After checking Hakoniwa with `host-ros2` in Stage 2, **additionally build** the official real-robot driver and choose `real` (real robot only) or `both` (real robot and Hakoniwa). Operation with the real robot is verified on Ubuntu native. The official demo includes a 50° absolute move, so it is not sent to the real robot; check with small motions from the current pose instead.
 
-## クイックスタート
+## Quick start
 
-### 共通：checkout用workspaceを作る
+### Common: create the checkout workspace
 
-利用者が置きたい親ディレクトリで次のコマンドを実行し、空のディレクトリを作って、その直下へBusiness Packと本リポジトリをcloneします。
+In the parent directory of your choice, create an empty directory and clone the Business Pack and this repository directly into it:
 
 ```bash
 mkdir -p hakoniwa-robot-arm-workspace
@@ -244,144 +261,143 @@ git clone https://github.com/hakoniwalab/hakoniwa-business-pack.git
 git clone https://github.com/teras-project/hakoniwa-robot-arm.git
 ```
 
-この時点では2リポジトリだけで構いません。標準配置では、後続のprofileがこの兄弟配置を自動検出します。Nova5が必要とする他のリポジトリは、Recipeの`configure`またはROS 2 workspaceの`build`が自動取得します。
+These two repositories are all you need at this point. With the standard layout, the profiles used later detect this side-by-side layout automatically. The other repositories Nova5 needs are fetched automatically by the Recipe's `configure` or by the ROS 2 workspace's `build`.
 
-### 段階1：箱庭単体で確認する（ROS 2なし）
+### Stage 1: check with Hakoniwa alone (no ROS 2)
 
-#### Ubuntu／macOS：host-standalone
+#### Ubuntu / macOS: host-standalone
 
-1. [箱庭単体セットアップ](docs/procedures/host-standalone/setup.md)
-2. [箱庭単体ビルド](docs/procedures/host-standalone/build.md)
-3. [箱庭単体の起動・動作確認](docs/procedures/host-standalone/operation.md)
+1. [Hakoniwa-only setup](docs/procedures/host-standalone/setup.md)
+2. [Hakoniwa-only build](docs/procedures/host-standalone/build.md)
+3. [Hakoniwa-only start and check](docs/procedures/host-standalone/operation.md)
 
-両OSともROS 2やDockerは不要です。セットアップ手順の冒頭で、Ubuntuは`apt`、macOSはHomebrewの前提コマンドを選んでください。
+Neither OS needs ROS 2 or Docker. At the beginning of the setup procedure, choose the prerequisite commands for Ubuntu (`apt`) or macOS (Homebrew).
 
-#### Windows native：windows-host-standalone
+#### Windows native: windows-host-standalone
 
-1. [Windows native箱庭単体セットアップ](docs/procedures/windows-host-standalone/setup.md)
-2. [Windows native箱庭単体ビルド](docs/procedures/windows-host-standalone/build.md)
-3. [Windows native箱庭単体の起動・動作確認](docs/procedures/windows-host-standalone/operation.md)
+1. [Windows native Hakoniwa-only setup](docs/procedures/windows-host-standalone/setup.md)
+2. [Windows native Hakoniwa-only build](docs/procedures/windows-host-standalone/build.md)
+3. [Windows native Hakoniwa-only start and check](docs/procedures/windows-host-standalone/operation.md)
 
-### 段階2：ROS 2から箱庭を動かす
+### Stage 2: drive Hakoniwa from ROS 2
 
-以下から実行環境を1つ選び、setup → build → operation の順に進みます。共通のゴールは **実機を接続せず、公式 `dobot_demo demo` を箱庭で動かすこと**です。
+Choose one environment below and go through setup → build → operation. The common goal is to **run the official `dobot_demo demo` on Hakoniwa, without the real robot**.
 
-#### Ubuntu Host：host-ros2
+#### Ubuntu host: host-ros2
 
-1. [Host ROS 2連携セットアップ](docs/procedures/host-ros2/setup.md)
-2. [Host ROS 2連携ビルド](docs/procedures/host-ros2/build.md)
-3. [Host ROS 2連携の起動・動作確認](docs/procedures/host-ros2/operation.md)
+1. [Host ROS 2 setup](docs/procedures/host-ros2/setup.md)
+2. [Host ROS 2 build](docs/procedures/host-ros2/build.md)
+3. [Host ROS 2 start and check](docs/procedures/host-ros2/operation.md)
 
-#### macOS Host＋Docker：host+docker
+#### macOS host + Docker: host+docker
 
-macOSでは、Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 BridgeとROSノードをDocker Containerで実行します。HostとDockerはTCPで接続します。
+On macOS, the Nova5 Runtime and the MuJoCo Viewer run on the host, and the ROS 2 Bridge and ROS nodes in a Docker container. The host and Docker are connected over TCP.
 
-1. [host+dockerセットアップ](docs/procedures/host-docker/setup.md)
-2. [host+dockerビルド](docs/procedures/host-docker/build.md)
-3. [host+docker起動・動作確認](docs/procedures/host-docker/operation.md)
+1. [host+docker setup](docs/procedures/host-docker/setup.md)
+2. [host+docker build](docs/procedures/host-docker/build.md)
+3. [host+docker start and check](docs/procedures/host-docker/operation.md)
 
-人が操作する場合はHost上のMuJoCo Viewerを利用できます。CIや画面のない自動確認ではheadlessを選択します。
+When a person operates it, the MuJoCo Viewer on the host can be used. For CI or automated checks without a display, choose headless.
 
-#### Windows Host＋Docker：windows-host-docker
+#### Windows host + Docker: windows-host-docker
 
-Windows 11 の native Runtime と ROS 2 Jazzy Docker Desktop の構成です。Dobot 仮想サービスは基本経路ですが、Windows native のビルドと結合は未検証です。各段階の確認に失敗したら先へ進まないでください。
+The Windows 11 native Runtime with ROS 2 Jazzy in Docker Desktop. The Dobot virtual services are the main path, but the Windows native build and integration are not verified. Do not go on when a stage's check fails.
 
-1. [Windows host+Dockerセットアップ](docs/procedures/windows-host-docker/setup.md)
-2. [Windows host+Dockerビルド](docs/procedures/windows-host-docker/build.md)
-3. [Windows host+Docker起動・動作確認](docs/procedures/windows-host-docker/operation.md)
+1. [Windows host+Docker setup](docs/procedures/windows-host-docker/setup.md)
+2. [Windows host+Docker build](docs/procedures/windows-host-docker/build.md)
+3. [Windows host+Docker start and check](docs/procedures/windows-host-docker/operation.md)
 
-#### Ubuntu／macOS／Windows Host：docker-only
+#### Ubuntu / macOS / Windows host: docker-only
 
-HostへCPython 3.12、CMake、ROS 2などを導入せず、GitとDockerだけで動作確認したい場合はdocker-onlyを選択します。Nova5とROS 2を同じ1つのUbuntu Container内で実行します。
+Choose docker-only to check with Git and Docker only, without installing CPython 3.12, CMake or ROS 2 on the host. Nova5 and ROS 2 run in the same single Ubuntu container.
 
-1. [docker-onlyセットアップ](docs/procedures/docker-only/setup.md)
-2. [docker-onlyビルド](docs/procedures/docker-only/build.md)
-3. [docker-only起動・動作確認](docs/procedures/docker-only/operation.md)
+1. [docker-only setup](docs/procedures/docker-only/setup.md)
+2. [docker-only build](docs/procedures/docker-only/build.md)
+3. [docker-only start and check](docs/procedures/docker-only/operation.md)
 
-native Linux HostではViewerを利用できます。macOS Docker Desktopではnative architectureのheadless実行を使用します。Windows Hostからの Bash 手順は未検証です。
+A native Linux host can use the Viewer. Docker Desktop on macOS runs headless in the native architecture. The Bash procedure from a Windows host is not verified.
 
-### 段階3：Ubuntu host-ros2 で実機にも接続する（発展）
+### Stage 3: also connect the real robot with Ubuntu host-ros2 (advanced)
 
-段階2の `host-ros2` の箱庭デモまで完了した場合のみ、[実機 driver の追加と `real`／`both` への切り替え](docs/procedures/host-ros2/real.md)へ進みます。実機で無改変の公式デモは実行しません。
+Only after the Hakoniwa demo with `host-ros2` in Stage 2, go on to [adding the real-robot driver and switching to `real` / `both`](docs/procedures/host-ros2/real.md). Do not run the unmodified official demo on the real robot.
 
-## リポジトリ構成
+## Repository layout
 
-| パス | 責務 |
+| Path | Responsibility |
 | --- | --- |
-| `apps/` | 共通ランタイムを利用するアームシミュレータのアプリケーション |
-| `recipes/nova5/` | Nova5のManifest、PDU、制御、Forge設定 |
-| `recipes/ros2/` | ROS 2 TCP BridgeのRecipe |
-| `ros2_packages/` | 標準colconでbuildするROS 2サンプルノード |
-| `sources/models/` | 上流モデルの取得情報、出典、work内での正規化手順。取得したモデル本体は含まない |
-| `tools/` | Forge、Recipe操作、環境生成、制御用ツール |
-| `docker/` | ROS 2 Humble/Jazzy用のContainer環境 |
-| `docs/procedures/` | 利用者が順番どおり実行する環境別手順 |
-| `docs/design/` | Recipe、profile、生成物、接続関係の設計説明 |
-| `docs/reference/` | 対応ロボットとModel Forgeの参照情報 |
-| `docs/license/` | 依存OSSとRobot Modelのライセンス台帳 |
+| `apps/` | Arm simulator applications on the common runtime |
+| `recipes/nova5/` | Nova5 manifest, PDU, control and Forge settings |
+| `recipes/ros2/` | Recipe for the ROS 2 TCP Bridge |
+| `ros2_packages/` | Sample ROS 2 nodes built with standard colcon |
+| `sources/models/` | Where upstream models come from, their sources, and the normalization steps in the work directory. The fetched models are not included |
+| `tools/` | Forge, Recipe, environment generation and control tools |
+| `docker/` | Containers for ROS 2 Humble / Jazzy |
+| `docs/procedures/` | Per-environment procedures, followed in order |
+| `docs/design/` | Design notes on Recipes, profiles, generated files and connections |
+| `docs/reference/` | Reference on supported robots and Model Forge |
+| `docs/license/` | License records of dependencies and robot models |
 
-Forgeで取得・生成したモデルはソースツリーへ配置せず、`HAKONIWA_WORK_DIR/model-forge/`以下で管理します。ROS 2のvenv、build、install、logは`HAKONIWA_ROS2_WS`以下へ生成します。
+Models fetched and generated by Forge are not placed in the source tree; they are kept under `HAKONIWA_WORK_DIR/model-forge/`. The ROS 2 venv, build, install and log go under `HAKONIWA_ROS2_WS`.
 
-## 必要なリポジトリ
+## Required repositories
 
-リポジトリは原則として同じ親ディレクトリへ配置します。最初に手動でcloneするのはBusiness Packと本リポジトリだけです。
+As a rule, place the repositories in the same parent directory. Only the Business Pack and this repository are cloned by hand at first.
 
-| リポジトリ | 準備方法 | 用途 |
+| Repository | How it is prepared | Use |
 | --- | --- | --- |
-| `hakoniwa-business-pack` | 利用者がclone | Composer、Workspace、Foundation |
-| `hakoniwa-robot-arm` | 利用者がclone | 本リポジトリ |
-| `hakoniwa-core-pro` | runtime Recipeの`configure`が自動取得 | 箱庭コアとSHM |
-| `hakoniwa-pdu-endpoint` | runtime RecipeおよびROS 2 workspaceが自動取得 | PDU通信Endpoint |
-| `hakoniwa-pdu-bridge-core` | runtime Recipeの`configure`が自動取得 | Host側TCP Bridge |
-| `hakoniwa-pdu-python` | runtime Recipeの`configure`が自動取得 | Python LauncherとPDU API |
-| `hakoniwa-robot-runtime` | runtime Recipeの`configure`が自動取得 | 共通ロボットランタイム |
-| `hakoniwa-mujoco-robots` | runtime／Forge Recipeの`configure`が自動取得 | MuJoCo共通機能 |
-| `hakoniwa-mbody-registry` | Forge Recipeの`configure`が自動取得 | モデル取得・変換ツール |
-| `hakoniwa-pdu-ros` | ROS 2 workspaceの`build`が自動取得 | ROS 2 Bridgeパッケージ |
+| `hakoniwa-business-pack` | Cloned by the user | Composer, Workspace, Foundation |
+| `hakoniwa-robot-arm` | Cloned by the user | This repository |
+| `hakoniwa-core-pro` | Fetched by the runtime Recipe's `configure` | Hakoniwa core and shared memory |
+| `hakoniwa-pdu-endpoint` | Fetched by the runtime Recipe and the ROS 2 workspace | PDU communication endpoint |
+| `hakoniwa-pdu-bridge-core` | Fetched by the runtime Recipe's `configure` | Host-side TCP Bridge |
+| `hakoniwa-pdu-python` | Fetched by the runtime Recipe's `configure` | Python Launcher and PDU API |
+| `hakoniwa-robot-runtime` | Fetched by the runtime Recipe's `configure` | Common robot runtime |
+| `hakoniwa-mujoco-robots` | Fetched by the runtime / Forge Recipe's `configure` | Common MuJoCo functions |
+| `hakoniwa-mbody-registry` | Fetched by the Forge Recipe's `configure` | Model fetch and conversion tools |
+| `hakoniwa-pdu-ros` | Fetched by the ROS 2 workspace's `build` | ROS 2 Bridge packages |
 
-自動取得されるリポジトリとrevisionはRecipeに記録されています。実行前に`tools/recipe.py plan`を使うと、clone、checkout、再利用、Foundationのビルド予定を確認できます。
+The repositories fetched automatically and their revisions are recorded in the Recipes. Before running, `tools/recipe.py plan` shows the planned clones, checkouts, reuse and Foundation builds.
 
 ```text
 hakoniwa-robot-arm-workspace/
-├── hakoniwa-business-pack/       # 手動clone
-├── hakoniwa-robot-arm/           # 手動clone
-├── hakoniwa-core-pro/            # configureが自動取得
-├── hakoniwa-pdu-endpoint/        # configure/buildが自動取得
-├── hakoniwa-pdu-bridge-core/     # configureが自動取得
-├── hakoniwa-pdu-python/          # configureが自動取得
-├── hakoniwa-robot-runtime/       # configureが自動取得
-├── hakoniwa-mujoco-robots/       # configureが自動取得
-├── hakoniwa-mbody-registry/      # configureが自動取得
-├── hakoniwa-pdu-ros/             # ROS 2 buildが自動取得
-├── work-host/                    # Host側のFoundation、Forge、Runtime、ROS 2生成物
-│   └── ros2/                     # host-ros2／host+dockerのROS 2基盤環境
-└── work-docker-jazzy/            # docker-only側のFoundation、Forge、Runtime生成物
-    └── ros2/                     # docker-onlyのROS 2基盤環境
+├── hakoniwa-business-pack/       # cloned by hand
+├── hakoniwa-robot-arm/           # cloned by hand
+├── hakoniwa-core-pro/            # fetched by configure
+├── hakoniwa-pdu-endpoint/        # fetched by configure / build
+├── hakoniwa-pdu-bridge-core/     # fetched by configure
+├── hakoniwa-pdu-python/          # fetched by configure
+├── hakoniwa-robot-runtime/       # fetched by configure
+├── hakoniwa-mujoco-robots/       # fetched by configure
+├── hakoniwa-mbody-registry/      # fetched by configure
+├── hakoniwa-pdu-ros/             # fetched by the ROS 2 build
+├── work-host/                    # host-side Foundation, Forge, Runtime and ROS 2 outputs
+│   └── ros2/                     # ROS 2 base environment for host-ros2 / host+docker
+└── work-docker-jazzy/            # docker-only Foundation, Forge and Runtime outputs
+    └── ros2/                     # ROS 2 base environment for docker-only
 ```
 
-主な生成先の指定は次のとおりです。
+The main output locations are set as follows:
 
-| 環境変数 | 用途 |
+| Environment variable | Use |
 | --- | --- |
-| `HAKONIWA_COMPOSER` | Composerリポジトリのルート。標準配置では自動検出されるため設定不要 |
-| `HAKONIWA_WORK_DIR` | Foundation、Forge、Recipeの生成物。`workspace.py enter --workdir`が選択値を設定 |
-| `HAKONIWA_ROS2_WS` | ROS 2のvenv、build、install、log。`docker/run.bash`は選択された`HAKONIWA_WORK_DIR/ros2`を既定値に設定 |
-| `HAKONIWA_ROS2_TCP_CONFIG` | Hostで生成したROS 2 TCP設定をDockerへ渡すHost側パス。`docker/run.bash`の前に利用者が設定 |
+| `HAKONIWA_COMPOSER` | Root of the Composer repository. Detected automatically with the standard layout; no need to set it |
+| `HAKONIWA_WORK_DIR` | Foundation, Forge and Recipe outputs. Set to the chosen value by `workspace.py enter --workdir` |
+| `HAKONIWA_ROS2_WS` | ROS 2 venv, build, install and log. `docker/run.bash` defaults it to the chosen `HAKONIWA_WORK_DIR/ros2` |
+| `HAKONIWA_ROS2_TCP_CONFIG` | Host-side path that passes the ROS 2 TCP settings generated on the host to Docker. Set by the user before `docker/run.bash` |
 
-## 詳細情報
+## More information
 
-- [環境別の詳細利用ガイド](docs/README.md)
-- [Nova5実行Recipe](recipes/nova5/nova5-joint-trajectory-control.yaml)
-- [Nova5モデルForge Recipe](recipes/nova5/nova5-model-forge.yaml)
-- [Robot Modelのライセンス情報（Nova5／FR5／SO-101／MathScavator9000）](docs/license/robot-models.md)
+- [Detailed user guide by environment](docs/README.md)
+- [Nova5 runtime Recipe](recipes/nova5/nova5-joint-trajectory-control.yaml)
+- [Nova5 model Forge Recipe](recipes/nova5/nova5-model-forge.yaml)
+- [Robot model license information (Nova5 / FR5 / SO-101 / MathScavator9000)](docs/license/robot-models.md)
 - [ROS 2 Bridge Recipe](recipes/ros2/arm-ros2-topic-bridge.yaml)
-- [Docker実行設定](docker/env.bash)
+- [Docker settings](docker/env.bash)
 
-## ライセンスとモデル出典
+## License and model sources
 
-本リポジトリのソースコードは[Apache License 2.0](LICENSE)で提供します。
+The source code of this repository is provided under the [Apache License 2.0](LICENSE).
 
-本リポジトリで扱うRobot Modelおよびその派生成果物については、各上流プロジェクトのライセンスおよび利用条件を確認する必要があります。
-モデル本体やForgeで生成した成果物を、本リポジトリから再配布するものではありません。
+For the robot models and their derivatives handled here, check the licenses and terms of use of each upstream project. This repository does not redistribute the models or the outputs Forge generates.
 
-モデル別の調査結果、利用上の注意、再配布判定は[Robot Modelのライセンス情報](docs/license/robot-models.md)を確認してください。
+For each model's investigation results, usage notes and redistribution decisions, see [Robot model license information](docs/license/robot-models.md).
