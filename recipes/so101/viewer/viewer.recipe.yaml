@@ -1,0 +1,22 @@
+# SO-101 view-model recipe (hakoniwa-mbody-registry format). tools/recipe/so101_view_model.py
+# writes the MJCF it reads as model.xml next to the generated files.
+format: hako_viewer_model_recipe
+version: 0.1
+
+robot: so101
+mjcf: model.xml
+coordinate_system: mujoco
+
+assets:
+  glb_dir: parts
+  map: body_name
+
+base: base
+
+movable_joints:
+  - shoulder_pan
+  - shoulder_lift
+  - elbow_flex
+  - wrist_flex
+  - wrist_roll
+  - gripper

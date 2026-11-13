@@ -411,6 +411,7 @@ def configure(
     realtime_sync_cycle_msec: int = 0,
     joint_trajectory: bool = True,
     sensors: bool = False,
+    viewer_state: bool = False,
     bridge_step_usec: int | None = None,
     sensor_implementation: str = "reference",
 ) -> int:
@@ -426,6 +427,8 @@ def configure(
         raise RecipeError("--ros2-tcp, --manual-demo, and --gamepad are exclusive")
     if realtime_sync_cycle_msec < 0:
         raise RecipeError("--realtime-sync-cycle-msec must be >= 0")
+    if viewer_state and not sensors:
+        raise RecipeError("--viewer-state needs --sensors")
     foundation, workspace = workspace_and_foundation()
     foundation.prepare_workspace(workspace)
     python = foundation_python(foundation, workspace)
@@ -449,6 +452,9 @@ def configure(
     manifest_name = "asset-manifest.json"
     if effective_digging_worksite:
         manifest_name = "asset-manifest-digging.json"
+    elif sensors and viewer_state:
+        # The sensors manifest and the states a Hakoniwa viewer reads.
+        manifest_name = "asset-manifest-sensors-viewer.json"
     elif sensors:
         manifest_name = "asset-manifest-sensors.json"
     elif arm_environment:
@@ -1068,6 +1074,10 @@ def parser() -> argparse.ArgumentParser:
         "--sensor-implementation", default="reference",
         help="with --sensors: the sensor set of the robot to use, by implementation (default reference: "
              "the true values; hakoniwa: the robot's set for Hakoniwa's sensor models)")
+    result.add_argument(
+        "--viewer-state", action="store_true",
+        help="SO-101 with --sensors: also the states a Hakoniwa viewer reads "
+             "(viewer_joint_states with joints named SO101/<joint>, viewer_body_states with the cube pose)")
     result.add_argument("--realtime-sync-cycle-msec", type=int, default=0, help="reconcile simulation and wall time at this simulation-time interval; 0 disables pacing")
     result.add_argument("--viewer", action="store_true", help="open the bucket proxy calibration Viewer")
     result.add_argument("--mujoco-root", type=Path, default=sibling("hakoniwa-mujoco-robots", "HAKONIWA_MUJOCO_ROBOTS_ROOT"))
@@ -1090,6 +1100,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.realtime_sync_cycle_msec,
                 args.joint_trajectory,
                 args.sensors,
+                args.viewer_state,
                 args.bridge_step_usec,
                 args.sensor_implementation,
             )
