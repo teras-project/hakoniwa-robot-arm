@@ -23,7 +23,7 @@ Mount: Composer parent directory -> /workspace
 Workdir: /workspace/<Composer directory name> (HAKONIWA_WORKSPACE_ROOT)
 HAKONIWA_WORK_DIR: /workspace/work-docker-<distro>
 Foundation runtime mmap: container-local tmpfs (not persisted on the Host)
-ROS workspace: /workspace/ros2-work-<distro> (HAKONIWA_ROS2_WS)
+ROS workspace: <HAKONIWA_WORK_DIR>/ros2 (HAKONIWA_ROS2_WS)
 No project build, source checkout, or Workspace enter is performed automatically.
 EOF
 }
@@ -117,5 +117,5 @@ exec docker run "${run_options[@]}" --name "${name}" --network "${network}" \
   --env "HAKONIWA_BUSINESS_PACK_ROOT=${HAKONIWA_CONTAINER_COMPOSER}" \
   --env "ARM_PACK=${HAKONIWA_CONTAINER_ARM_PACK}" \
   --env "HAKONIWA_WORK_DIR=${container_work_dir}" \
-  --env "HAKONIWA_ROS2_WS=/workspace/ros2-work-${distro}" \
+  --env "HAKONIWA_ROS2_WS=${container_work_dir}/ros2" \
   "$@" "${IMAGE_NAME:-hakoniwa-arm-dev}:${distro}" bash

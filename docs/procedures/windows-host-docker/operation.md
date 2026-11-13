@@ -1,67 +1,58 @@
-# Windows host+Docker起動・動作確認
+# Windows host+Docker：Dobot 仮想サービスの起動・動作確認
 
-[Windows host+Dockerビルド](build.md)の完了後、4端末でMuJoCo Viewer、ROS 2 Bridge、JointState、JointTrajectoryを確認します。
+[ビルド](build.md)のWindows Native PDU-RPC／専用Asset、Container内の公式ROSメッセージ・PDU型・service/topic binding、Launcherの切り替えが**すべて成功した場合のみ**実行します。**Windows Host + DockerのDobot結合は未検証です。** ROS launch は既定で箱庭だけに接続します。この手順では実機に接続しません。
 
-| 端末 | 環境・実行ディレクトリ | 実行するもの |
-| --- | --- | --- |
-| `host-hako` | Windows PowerShell、`hakoniwa-business-pack`のrepository root | Nova5 Runtime、MuJoCo Viewer、Host TCP Bridge |
-| `docker-ros-bridge` | 起動済みContainer Bash、`/workspace/hakoniwa-robot-arm` | ROS 2 Bridge |
-| `docker-ros-monitor` | 追加Container Bash、`/workspace/hakoniwa-robot-arm` | JointState monitor |
-| `docker-ros-control` | 追加Container Bash、`/workspace/hakoniwa-robot-arm` | JointTrajectory control |
+| 端末 | 環境・実行するもの |
+| --- | --- |
+| `host-hako` | Windows PowerShell、`hakoniwa-business-pack`ルート：Windows Native AssetとHost TCP Bridge |
+| `docker-ros-bridge` | [ビルド](build.md)から開いたContainer Bash：Dobot service/topic launch |
+| `docker-ros-monitor` | 別のHost PowerShellから`docker exec`したContainer Bash：JointState |
+| `docker-ros-control` | 別のHost PowerShellから`docker exec`したContainer Bash：安全なdry-run／小動作 |
 
-`powershell`・`bash`ブロックはそれぞれの端末で実行するコマンドです。表示結果は各段階の成功条件を確認するために使います。
+[実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [安全上の警告](../ros2/arm-operations.md)
 
-[実行手順の索引](../README.md) | [セットアップ](setup.md) | [ビルド](build.md) | [起動・動作確認](operation.md)
+## 1. Windows HostでDobot Assetを起動
 
-## 1. Host側Nova5を起動する
-
-`hakoniwa-business-pack`のrepository rootを開いたPowerShellで実行します。
+`hakoniwa-business-pack`ルートのHost PowerShellで、Windows用に適用済みの`launcher.json`と`robot-arm-dobot-asset.exe`を確認してから起動します。
 
 ```powershell
 Get-Location
-```
-
-`hakoniwa-business-pack`のrepository rootであることを確認してから実行します。
-
-```powershell
+Test-Path .\work\recipes\nova5-joint-trajectory-control\config\launcher.pre-dobot.json
 python tools\workspace.py run -- python `
   ..\hakoniwa-robot-arm\tools\recipe\nova5.py doctor
-
 python tools\workspace.py run -- python `
   ..\hakoniwa-robot-arm\tools\recipe\nova5.py start
-
 python tools\workspace.py run -- python `
   ..\hakoniwa-robot-arm\tools\recipe\nova5.py status
+Test-NetConnection 127.0.0.1 -Port 54020
 ```
 
-次を確認します。
+`launcher.pre-dobot.json`が存在し、doctorが`[OK]`、statusが`RUNNING`、`TcpTestSucceeded: True`となることを確認します。Viewerを使う場合はNova5も確認します。TCP 54020に接続できなければ、Native Assetの起動ログ、DLLの配置、Windows Defender Firewall、Host TCP Bridgeのログを調べて停止します。`Test-NetConnection`の接続成功だけではサービス機能の成功を意味しません。
 
-- `status`が`RUNNING`
-- MuJoCo ViewerにNova5と周辺環境が表示される
-- `work\recipes\nova5-joint-trajectory-control\logs\nova5-ros2-tcp-bridge.out`に`bridge_time_source=hakoniwa_callback`がある
-- Bridgeが`0xc0000005`で終了しない
+## 2. DockerでDobot service/topic launchを起動
 
-初回起動時にWindows Defender Firewallの許可画面が表示される場合があります。Docker DesktopからHost TCP Bridgeへの通信に必要なため、所属組織のポリシーに従って必要なネットワークだけを許可してください。安易にPublic network全体を許可しないでください。拒否した場合、Container側BridgeがHostへ接続できないことがあります。
-
-## 2. ROS 2 Bridgeを起動する
-
-build時から開いている`docker-ros-bridge`のContainer Bashで実行し、この端末を維持します。
+開いたままの`docker-ros-bridge`（Container Bash、`/workspace/hakoniwa-robot-arm`）で実行します。`/ros2-tcp/ros/binding.json`はWindows Hostが生成しread-only mountしたtopic binding、`/workspace/hakoniwa-business-pack/work/dobot-services`はContainerで生成したservice bindingです。両方を**同じlaunch**へ渡します。
 
 ```bash
 cd /workspace/hakoniwa-robot-arm
-source "$HAKONIWA_ROS2_WS/activate.bash"
-/usr/bin/python3 tools/recipe/ros2_workspace.py doctor
+export DOBOT_WORK=/workspace/hakoniwa-business-pack/work
+source "$DOBOT_WORK/ros2/activate.bash"
+source "$DOBOT_WORK/dobot-ros/install/setup.bash"
+source "$DOBOT_WORK/dobot-types/activate.bash"
+source "$DOBOT_WORK/dobot-apps/install/setup.bash"
 test -f "$HAKONIWA_ROS_BINDING"
-ros2 run hakoniwa_pdu_ros bridge --config "$HAKONIWA_ROS_BINDING"
+ros2 launch hakoniwa_dobot dobot.launch.py \
+  service_binding:="$DOBOT_WORK/dobot-services/dobot-services.json" \
+  offset_dir:="$DOBOT_WORK/dobot-types/pdu/offset" \
+  rpc_output:="$DOBOT_WORK/dobot-services/rpc" \
+  topic_binding:="$HAKONIWA_ROS_BINDING"
 ```
 
-doctorが成功し、Bridgeが終了せずHostとの接続を維持すればOKです。
+Service Bridgeとtopic Bridgeが終了せず起動し、RPCサーバーへ接続できることを次の端末から確認します。ContainerとHostでROSの`ROS_DOMAIN_ID`を混在させず、Containerの各ROS端末で同じ`activate.bash`をsourceしてください（既定73）。
 
-## 3. JointStateを観察する
+## 3. JointStateを監視
 
-新しいHost PowerShellで追加shellを開きます。
-
-Host PowerShellで実行:
+新しいHost PowerShellから追加Container shellを開きます。**PowerShellのブロックとContainer Bashのブロックは別々に実行**してください。
 
 ```powershell
 docker exec -it `
@@ -70,60 +61,65 @@ docker exec -it `
   /ros_entrypoint.sh bash
 ```
 
-ContainerのBash promptが表示されるまで待ってから、`docker-ros-monitor`で実行:
+Container Bash（`docker-ros-monitor`）:
 
 ```bash
-source "$HAKONIWA_ROS2_WS/activate.bash"
-source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
-ros2 topic info /pdu/joint_states
-ros2 run hakoniwa_arm_samples monitor --topic /pdu/joint_states
+export DOBOT_WORK=/workspace/hakoniwa-business-pack/work
+source "$DOBOT_WORK/ros2/activate.bash"
+source "$DOBOT_WORK/dobot-ros/install/setup.bash"
+source "$DOBOT_WORK/dobot-types/activate.bash"
+source "$DOBOT_WORK/dobot-apps/install/setup.bash"
+ros2 topic info /joint_states_robot
+ros2 run hakoniwa_arm_samples monitor
 ```
 
-`monitoring /pdu/joint_states`に続いて、`joint1`から`joint6`の値が繰り返し表示されればOKです。この端末は開いたままにします。
+`/joint_states_robot`の6軸が約1 Hzで表示されることを確認します。JointStateの角度はrad、Dobot `GetAngle`はdegです。topicがない場合はHost TCP Bridgeのstatus、read-only mountの`HAKONIWA_ROS_BINDING`、Docker launchを調べます。
 
-## 4. JointTrajectoryを送信する
+## 4. サービスでdry-run後に小動作を確認
 
-さらに新しいHost PowerShellで`docker-ros-control`を開きます。
-
-Host PowerShellで実行:
-
-```powershell
-docker exec -it `
-  --workdir /workspace/hakoniwa-robot-arm `
-  hakoniwa-arm-dev-jazzy `
-  /ros_entrypoint.sh bash
-```
-
-ContainerのBash promptが表示されるまで待ってから、`docker-ros-control`で実行:
+別のHost PowerShellから手順3と同じ`docker exec -it ... /ros_entrypoint.sh bash`で`docker-ros-control`を開きます。`hakoniwa_arm_samples control` と公式 `dobot_demo demo` は同じ `/dobot_bringup_ros2/srv/*` を呼び、箱庭専用の宛先には固定されていません。dry-run の `GetAngle` も実機の同名サービスに届く可能性があり、`--execute` は実機を動かし得ます。**この箱庭手順では実機 driver を停止するか別の ROS domain に分離し、同名サービスの競合がないことを確認してから** Container Bash で実行します。[安全上の警告](../ros2/arm-operations.md)も参照してください。
 
 ```bash
-source "$HAKONIWA_ROS2_WS/activate.bash"
-source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
-ros2 topic info /joint_trajectory
-ros2 run hakoniwa_arm_samples control \
-  --topic /joint_trajectory --joints 6 --amplitude 0.15 --duration 2.0
+export DOBOT_WORK=/workspace/hakoniwa-business-pack/work
+source "$DOBOT_WORK/ros2/activate.bash"
+source "$DOBOT_WORK/dobot-ros/install/setup.bash"
+source "$DOBOT_WORK/dobot-types/activate.bash"
+source "$DOBOT_WORK/dobot-apps/install/setup.bash"
+ros2 service type /dobot_bringup_ros2/srv/GetAngle
+ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{}'
+ros2 run hakoniwa_arm_samples control
 ```
 
-次を確認します。
+`GetAngle`の応答とdry-runの現在角・J1 +3°目標を点検します。**同じ ROS domain に同名サービスを出す実機 driver がいないことを再確認**してから、小動作を明示的に実行します。
 
-- `published 4 points for 6 joints`と表示される
-- monitorに表示される6関節の値が変化する
-- MuJoCo Viewer上のNova5が軌道に従って動く
+```bash
+ros2 run hakoniwa_arm_samples control --execute --delta-deg 3
+ros2 service call /dobot_bringup_ros2/srv/GetAngle dobot_msgs_v4/srv/GetAngle '{}'
+```
 
-## 5. 終了する
+`control`は`EnableRobot`、`SpeedFactor=10%`、`MovJ`を使用します。応答`res=0`は受理であって到達ではありません。monitorの値とViewerの動きを確認してください。次に箱庭だけで公式デモを実行します。J1 50°／J2 -8°への絶対角移動を含むため、[安全上の警告と仮想MovL／DOの制限](../ros2/arm-operations.md)を読んでから実行してください。**実機に公式デモを送らないでください。**
 
-次の順序で終了します。
+実行するコマンド（`docker-ros-control`）:
+```bash
+ros2 run dobot_demo demo
+```
 
-1. `docker-ros-control`を終了する。
-2. `docker-ros-monitor`と`docker-ros-bridge`のROS 2 processをCtrl+Cで停止する。
-3. Windows HostのRuntimeを停止する。
+monitor で連続する移動を確認します。
 
-`host-hako`のPowerShellで実行します。
+## 5. 停止
+
+`docker-ros-control` 端末で次のコマンドを実行します。
+
+実行するコマンド（`docker-ros-control`）:
+```bash
+ros2 service call /dobot_bringup_ros2/srv/DisableRobot dobot_msgs_v4/srv/DisableRobot '{}'
+```
+
+monitorとlaunchをCtrl+Cで止めてからHost PowerShell（Business Packルート）で実行します。
 
 ```powershell
 python tools\workspace.py run -- python `
   ..\hakoniwa-robot-arm\tools\recipe\nova5.py stop
-
 python tools\workspace.py run -- python `
   ..\hakoniwa-robot-arm\tools\recipe\nova5.py status
 ```

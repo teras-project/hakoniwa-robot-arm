@@ -24,7 +24,7 @@
   },
   "pdu_config": {
     "pdu_name": "joint_states",
-    "update_rate_hz": 50.0,
+    "update_rate_hz": 10.0,
     "message_type": "sensor_msgs/JointState"
   }
 }

@@ -1,6 +1,6 @@
 # Host ROS 2連携セットアップ
 
-Nova5 Runtime、MuJoCo Viewer、ROS 2 Bridge、ROS 2 sample nodeを同じUbuntu Host上で実行するための準備手順です。Ubuntu 22.04／ROS 2 Humble、またはUbuntu 24.04／ROS 2 Jazzyを使用します。
+Nova5 Runtime、MuJoCo Viewer、Dobot 公式サービスに接続する ROS 2 Bridge と sample node を同じ Ubuntu Host 上で実行する準備手順です。Ubuntu 24.04／ROS 2 Jazzy を使用します。Ubuntu 22.04／Humble の Dobot 経路は現時点で[対応待ち](../ros2/dobot-build.md)です。ROS launch の既定は箱庭で、実機の `real`／`both` は箱庭確認後の[追加手順](real.md)で扱います。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で取得・生成します。
 
 手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
 
@@ -42,7 +42,7 @@ cmake --version
 
 実行するコマンド（通常のHost terminal）:
 ```bash
-sudo apt install -y python3-colcon-common-extensions
+sudo apt install -y python3-colcon-common-extensions python3-venv python3-pip
 ls -l /opt/ros/jazzy/setup.bash
 /usr/bin/python3 -m colcon --help
 ```

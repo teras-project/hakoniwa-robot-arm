@@ -16,24 +16,26 @@
 
 ## ROS 2連携の確認対象
 
-以下の`bash`コマンド例はLinux/macOSの箱庭Workspace用です。Windowsでは上の表にあるWindows専用手順のPowerShellコマンドを使用してください。
+以下の`bash`コマンド例はLinux/macOSの箱庭Workspace用です。Windows native Host + Docker は[専用のPowerShell手順](windows-host-docker/operation.md)に従い、未検証のビルド・結合で失敗したら停止してください。
 
-ROS 2連携を使用する場合は、次の2トピックを確認します。
+ROS 2 連携では、virtual のサービスと状態 topic を確認します。
 
-確認するトピック（参照用。コマンドではない）:
+確認する接続点（参照用。コマンドではない）:
 ```text
-/joint_trajectory   trajectory_msgs/msg/JointTrajectory
-/pdu/joint_states   sensor_msgs/msg/JointState
+/dobot_bringup_ros2/srv/GetAngle    dobot_msgs_v4/srv/GetAngle
+/dobot_bringup_ros2/srv/MovJ        dobot_msgs_v4/srv/MovJ
+/joint_states_robot                sensor_msgs/msg/JointState
 ```
 
 期待結果は次のとおりです。
 
 - Nova5 RuntimeとLauncherが`RUNNING`になる。
-- `control`が6軸の軌道をpublishする。
+- `control` は現在角からの +3° を dry-run 表示し、明示的な `--execute` でサービスを呼ぶ。
+- 箱庭だけで公式 `dobot_demo demo` の連続する移動を確認する（実機には送らない）。
 - Viewerありの場合はNova5の動作を画面で確認できる。
-- `monitor`の`joint1`から`joint6`が軌道指令に応じて変化する。
+- `monitor`の6軸が動作に応じて変化する（既定表示周期 1 Hz）。
 
-Viewerでは`p`でpause/resume、`r`でreset、`q`またはEscでViewerを閉じます。通常終了ではROSプロセスをCtrl+Cで停止してから、箱庭WorkspaceでLauncherを停止します。
+Viewerでは`p`でpause/resume、`r`でreset、`q`またはEscでViewerを閉じます。pause 中はサービスが timeout する可能性があります。通常終了ではロボットを無効化し、ROS プロセスを Ctrl+C で停止してから、箱庭 Workspace で Launcher を停止します。公式デモの 50° の動作を **real／both に送らない**でください。
 
 実行するコマンド（選択した構成の箱庭Workspace）:
 ```bash

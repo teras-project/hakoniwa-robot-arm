@@ -1,6 +1,6 @@
 # docker-onlyビルド
 
-[docker-onlyセットアップ](setup.md)の完了が前提です。箱庭workは`/workspace/work-docker-<distro>`、ROS 2成果物は共有の`/workspace/ros2-work-<distro>`を使用します。
+[docker-onlyセットアップ](setup.md)の完了が前提です。基本経路は Dobot 仮想サービスです。箱庭workは`/workspace/work-docker-<distro>`、この構成の Dobot / ROS 成果物も同 work 内の `ros2` に置きます（旧 `/workspace/ros2-work-<distro>` は使用しません）。
 
 手順: [一覧](../README.md) → [セットアップ](setup.md) → **ビルド** → [起動・動作確認](operation.md)
 
@@ -81,39 +81,43 @@ Containerのプロンプトが出てから、次を実行します。
 ```bash
 cd ../hakoniwa-robot-arm
 pwd
-echo "$HAKONIWA_ROS2_WS"
+echo "$HAKONIWA_WORK_DIR"
 ```
 
-Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer内の`hakoniwa-business-pack`リポジトリルートを開くため、Container側のブロックでRobot Arm repositoryへ移動します。`pwd`の末尾が`hakoniwa-robot-arm`で、`echo "$HAKONIWA_ROS2_WS"`に`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`が表示されればOKです。
+Humbleでは`jazzy`を`humble`へ置き換えます。`attach.bash`はContainer内の`hakoniwa-business-pack`リポジトリルートを開くため、Container側のブロックでRobot Arm repositoryへ移動します。`pwd`の末尾が`hakoniwa-robot-arm`で、`echo "$HAKONIWA_WORK_DIR"`に`/workspace/work-docker-jazzy`または`/workspace/work-docker-humble`が表示されればOKです。
 
-## 4. ROS 2 Bridgeとサンプルをbuildする
+## 4. Dobot / ROS workspace とサービス binding を build する
 
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | `docker-ros-build` |
 | 実行ディレクトリ | Container内の`hakoniwa-robot-arm` repository root |
 | この作業の入力成果物 | 起動中のContainerと、configure済みTCP設定 |
-| この作業のゴール | ROS 2 Bridgeとサンプルの`control`、`monitor`が実行可能になる。 |
+| この作業のゴール | 公式メッセージ・demo、Service Bridge、サンプルと binding が実行可能になる。 |
 
-実行するコマンド（`docker-ros-build`）:
+まず `docker-ros-build` で次の設定を行ってください。Docker が同じ Container のため RPC 接続先は localhost です。
+
+実行する設定コマンド（`docker-ros-build`）:
 ```bash
-/usr/bin/python3 tools/recipe/ros2_workspace.py build
-source "$HAKONIWA_ROS2_WS/activate.bash"
-/usr/bin/python3 tools/recipe/ros2_workspace.py doctor
-
-colcon --log-base "${HAKONIWA_ROS2_WS}-samples/log" build \
-  --base-paths ros2_packages/hakoniwa_arm_samples \
-  --build-base "${HAKONIWA_ROS2_WS}-samples/build" \
-  --install-base "${HAKONIWA_ROS2_WS}-samples/install" \
-  --symlink-install \
-  --packages-select hakoniwa_arm_samples
-
-source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
-ros2 pkg executables hakoniwa_arm_samples
+export DOBOT_WORK="$HAKONIWA_WORK_DIR"
+export ROS_DISTRO=jazzy
+export DOBOT_RPC_ADDRESS=127.0.0.1
 ```
 
-doctorに`hakoniwa_pdu_ros bridge`、最後のコマンドに`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されればOKです。
+Humble では `ROS_DISTRO=humble` に変更します。次に、**同じ `docker-ros-build` 端末で**[Dobot 共通ビルド手順](../ros2/dobot-build.md)の **1 → 2** を順に実行してください。共通手順3はここでは実行せず、手順5で `docker-hako` に戻って行います。`dobot_demo demo` と `hakoniwa_dobot configure` が表示され、service / endpoint JSON が存在すればOKです。
 
-このROS 2成果物は、同じdistribution・CPU architectureのhost+docker構成でも再利用できます。build完了後は`docker-ros-build`を`exit`して構いません。`docker-hako`とContainerは終了しないでください。
+## 5. Native RPC / Asset をビルドし Launcher を切り替える
+
+手順4の完了後、`docker-hako` の `(hako)` shell に戻り、Robot Arm ルートでまず次の設定を行ってください。
+
+実行する設定コマンド（`docker-hako`）:
+```bash
+export DOBOT_WORK="$HAKONIWA_WORK_DIR"
+test -d "$DOBOT_WORK/foundation/install/include"
+```
+
+`test -d` が成功しなければ先へ進まず、Foundation と `DOBOT_WORK` を確認してください。次に、**同じ `docker-hako` 端末で**[共通ビルド手順3](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)を実行してください。
+
+`robot-arm-dobot-asset` と Launcher backup を確認してください。`docker-ros-build` は `exit` して構いませんが、`docker-hako` と Container は終了しないでください。
 
 次は[docker-only起動・動作確認](operation.md)へ進んでください。

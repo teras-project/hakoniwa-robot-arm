@@ -8,7 +8,7 @@
 
 | 利用構成 | 適した環境 | Nova5 Runtime / MuJoCo | ROS 2 | 詳細手順 |
 | --- | --- | --- | --- | --- |
-| host-standalone | ROS 2を使わず箱庭単体で確認する | Host | 使用しない | [setup](host-standalone/setup.md) |
+| host-standalone | Ubuntu／macOSでROS 2を使わず箱庭単体で確認する | Host | 使用しない | [setup](host-standalone/setup.md) |
 | windows-host-standalone | Windows nativeで箱庭単体を確認する | Windows Host | 使用しない | [setup](windows-host-standalone/setup.md) |
 | Excavator host-standalone | macOS／Ubuntu 24.04／WSL2でExcavatorをheadless確認する | Host | 使用しない | [setup](excavator/host-standalone/setup.md) |
 | Excavator windows-host-standalone | Windows nativeでExcavatorをheadless確認する | Windows Host | 使用しない | [setup](excavator/windows-host-standalone/setup.md) |

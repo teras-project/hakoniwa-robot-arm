@@ -1,6 +1,6 @@
 # host+dockerセットアップ
 
-Nova5 RuntimeとMuJoCo ViewerをHost、ROS 2 Bridge、monitor、controlをDocker Containerで実行するための準備手順です。macOS＋ROS 2 Jazzyを主な対象とします。
+Nova5 RuntimeとMuJoCo ViewerをHost、Dobot 公式サービス用 ROS 2 Bridge、monitor、controlをDocker Containerで実行する準備手順です。macOS＋ROS 2 Jazzyを主な対象とします。実機を使わず、箱庭で公式デモを確認します。公式 Dobot ソースとメッセージは[ビルド手順](build.md)で準備します。
 
 手順: [一覧](../README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)
 
@@ -75,7 +75,7 @@ python tools/recipe.py doctor \
   --recipe ../hakoniwa-robot-arm/recipes/nova5/nova5-joint-trajectory-control.yaml
 ```
 
-`plan`に`Recipe plan:`が表示されれば、構築予定を確認できています。初回の`plan`では、まだ存在しないFoundation成果物が`MISSING`と表示されても正常です。`configure`後に実行する2つのdoctorで`[OK]`と`SATISFIED`が表示され、ここでは`[NG]`、`MISSING`、`error:`がなければOKです。
+`plan`に`Recipe plan:`が表示されれば、構築予定を確認できています。Nova5 が使う Runtime の拡張 API は[上流 PR #29](https://github.com/hakoniwalab/hakoniwa-robot-runtime/pull/29)で未マージのため、この Recipe は fork 上の対応 commit を固定して取得します。既に上流 `main` の Runtime を取得していた場合も、未変更の checkout なら `configure` が対応 commit へ切り替えます。初回の`plan`では、まだ存在しないFoundation成果物が`MISSING`と表示されても正常です。`configure`後に実行する2つのdoctorで`[OK]`と`SATISFIED`が表示され、ここでは`[NG]`、`MISSING`、`error:`がなければOKです。
 
 ## 4. Nova5 MJCFを生成する
 

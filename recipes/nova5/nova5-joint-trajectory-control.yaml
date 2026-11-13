@@ -68,8 +68,8 @@ recipe_local_requirements:
       relative_to: recipe_repository
     source:
       type: git
-      url: "https://github.com/hakoniwalab/hakoniwa-robot-runtime.git"
-      revision: main
+      url: "https://github.com/teras-project/hakoniwa-robot-runtime.git"
+      revision: 42ec59134dca06b11103bb2051ee31ee75de3347
     required_artifacts:
       - path: include/hakoniwa/robot_runtime/factory/manifest_factory.hpp
         kind: file

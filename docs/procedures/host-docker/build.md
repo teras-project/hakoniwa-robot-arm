@@ -1,6 +1,6 @@
 # host+dockerビルド
 
-[host+dockerセットアップ](setup.md)の完了が前提です。Host側の箱庭workは`../work-host`、Container側のROS 2成果物はdistributionごとの`/workspace/ros2-work-<distro>`を使用します。
+[host+dockerセットアップ](setup.md)の完了が前提です。基本経路は Dobot 仮想サービスです。Host の箱庭workは`../work-host`、Container の Dobot / ROS 生成物も同じ Host mount の `/workspace/work-host` に置きます（旧 `/workspace/ros2-work-<distro>` の生成物はこの経路では使用しません）。
 
 手順: [一覧](../README.md) → [セットアップ](setup.md) → **ビルド** → [起動・動作確認](operation.md)
 
@@ -48,7 +48,7 @@ python tools/recipe/nova5.py configure \
 python tools/recipe/nova5.py build
 ```
 
-画面のないHostでは`python tools/recipe/nova5.py build --headless`へ置き換えます。続けて成果物と設定を確認します。
+画面のないHostでは`python tools/recipe/nova5.py build --headless`へ置き換えます。この通常 Asset のビルドは、同じ build ディレクトリに以前の Dobot 専用設定が残っていても、Dobot 用 PDU 型を要求しません。Dobot 専用 Asset は手順5で別途ビルドします。続けて成果物と設定を確認します。
 
 実行する確認コマンド（`host-hako`）:
 ```bash
@@ -74,6 +74,7 @@ python tools/recipe/nova5.py doctor
 ```bash
 HAKONIWA_DOCKER_GUI=off \
 HAKONIWA_ROS2_TCP_CONFIG=../work-host/recipes/nova5-joint-trajectory-control/config/ros2-tcp \
+HAKONIWA_DOCKER_WORK_DIR=/workspace/work-host \
 bash docker/run.bash jazzy
 ```
 
@@ -83,18 +84,19 @@ Humbleでは`jazzy`を`humble`へ置き換えます。起動ログに次の内�
 Mount: ... -> /workspace
 Container: hakoniwa-arm-dev-jazzy; ...
 GUI: off; DISPLAY: disabled
+Workdir: /workspace/work-host; Foundation mmap: tmpfs
 ```
 
-このshellを終了するとContainerも削除されるため、以後`docker-ros-bridge`端末として最後まで開いたままにします。
+この構成では `HAKONIWA_WORK_DIR=/workspace/work-host`、`HAKONIWA_ROS2_WS=/workspace/work-host/ros2` になります。このshellを終了するとContainerも削除されるため、以後`docker-ros-bridge`端末として最後まで開いたままにします。
 
-## 4. ROS 2 Bridgeとサンプルをbuildする
+## 4. Dobot / ROS サービスとサンプルを build する
 
 | 項目 | 内容 |
 | --- | --- |
 | 実行端末 | 手順3の`docker/run.bash`で開いた同じContainer shell（`docker-ros-bridge`）。 |
 | 実行ディレクトリ | 最初はContainer内の`hakoniwa-business-pack`リポジトリルート。手順4.1で`hakoniwa-robot-arm`へ移動する。 |
-| この作業の入力成果物 | 起動中のContainerと、distribution単位の`HAKONIWA_ROS2_WS` |
-| この作業のゴール | ROS 2 Bridgeとサンプルの`control`、`monitor`が実行可能になる。 |
+| この作業の入力成果物 | 起動中のContainerと、共有 mount `/workspace/work-host` |
+| この作業のゴール | 公式メッセージ・demo、ROS Service Bridge、Dobot サンプルが実行可能になる。 |
 
 以下はすべて、手順3で開いた同じContainer shellで実行します。新しいHost terminalを開いたり、追加attachしたりする必要はありません。`docker-ros-bridge`はこの端末の役割名であり、ROS 2 Bridgeのプロセスはまだ起動しません。Bridgeの起動は次の[起動・動作確認](operation.md)で行います。
 
@@ -112,61 +114,51 @@ pwd
 
 `pwd`の結果が`/workspace/hakoniwa-robot-arm`ならOKです。以降は同じディレクトリで実行します。
 
-### 4.2 ROS 2 Bridge workspaceをbuildする
+### 4.2 Dobot / ROS workspace とサービス binding を build する
 
-実行するコマンド（`docker-ros-bridge`）:
+まず、`docker-ros-bridge` で次の設定を行ってください。macOS Docker Desktop では Host の RPC TCP 54020 に `host.docker.internal` で接続します。Linux Host の `docker/run.bash` 既定 host network では `DOBOT_RPC_ADDRESS=127.0.0.1` に変更します。Humble では `ROS_DISTRO=humble` に変更します。
+
+実行する設定コマンド（`docker-ros-bridge`）:
 ```bash
-/usr/bin/python3 tools/recipe/ros2_workspace.py build
+export DOBOT_WORK=/workspace/work-host
+export ROS_DISTRO=jazzy
+export DOBOT_RPC_ADDRESS=host.docker.internal
 ```
 
-buildがerrorなく終了し、`ROS workspace installed:`に`/workspace/ros2-work-jazzy`が表示されれば次へ進みます。Humbleでは`/workspace/ros2-work-humble`です。
+次に、**同じ `docker-ros-bridge` 端末で**[Dobot 共通ビルド手順](../ros2/dobot-build.md)の **1 → 2 だけ**を順に実行してください。共通手順3は Container では実行せず、このページの手順5で Host に戻って行います。公式 checkout と成果物は Host と共有されるため、Native 側でも読めます。
 
-### 4.3 ROS 2環境を有効にして検査する
+共通手順1・2の完了後、生成結果で `dobot_demo demo` と `hakoniwa_dobot configure` が表示され、次の成果物がすべて存在することを確認します。
 
-実行するコマンド（`docker-ros-bridge`）:
+実行する確認コマンド（`docker-ros-bridge`。共通手順1・2の完了後）:
 ```bash
-source "$HAKONIWA_ROS2_WS/activate.bash"
+ls -l "$DOBOT_WORK/dobot-ros/install/setup.bash" \
+  "$DOBOT_WORK/dobot-apps/install/setup.bash" \
+  "$DOBOT_WORK/dobot-types/pdu/types/dobot_msgs_v4_msgs/pdu_cpptype_conv_ServoJRequestPacket.hpp" \
+  "$DOBOT_WORK/dobot-services/dobot-services.json" \
+  "$DOBOT_WORK/dobot-services/rpc/endpoints/dobot_virtual.json"
 ```
 
-環境の有効化がerrorなく終了したら、doctorを実行します。
+一つでも見つからなければ手順5へ進まず、共通手順1・2の失敗を解消してください。Docker Desktop 側の Host Firewall で TCP 54020 を使用できることも確認してください。
 
-実行する確認コマンド（`docker-ros-bridge`）:
+## 5. Host Native RPC / Asset をビルドし Launcher を切り替える
+
+| 項目 | 内容 |
+| --- | --- |
+| 実行端末 | Host 側の `host-hako`。手順1・2で使った端末へ戻る。`docker-ros-bridge` では実行しない。 |
+| 実行ディレクトリ | Host 上の `hakoniwa-robot-arm` repository root |
+| この作業の入力成果物 | 手順4.2で共通手順1・2を完了して生成した `dobot-types` とサービス binding、Host 側の Foundation |
+| この作業のゴール | Host の Native RPC / Dobot Asset をビルドし、Launcher を切り替える。 |
+
+手順4.2の完了後、**Host の `host-hako` に戻り**ます。端末を閉じていた場合は[セットアップの手順2](setup.md#2-host-hako端末を開く)に従って開き直してください。Host 上の Robot Arm repository root にいることを確認し、まず次の設定を行ってください。
+
+実行する設定コマンド（Host の `host-hako`）:
 ```bash
-/usr/bin/python3 tools/recipe/ros2_workspace.py doctor
+export DOBOT_WORK="$(realpath ../work-host)"
+test -d "$DOBOT_WORK/foundation/install/include"
 ```
 
-doctorに`hakoniwa_pdu_ros bridge`が表示され、errorなく終了すればOKです。
+`test -d` が成功しなければ先へ進まず、Host 側の Foundation と `DOBOT_WORK` を確認してください。次に、**同じ `host-hako` 端末で**[共通ビルド手順3](../ros2/dobot-build.md#3-native-端末rpc-を-foundation-に接続し専用-asset-を作る)を実行してください。手順5は共通手順3の準備と実行であり、その前に別途行うビルドではありません。Container の ROS shell に Foundation を source しないでください。
 
-### 4.4 サンプルpackageをbuildする
-
-実行するコマンド（`docker-ros-bridge`）:
-```bash
-colcon --log-base "${HAKONIWA_ROS2_WS}-samples/log" build \
-  --base-paths ros2_packages/hakoniwa_arm_samples \
-  --build-base "${HAKONIWA_ROS2_WS}-samples/build" \
-  --install-base "${HAKONIWA_ROS2_WS}-samples/install" \
-  --symlink-install \
-  --packages-select hakoniwa_arm_samples
-```
-
-summaryに`1 package finished`が表示され、`packages failed`がなければ次へ進みます。
-
-### 4.5 サンプルの実行ファイルを確認する
-
-実行するコマンド（`docker-ros-bridge`）:
-```bash
-source "${HAKONIWA_ROS2_WS}-samples/install/setup.bash"
-```
-
-環境の有効化がerrorなく終了したら、実行ファイルを確認します。
-
-実行する確認コマンド（`docker-ros-bridge`）:
-```bash
-ros2 pkg executables hakoniwa_arm_samples
-```
-
-`hakoniwa_arm_samples control`と`hakoniwa_arm_samples monitor`が表示されれば完了です。このContainer shellは次の起動・動作確認でも使用するので、開いたままにしてください。
-
-ROS 2成果物は`/workspace/ros2-work-jazzy`または`/workspace/ros2-work-humble`へ保存され、同じdistributionのdocker-only構成でも再利用します。
+共通手順3の完了後に `robot-arm-dobot-asset` と Launcher backup を確認してください。Container は終了せず `docker-ros-bridge` として維持します。Host と Container の絶対パスが違うため、Host の Launcher に `/workspace/...` を書き込まないでください。
 
 次は[host+docker起動・動作確認](operation.md)へ進んでください。

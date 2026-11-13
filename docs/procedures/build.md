@@ -16,12 +16,13 @@
 
 ## 共通ビルド契約
 
-以下の`bash`コマンド例はLinux/macOSの箱庭Workspace用です。Windowsでは上の表にあるWindows専用手順のPowerShellコマンドを使用してください。`text`ブロックは配置先の説明であり、実行しません。
+以下の`bash`コマンド例はLinux/macOSの箱庭Workspaceでの **Nova5 Runtime 基礎ビルド**用です。ROS 利用構成では、対応する上表の手順に従い公式 Dobot ソース・ROS メッセージ・PDU-RPC・専用 Asset も追加ビルドしてください。Windows native の専用 Dobot Asset は[PowerShell手順](windows-host-docker/build.md)を使用しますが、ビルド・結合は未検証です。`text`ブロックは配置先の説明であり、実行しません。
 
 Nova5の実行ファイルは、ソースツリーではなく選択した箱庭workへ生成されます。配置先（参照用。コマンドではない）:
 
 ```text
 $HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-hakoniwa-asset
+$HAKONIWA_WORK_DIR/recipes/nova5-joint-trajectory-control/build/bin/robot-arm-dobot-asset  # ROS 用追加ビルド
 ```
 
 実行するコマンド（選択した構成の箱庭Workspace、Viewerを利用する場合）:

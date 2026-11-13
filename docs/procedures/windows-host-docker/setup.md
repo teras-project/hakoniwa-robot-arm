@@ -1,6 +1,6 @@
 # Windows host+Dockerセットアップ
 
-Nova5 RuntimeとMuJoCo ViewerをWindows 11 Host上でnative実行し、ROS 2 Jazzy Bridge、monitor、controlをDocker Desktop上で実行するための準備手順です。Host側はPowerShell、Container内はBashで操作します。
+Nova5 RuntimeとMuJoCo ViewerをWindows 11 Host上でnative実行し、Dobot 公式 ROS 2サービスとJointState BridgeをDocker Desktop上で実行する準備手順です。Host側はPowerShell、Container内はBashで操作します。実機を使わず、箱庭で公式デモを確認します。**以下のWindows Dobot Native Asset / PDU-RPC手順は未検証**です。失敗した段階で止め、成功済みとして扱わないでください。
 
 端末: 手順1はWindows nativeセットアップに従い、手順2～3はWindows HostのPowerShell（`hakoniwa-business-pack`のrepository root）を使用します。ContainerのBashは[ビルド](build.md)から使用します。`powershell`ブロックは実行コマンド、表示結果は手順の成功条件を確認するためのものです。
 
@@ -15,6 +15,8 @@ Nova5 RuntimeとMuJoCo ViewerをWindows 11 Host上でnative実行し、ROS 2 Jaz
 - 同じ親ディレクトリにある`hakoniwa-business-pack`と`hakoniwa-robot-arm`
 - Foundation toolchainとNova5のMJCF
 
+Native PDU-RPCのビルドにはWindows Foundation prefixにインストールされたEndpoint CMake package、MSVC x64のCMakeツールチェーン、Gitが必要です。Docker内で生成するDobot型・service設定はWindows Hostから読める共有`work`へ置きます。公式Dobot checkoutとパッケージ、PDU-RPC/registry checkoutは[ビルド](build.md)で準備します。`dobot_demo/demo.py`は変更しません。
+
 以降の例では、両repositoryの親を`C:\work\hakoniwa-robot-arm-workspace`、Business Packのworkを`hakoniwa-business-pack\work`とします。
 
 ## 2. Docker Desktopを準備する
@@ -27,6 +29,8 @@ docker info --format '{{.OSType}}/{{.Architecture}}'
 ```
 
 ClientとServerのversion、および`linux/amd64`が表示されればOKです。Serverへ接続できない場合は、Docker Desktopの起動完了を待って再実行します。
+
+Docker Desktopでcheckoutの親ディレクトリのfile sharingを許可してください。ContainerからHostへの接続名は`host.docker.internal`です。TCP 54001（状態Bridge）と54020（Dobot PDU-RPC）を使用するため、Windows Defender Firewallは組織のポリシーに従い必要なPrivate networkだけを許可し、Public network全体を安易に許可しないでください。
 
 ## 3. FoundationとRecipeを検査する
 
@@ -60,4 +64,4 @@ Select-String `
 
 2行とも表示されればHost TCP Bridgeに必要なCore構成です。表示されない場合は、最新のBusiness Pack、Robot Arm、Coreを取得してRecipeを再configureしてください。
 
-次は[Windows host+Dockerビルド](build.md)へ進んでください。
+次は[Windows host+Dockerビルド](build.md)へ進んでください。Windows native Dobotビルド・結合はまだ検証していません。

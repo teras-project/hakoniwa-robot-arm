@@ -1,6 +1,6 @@
 # ROS 2 Bridge基盤環境の成果物と接続関係
 
-この文書は、ROS 2連携用Recipeがworkディレクトリへ生成する成果物と、`ros2 run`で起動するBridgeから箱庭Runtimeまでの接続関係を説明します。
+この文書は、ROS 2連携用Recipeがworkディレクトリへ生成する成果物と、箱庭Runtimeまでの接続関係を説明します。Nova5 の標準 procedure は[Dobot Service Bridge と JointState topic Bridge](../procedures/ros2/dobot-build.md)を併用します。ここで説明する `/joint_trajectory` は生成済みの生bindingには残りますが、標準制御経路では使いません。
 
 EndpointのCMake option、Python環境、Python接続モジュールの生成手順を利用者が個別に設定する必要はありません。これらはRecipeと構成ツールの責務です。
 
@@ -17,7 +17,7 @@ EndpointのCMake option、Python環境、Python接続モジュールの生成手
 
 - 箱庭Coreを内包しない`hakoniwa-pdu-endpoint`共有ライブラリ
 - EndpointをPythonから呼び出す接続モジュール
-- ROS 2 package `hakoniwa_pdu_ros`
+- ROS 2 package `hakoniwa_pdu_ros`（`--with-rpc` 指定時は Service Bridge と PDU-RPC も）
 - 上記をまとめて有効化する`activate.bash`
 
 利用者が個別の環境変数やCMake optionを設定するのではなく、configureで生成されたprofileとbuild済み成果物を使用します。
@@ -28,12 +28,12 @@ EndpointのCMake option、Python環境、Python接続モジュールの生成手
 
 Docker構成では、Runtime側のworkとROS 2成果物を分けます。
 
-| 構成 | Runtime、接続設定 | ROS 2 Bridge | ROS 2サンプル |
+| 構成 | Runtime、接続設定 | ROS 2 Bridge | Dobotアプリ |
 | --- | --- | --- | --- |
-| host+docker | Hostの`../work-host` | `/workspace/ros2-work-<distro>` | `/workspace/ros2-work-<distro>-samples` |
-| docker-only | `/workspace/work-docker-<distro>` | `/workspace/ros2-work-<distro>` | `/workspace/ros2-work-<distro>-samples` |
+| host+docker | Hostの`../work-host` | Container内の`/workspace/work-host/ros2` | `/workspace/work-host/dobot-apps` |
+| docker-only | `/workspace/work-docker-<distro>` | `/workspace/work-docker-<distro>/ros2` | `/workspace/work-docker-<distro>/dobot-apps` |
 
-host+dockerではHost側で生成した`ros2-tcp`ディレクトリをContainerへread-only mountします。docker-onlyでは同じContainer内の`HAKONIWA_WORK_DIR`から接続設定を読みます。ROS 2成果物は、ROS distributionとCPU architectureが同じ場合に2構成で共有できます。
+host+dockerではHost側で生成した`ros2-tcp`ディレクトリをContainerへread-only mountします。docker-onlyでは同じContainer内の`HAKONIWA_WORK_DIR`から接続設定を読みます。Dobotの生成物はHostとContainerが共有するwork領域に置き、パスは両環境でそれぞれ設定します。
 
 ### 2.1 configureが生成する接続設定
 
@@ -74,7 +74,7 @@ host+dockerではHost側で生成した`ros2-tcp`ディレクトリをContainer�
 │       └── _c_endpoint_ffi*.so
 ├── install/
 │   ├── setup.bash
-│   └── hakoniwa_pdu_ros/lib/hakoniwa_pdu_ros/bridge
+│   └── hakoniwa_pdu_ros/lib/hakoniwa_pdu_ros/{bridge,service-server}
 ├── build/                   # 構成ツールが使用する中間生成物
 ├── log/                     # build log
 ├── activate.bash            # 上記の実行環境をまとめて有効化
@@ -86,7 +86,7 @@ host+dockerではHost側で生成した`ros2-tcp`ディレクトリをContainer�
 付属サンプルは別の場所へ標準colconでbuildします。
 
 ```text
-../work-host/ros2-samples/
+../work-host/dobot-apps/
 └── install/
     ├── setup.bash
     └── hakoniwa_arm_samples/lib/hakoniwa_arm_samples/
@@ -122,7 +122,7 @@ Bridge起動時に渡す`binding.json`が、ROS 2 topicとPDUの対応、およ�
 
 ```text
 ROS 2 node
-  `/joint_trajectory` または `/pdu/joint_states`
+  `/joint_states_robot`（生成済みの `/pdu/joint_states` をremap）
         ⇅
 hakoniwa_pdu_ros bridge
         ⇅  ros/binding.json
@@ -132,6 +132,9 @@ Host側PDU Bridge
         ⇅  SHM
 箱庭Runtime
 ```
+
+ユーザーの制御要求はこのtopic経路を逆走せず、`/dobot_bringup_ros2/srv/*` →
+Service Bridge → TCP/PDU-RPC → Dobot Native Asset に入ります。
 
 ROS 2側Bridgeは次の設定を参照します。
 

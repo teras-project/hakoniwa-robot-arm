@@ -1,0 +1,9 @@
+{
+  "hakoniwa-robot-arm": "301c22cd3b9b8d0111a039c309ee53a6428665a2",
+  "hakoniwa-robot-runtime": "42ec59134dca06b11103bb2051ee31ee75de3347",
+  "hakoniwa-pdu-ros": "f03c43deccc193f7acee3f8b3175b349ee9304d2",
+  "DOBOT_6Axis_ROS2_V4": "89d47c66a6e0c654dbbe6819f2291132ad0ce979",
+  "hakoniwa-pdu-rpc": "c69049c240b4499bf258d3f07c6bb5e73b07064b",
+  "hakoniwa-pdu-registry": "c40ad51fe410b7692fdffcd0c8c94dbf0ea6adb5",
+  "hakoniwa-pdu-endpoint": "12230c9540bc865210e5133873a0b7aeac799ad5"
+}

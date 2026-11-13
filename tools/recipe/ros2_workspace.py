@@ -15,7 +15,9 @@ from pathlib import Path
 ARM_ROOT = Path(__file__).resolve().parents[2]
 SOURCES = {
     "hakoniwa-pdu-endpoint": "main",
-    "hakoniwa-pdu-ros": "main",
+    "hakoniwa-pdu-ros": json.loads((ARM_ROOT / "tools/dobot/versions.json").read_text())["hakoniwa-pdu-ros"],
+    "hakoniwa-pdu-rpc": "main",
+    "hakoniwa-pdu-registry": "main",
 }
 
 
@@ -43,9 +45,20 @@ def ensure_source(path, name):
         run(["git", "clone", "--no-checkout", f"https://github.com/hakoniwalab/{name}.git", path])
         run(["git", "-C", path, "checkout", "--detach", SOURCES[name]])
     # Existing checkouts belong to the user; never checkout or pull them here.
-    required = "CMakeLists.txt" if name.endswith("endpoint") else "package.xml"
+    required = ("pdu/types/pdu_primitive_ctypes.h" if name.endswith("registry") else
+                "CMakeLists.txt" if name.endswith(("endpoint", "rpc")) else "package.xml")
     if not (path / required).is_file():
         raise ValueError(f"missing {required} in {path}")
+    if name == "hakoniwa-pdu-ros":
+        revision = SOURCES[name]
+        result = subprocess.run(
+            ["git", "-C", str(path), "merge-base", "--is-ancestor", revision, "HEAD"],
+            capture_output=True, text=True, check=False)
+        if result.returncode != 0:
+            raise ValueError(
+                f"{path} does not include required {name} revision {revision}; "
+                "fetch the fix or select a compatible --pdu-ros-src checkout"
+            )
 
 
 def shell_environment(root, distro):
@@ -54,6 +67,7 @@ def shell_environment(root, distro):
         f"source {q('/opt/ros/' + distro + '/setup.bash')} || return $?",
         f"source {q(str(root / 'venv/bin/activate'))} || return $?",
         f"source {q(str(root / 'install/setup.bash'))} || return $?",
+        f"if [[ -f {q(str(root / 'native/lib/libhakoniwa_pdu_rpc.so'))} ]]; then export HAKO_PDU_RPC_LIBRARY={q(str(root / 'native/lib/libhakoniwa_pdu_rpc.so'))}; fi",
         "unset HAKONIWA_PDU_ENDPOINT_PYTHON_PATH HAKO_PDU_ENDPOINT_LIB_DIR PYTHONHOME",
         f"export HAKONIWA_ROS2_WS={q(str(root))}",
         'export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-73}"',
@@ -73,7 +87,7 @@ def check_platform(distro):
         raise ValueError("use a ROS terminal outside the Hakoniwa Foundation workspace")
 
 
-def build(root, distro, endpoint, pdu_ros):
+def build(root, distro, endpoint, pdu_ros, rpc=None, registry=None):
     check_platform(distro)
     identity = {"ros_distro": distro, "architecture": platform.machine(), "system_python": "/usr/bin/python3"}
     marker = root / "ros-workspace.json"
@@ -90,8 +104,11 @@ def build(root, distro, endpoint, pdu_ros):
         env.pop(key, None)
     run(["/usr/bin/python3", "-m", "venv", "--system-site-packages", root / "venv"], env=env)
     python = root / "venv/bin/python"
-    run([python, "-m", "pip", "install", "wheel", "setuptools>=68,<80", "packaging>=24,<27",
-         "cffi>=1.16", "hakoniwa-pdu==1.6.9"], env=env)
+    packages = ["wheel", "setuptools>=68,<80", "packaging>=24,<27", "cffi>=1.16",
+                "hakoniwa-pdu==1.7.0" if rpc else "hakoniwa-pdu==1.6.9"]
+    if rpc is not None:
+        packages.append("jinja2")
+    run([python, "-m", "pip", "install", *packages], env=env)
     run(["cmake", "-S", endpoint, "-B", root / "build/endpoint",
          "-DCMAKE_BUILD_TYPE=Release", f"-DCMAKE_INSTALL_PREFIX={root / 'native'}",
          "-DCMAKE_INSTALL_LIBDIR=lib", "-DBUILD_SHARED_LIBS=ON", "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
@@ -103,6 +120,17 @@ def build(root, distro, endpoint, pdu_ros):
     library = root / "native/lib/libhakoniwa_pdu_endpoint.so"
     if not library.is_file():
         raise ValueError(f"Endpoint installation did not produce {library}")
+    if rpc is not None:
+        ensure_source(rpc, "hakoniwa-pdu-rpc")
+        ensure_source(registry, "hakoniwa-pdu-registry")
+        run([python, "-m", "pip", "install", rpc], env=env)
+        run(["cmake", "-S", rpc, "-B", root / "build/rpc",
+             f"-DCMAKE_PREFIX_PATH={root / 'native'}",
+             f"-DCMAKE_INSTALL_PREFIX={root / 'native'}", "-DCMAKE_INSTALL_LIBDIR=lib",
+             f"-DHAKONIWA_PDU_REGISTRY_DIR={registry}",
+             "-DHAKO_PDU_RPC_BUILD_TESTS=OFF", "-DHAKO_PDU_RPC_BUILD_EXAMPLES=OFF"], env=env)
+        run(["cmake", "--build", root / "build/rpc", "--parallel", "2"], env=env)
+        run(["cmake", "--install", root / "build/rpc"], env=env)
     env["HAKO_PDU_ENDPOINT_SHARED_LIB"] = str(library)
     env["HAKO_PDU_ENDPOINT_PYTHON_BUILD_DIR"] = str(root / "build/endpoint-python")
     ffi_script = endpoint / "python/hakoniwa_pdu_endpoint/build_c_endpoint_ffi.py"
@@ -154,6 +182,9 @@ def main():
     parser.add_argument("--workdir", help="default: HAKONIWA_ROS2_WS")
     parser.add_argument("--ros-distro", choices=["humble", "jazzy"], default=os.environ.get("ROS_DISTRO"))
     parser.add_argument("--endpoint-src", default=os.environ.get("HAKONIWA_PDU_ENDPOINT_SRC"))
+    parser.add_argument("--with-rpc", action="store_true", help="Also build Service/Action PDU-RPC support")
+    parser.add_argument("--rpc-src")
+    parser.add_argument("--pdu-registry-src")
     parser.add_argument("--pdu-ros-src", default=os.environ.get("HAKONIWA_PDU_ROS_SRC"))
     args = parser.parse_args()
     try:
@@ -162,7 +193,9 @@ def main():
             if args.ros_distro not in ("humble", "jazzy"):
                 raise ValueError("set ROS_DISTRO or pass --ros-distro")
             build(root, args.ros_distro, source_path(args.endpoint_src, "hakoniwa-pdu-endpoint"),
-                  source_path(args.pdu_ros_src, "hakoniwa-pdu-ros"))
+                  source_path(args.pdu_ros_src, "hakoniwa-pdu-ros"),
+                  source_path(args.rpc_src, "hakoniwa-pdu-rpc") if args.with_rpc else None,
+                  source_path(args.pdu_registry_src, "hakoniwa-pdu-registry") if args.with_rpc else None)
         elif args.command == "doctor":
             doctor(root)
         else:

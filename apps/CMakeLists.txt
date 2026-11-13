@@ -109,3 +109,33 @@ if(WIN32)
         COMMAND_EXPAND_LISTS
     )
 endif()
+
+option(HAKO_ARM_ENABLE_DOBOT "Build the Dobot ROS service compatible simulation backend" OFF)
+if(HAKO_ARM_ENABLE_DOBOT)
+    set(HAKO_DOBOT_PDU_DIR "" CACHE PATH "Output of tools/dobot/generate_types.py")
+    if(NOT EXISTS "${HAKO_DOBOT_PDU_DIR}/pdu/types/dobot_msgs_v4_msgs/pdu_cpptype_ServoJRequestPacket.hpp")
+        message(FATAL_ERROR "Generate Dobot PDU types first and set HAKO_DOBOT_PDU_DIR")
+    endif()
+    find_package(hakoniwa_pdu_rpc CONFIG REQUIRED)
+    add_executable(robot-arm-dobot-asset dobot/main.cpp common/manifest_runtime_app.cpp common/mujoco_viewer.cpp)
+    target_compile_features(robot-arm-dobot-asset PRIVATE cxx_std_20)
+    target_compile_definitions(robot-arm-dobot-asset PRIVATE HAKO_ARM_ENABLE_DOBOT=1 HAKO_ARM_ENABLE_VIEWER=$<BOOL:${HAKO_ARM_ENABLE_VIEWER}>)
+    target_include_directories(robot-arm-dobot-asset PRIVATE
+        common "${HAKO_ROBOT_RUNTIME_SRC_DIR}" "${HAKO_DOBOT_PDU_DIR}/pdu/types"
+        "${HAKO_MUJOCO_ROBOTS_PROJECT_ROOT}/src" "${HAKO_MUJOCO_ROBOTS_PROJECT_ROOT}/include")
+    target_include_directories(robot-arm-dobot-asset SYSTEM PRIVATE
+        "${HAKO_MUJOCO_SOURCE_DIR}" "${HAKO_MUJOCO_ROBOTS_PROJECT_ROOT}/thirdparty/nolman/single_include")
+    if(HAKO_MUJOCO_LIB_DIR)
+        target_link_directories(robot-arm-dobot-asset PRIVATE ${HAKO_MUJOCO_LIB_DIR})
+    endif()
+    target_link_libraries(robot-arm-dobot-asset PRIVATE hako-robot-arm-manifest-factory
+        mujoco-common ${HAKO_LIBMUJOCO} hakoniwa_pdu_rpc::rpc)
+    set_target_properties(robot-arm-dobot-asset PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+    if(WIN32)
+        add_custom_command(TARGET robot-arm-dobot-asset POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:robot-arm-dobot-asset>
+                $<TARGET_FILE_DIR:robot-arm-dobot-asset>
+            COMMAND_EXPAND_LISTS)
+    endif()
+endif()

@@ -153,10 +153,10 @@ python tools/recipe.py configure \
 
 ### 4.2 調整後の確認
 
-最初は小さな変更幅と小さな軌道振幅で確認してください。[環境別の動作確認手順](../procedures/operation.md)に従い、少なくとも次を確認します。
+最初は小さな変更幅と低速の小動作で確認してください。[環境別の動作確認手順](../procedures/operation.md)に従い、少なくとも次を確認します。
 
-- `/joint_trajectory`の目標へ各jointが追従する。
-- `/pdu/joint_states`の値が滑らかに変化する。
+- `GetAngle`から現在角を読み、`MovJ`の小さな目標へ各jointが追従する（ROS 2構成）。
+- `/joint_states_robot`の値が滑らかに変化する（ROS 2構成）。
 - Viewer上で継続的な振動や過大なovershootがない。
 - `nova5-plant.err`に`simulation is unstable`、`Nan, Inf or huge value`などの数値不安定を示す出力がない。
 - 接触を使用する構成では、接触時にもシミュレーションが安定している。
