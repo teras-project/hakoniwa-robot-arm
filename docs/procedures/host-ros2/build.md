@@ -77,6 +77,7 @@ source ../work-host/profiles/activate-host-ros-build.bash
 
 export DOBOT_WORK="$(realpath ../work-host)"
 export ROS_DISTRO=jazzy
+source "/opt/ros/$ROS_DISTRO/setup.bash"
 export DOBOT_RPC_ADDRESS=127.0.0.1
 ```
 
