@@ -68,6 +68,23 @@ target_include_directories(hako-robot-arm-runtime PUBLIC
     $<BUILD_INTERFACE:${HAKO_ROBOT_RUNTIME_SRC_DIR}>
 )
 
+# Controller plugins are opt-in: a manifest component {"kind": "controller",
+# "type": "plugin"} loads a shared library through the Runtime's C plugin
+# interface (include/hakoniwa/robot_runtime/plugin/controller_plugin.h). Off,
+# such a component is refused with a message.
+option(HAKO_ROBOT_ARM_CONTROLLER_PLUGIN "Build the Runtime controller plugin loader" OFF)
+if(HAKO_ROBOT_ARM_CONTROLLER_PLUGIN)
+    target_sources(hako-robot-arm-runtime PRIVATE
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/plugin/plugin_library.cpp
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/controller/plugin_controller.cpp
+    )
+    # PUBLIC: the switch changes RuntimeDefinition, so every library that
+    # sees it must be compiled with the same value.
+    target_compile_definitions(hako-robot-arm-runtime PUBLIC
+        HAKONIWA_ROBOT_RUNTIME_ENABLE_CONTROLLER_PLUGIN=1)
+    target_link_libraries(hako-robot-arm-runtime PUBLIC ${CMAKE_DL_LIBS})
+endif()
+
 # Sensors are opt-in. An application that uses them enables the switch, lists
 # the sensor implementations it links by name and gives their libraries. The
 # registration of each implementation is generated from its name
@@ -399,6 +416,10 @@ add_library(hako-robot-arm-manifest-factory STATIC
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_state_output.cpp
     ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_ackermann.cpp
 )
+if(HAKO_ROBOT_ARM_CONTROLLER_PLUGIN)
+    target_sources(hako-robot-arm-manifest-factory PRIVATE
+        ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_plugin.cpp)
+endif()
 if(HAKO_ROBOT_ARM_ENABLE_SENSOR)
     target_sources(hako-robot-arm-manifest-factory PRIVATE
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/runtime_factory_sensor.cpp
