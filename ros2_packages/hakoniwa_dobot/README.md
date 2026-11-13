@@ -49,7 +49,8 @@ Runtime 拡張 API は[上流 PR #29](https://github.com/hakoniwalab/hakoniwa-ro
 | macOS host+Docker（Jazzy、`virtual`） | 利用者が動作を確認。Native Asset と ROS 2 を接続し、無改変の公式デモと小動作を実行 |
 | Ubuntu Native host-ros2（`virtual`／`real`／`both`） | 利用者が箱庭と実機の動作を確認 |
 | Native TCP/PDU-RPC と仮想 ROS Bridge | 13サービスの結合試験と Python／C++ の単体試験を実施。mirror の Python 試験は配送ロジックの模擬試験 |
-| docker-only（各 Host OS）、Windows host+Docker、Ubuntu 22.04／Humble、macOS 以外の host+Docker | この Dobot 経路の環境別 end-to-end 動作は未確認。部分的なビルド・Container 起動を完了済みの構成も含む |
+| docker-only（各 Host OS）、Windows host+Docker、macOS 以外の host+Docker | この Dobot 経路の環境別 end-to-end 動作は未確認。部分的なビルド・Container 起動を完了済みの構成も含む |
+| Ubuntu 22.04／Humble | 現行 RPC の Python 3.12 以上要件により Dobot ROS ビルド不可。Python 3.10 対応と結合検証は[Issue #14](https://github.com/teras-project/hakoniwa-robot-arm/issues/14)で追跡 |
 
 headless の Native 試験は独立した6軸モデルを使うため、Nova5 のモデル精度の検証ではありません。Core の `stop`／`start` 後に同じ Asset の物理ステップが再開することも未確認です。
 

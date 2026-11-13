@@ -80,7 +80,7 @@ export ROS_DISTRO=jazzy
 export DOBOT_RPC_ADDRESS=127.0.0.1
 ```
 
-Ubuntu 22.04／Humble では `ROS_DISTRO=humble` に置き換えます。ROS profile による `ROS_DOMAIN_ID` は既定 73 です。
+Ubuntu 22.04／Humble の Dobot 経路は[対応待ち](../ros2/dobot-build.md)のため、この手順では `ROS_DISTRO=humble` に置き換えないでください。ROS profile による `ROS_DOMAIN_ID` は既定 73 です。
 
 次に、**同じ `host-ros-build` 端末で**[Dobot 共通ビルド手順](../ros2/dobot-build.md)の **1 → 2** を順に実行してください。共通手順3はこの端末では実行せず、手順4で `host-hako` に戻って行います。共通手順1・2の完了後、次を確認します。
 

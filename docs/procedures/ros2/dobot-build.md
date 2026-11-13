@@ -2,6 +2,8 @@
 
 [host-ros2](../host-ros2/build.md)、[host+docker](../host-docker/build.md)、[docker-only](../docker-only/build.md)の各ページで端末・`DOBOT_WORK`・接続先を決めてから、**各ページで指定された端末で**手順1 → 2 → 3の順に実行します。1・2は ROS 端末、3は Native 端末へ切り替えて実行します。**ROS 端末は Ubuntu（Host または Container）の Bash、Native 端末は箱庭 Workspace の Bash** です。host+docker の Native 端末は Host 側の `host-hako` です。両方とも `hakoniwa-robot-arm` のルートで実行します。`DOBOT_WORK` は両端末から同じ生成物を見られるディレクトリの絶対パスにします。`ROS_DISTRO` は `jazzy` または `humble` です。Container と Host では同じディレクトリでも絶対パスが異なるため、各端末で指定し直します。Windows native Host にはこの Native ビルドを適用できません。
 
+Ubuntu 22.04／Humble の Dobot 経路は、現行の RPC が Python 3.12 以上を要求し、ROS 側の Python 3.10 でビルドできません（[Issue #14](https://github.com/teras-project/hakoniwa-robot-arm/issues/14)）。Foundation 側の Python 3.12 と ROS 側の Python 3.10 は分離したまま、対応版の導入と結合検証を待ちます。
+
 ## 1. ROS 端末：公式ソース、メッセージ、RPC、PDU 型
 
 Dobot 公式ソースは**変更せず**に取得します。既存 checkout がある場合は clone / checkout 行を省略し、手元の対応版であることを確認します。箱庭で公式 `dobot_demo/demo.py` を動かすため、メッセージとデモの2パッケージだけをビルドします。実機 driver は Ubuntu host-ros2 の[実機追加手順](../host-ros2/real.md)でビルドします。先に ROS の profile または `/opt/ros/$ROS_DISTRO/setup.bash` を source してください。
