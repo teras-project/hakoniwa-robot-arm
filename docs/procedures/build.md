@@ -41,10 +41,13 @@ python "$ARM_PACK/tools/recipe/nova5.py" build --headless
 
 ## センサの実装を選ぶ準備
 
-センサ（関節のエンコーダ、力覚、IMU、LiDAR、カメラなど）を使うときだけ必要です。センサの設定の `implementation` で、センサごとに実装を選びます（書き方は [hakoniwa-robot-runtime の設定](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/configuration.md#34-センサopt-in)）。選んだ実装のライブラリを、アームのビルドにリンクしておきます。
+センサ（関節のエンコーダ、力覚、IMU、LiDAR、カメラなど）を使うときだけ必要です。センサの設定の `implementation` で、センサごとに実装を選びます（書き方は [hakoniwa-robot-runtime の設定](https://github.com/hakoniwalab/hakoniwa-robot-runtime/blob/main/docs/configuration.md#34-センサopt-in)）。選んだ実装を、アームのビルドに組み込んでおきます。
+
+既定は `reference`（真の値だけを返す参照実装）です。ライブラリは要らず、[hakoniwa-sensor-adapter](https://github.com/hakoniwalab/hakoniwa-sensor-adapter) をアームのリポジトリと同じ階層に置くだけで、ソースから一緒にビルドされます。SO-101 の既定のセンサ（作業台の上の LiDAR、手首の力覚）は、これで動きます。
 
 | 実装 | 対応するセンサ | 用意するもの |
 | --- | --- | --- |
+| `reference` | LiDAR（一瞬で撮る方式）、力覚、関節のエンコーダ。どれも真の値だけ（誤差なし） | [hakoniwa-sensor-adapter](https://github.com/hakoniwalab/hakoniwa-sensor-adapter) を同じ階層に置く。ライブラリは不要 |
 | `hakoniwa` | 全種類 | 箱庭ラボが提供するライブラリです。[箱庭ラボにお問い合わせください](https://hakoniwa-lab.net/contact/)。 |
 | `airsim` | IMU、地磁気、気圧、GPS | [hakoniwa-sensor-adapter-airsim](https://github.com/hakoniwalab/hakoniwa-sensor-adapter-airsim) をビルドします（C++17 と Boost のヘッダが必要）。 |
 | `gazebo` | 関節のエンコーダ（真値）、力覚、IMU、地磁気、気圧、GPS | [hakoniwa-sensor-adapter-gazebo](https://github.com/hakoniwalab/hakoniwa-sensor-adapter-gazebo) をビルドします（gz-sensors が必要。pixi か Docker で入れる手順がその README にあります）。リンクには gz-sensors のライブラリも要ります。 |
@@ -58,16 +61,15 @@ cmake -S hakoniwa-sensor-adapter-airsim -B hakoniwa-sensor-adapter-airsim/build 
 cmake --build hakoniwa-sensor-adapter-airsim/build -j
 ```
 
-アームの CMake には、次の 3 つを渡します。
+レシピの `configure --sensors` と `build --sensors` は、次の環境変数から CMake に渡します。
 
 | 変数 | 値 |
 | --- | --- |
-| `HAKO_ROBOT_ARM_ENABLE_SENSOR` | `ON` |
-| `HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS` | リンクする実装の名前をセミコロンで並べる（例：`hakoniwa;airsim`） |
-| `HAKO_ROBOT_ARM_SENSOR_LIBRARIES` | その実装のライブラリ（`airsim` なら `hakoniwa-sensor-adapter-airsim/build/libhakoniwa_sensor_adapter_airsim.a`） |
+| `HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS` | 組み込む実装の名前をセミコロンで並べる。既定は `reference`（例：`hakoniwa;reference`） |
+| `HAKO_ROBOT_ARM_SENSOR_LIBRARIES` | `reference` 以外の実装のライブラリ（`airsim` なら `hakoniwa-sensor-adapter-airsim/build/libhakoniwa_sensor_adapter_airsim.a`）。`reference` だけなら要らない |
 
 - 設定で選んだ実装がリンクされていないと、起動時に理由を示して止まります。
 - 定義ファイルの書き方は実装ごとに違います（`airsim` は Project AirSim のセンサの JSON、`gazebo` は SDFormat を JSON に写したもの）。
-- いまのレシピの `build` は、この 3 つを渡しません。センサを使うときは CMake を直接実行します。
+- SO-101 では、`configure --sensors` が既定のセンサの組（`recipes/so101/config/sensors/so101-sensors.json`、`reference`）を選びます。箱庭ラボの実装の組を使うときは、`configure --sensors --sensor-implementation hakoniwa`（`so101-sensors-hakoniwa.json`）にし、上の 2 つで `hakoniwa` とそのライブラリを渡します。
 
 ビルド後は、選択した利用構成の[起動・動作確認手順](operation.md)へ進んでください。
