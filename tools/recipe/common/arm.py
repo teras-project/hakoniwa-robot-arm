@@ -401,7 +401,13 @@ def configure(
     digging_worksite: bool = False,
     arm_environment: bool = False,
     realtime_sync_cycle_msec: int = 0,
+    joint_trajectory: bool = True,
+    bridge_step_usec: int | None = None,
 ) -> int:
+    if not ros2_tcp and (not joint_trajectory or bridge_step_usec is not None):
+        raise RecipeError("--no-joint-trajectory and --bridge-step-usec need --ros2-tcp")
+    if bridge_step_usec is not None and bridge_step_usec <= 0:
+        raise RecipeError("--bridge-step-usec must be positive")
     if sum(bool(value) for value in (ros2_tcp, manual_demo, gamepad_controller)) > 1:
         raise RecipeError("--ros2-tcp, --manual-demo, and --gamepad are exclusive")
     if realtime_sync_cycle_msec < 0:
@@ -464,7 +470,9 @@ def configure(
     if ros2_tcp:
         import ros2_tcp as ros2_tcp_recipe
 
-        config_root = ros2_tcp_recipe.configure(ROBOT_ID, ros2_tcp_recipe.DEFAULT_PORT)
+        config_root = ros2_tcp_recipe.configure(
+            ROBOT_ID, ros2_tcp_recipe.DEFAULT_PORT, joint_trajectory=joint_trajectory,
+            manifest_name=manifest_name)
         bridge_binary = required(
             ros2_tcp_recipe.host_bridge_binary(ROBOT_ID),
             "Foundation PDU bridge",
@@ -477,7 +485,9 @@ def configure(
                 "--config-root", str(config_root),
                 "--node-name", "arm_ros2_tcp_node",
                 "--asset-name", "Ros2TcpBridge",
-                "--delta-time-step-usec", "20000",
+                "--delta-time-step-usec", str(
+                    bridge_step_usec if bridge_step_usec is not None
+                    else ros2_tcp_recipe.DEFAULT_BRIDGE_DELTA_USEC),
             ],
             "depends_on": [f"{ROBOT_ID}-plant"],
             "delay_sec": 1,
@@ -601,7 +611,7 @@ def configure(
     print(f"Launcher        : {output}")
     print("Profiles        : " + ", ".join(str(path) for path in profiles))
     print(f"Mode            : {'headless' if headless else 'viewer'}")
-    print(f"ROS 2 TCP       : {'enabled' if ros2_tcp else 'disabled'}")
+    print(f"ROS 2 TCP       : {('enabled (no joint trajectory input)' if not joint_trajectory else 'enabled') if ros2_tcp else 'disabled'}")
     print(f"Manual demo     : {'enabled' if manual_demo else 'disabled'}")
     print(f"Gamepad         : {'enabled' if gamepad_controller else 'disabled'}")
     print(f"Digging worksite: {'enabled' if effective_digging_worksite else 'disabled'}")
@@ -983,6 +993,14 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("command", choices=commands)
     result.add_argument("--headless", action="store_true")
     result.add_argument("--ros2-tcp", action="store_true", help="launch the host SHM/TCP bridge instead of the demo sender")
+    result.add_argument(
+        "--no-joint-trajectory", dest="joint_trajectory", action="store_false",
+        help="with --ros2-tcp: do not bridge the Runtime's JointTrajectory input "
+             "(the ROS side sends interpolated joint commands)")
+    result.add_argument(
+        "--bridge-step-usec", type=int, default=None,
+        help="with --ros2-tcp: the host bridge step in usec (default 20000); the Robot Runtime "
+             "physics step (2000) for commands at 50 Hz or faster")
     result.add_argument("--manual-demo", action="store_true", help="launch the excavator Manual Controller demo instead of Auto")
     result.add_argument(
         "--gamepad", dest="gamepad_controller", action="store_true",
@@ -1012,6 +1030,8 @@ def main(argv: list[str] | None = None) -> int:
                 args.digging_worksite,
                 args.environment,
                 args.realtime_sync_cycle_msec,
+                args.joint_trajectory,
+                args.bridge_step_usec,
             )
         if args.command == "bucket-proxy":
             return bucket_proxy(args.viewer)

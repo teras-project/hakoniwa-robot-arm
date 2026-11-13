@@ -16,6 +16,22 @@ from _hakoniwa_composer import HakoniwaComposerError, arm_root, workspace_work_d
 
 
 DEFAULT_PORT = 54001
+# The host bridge is a Hakoniwa asset; its step is --delta-time-step-usec
+# (default 20 ms). With a step longer than the Robot Runtime's (the MuJoCo
+# physics step, 2 ms for the supplied arms), the Runtime waits for the bridge at
+# the conductor's delay limit, takes no commands meanwhile, and the Hakoniwa core
+# refuses the next command PDU, which the bridge then drops (about 13 % at 50 Hz
+# with 20 ms). Commands sent at 50 Hz or faster need the Runtime's step (2000).
+DEFAULT_BRIDGE_DELTA_USEC = 20000
+# State outputs without a rate, and the fastest a state output is sent.
+DEFAULT_STATE_INTERVAL_MS = 20
+
+
+def state_interval_ms(pdu: dict[str, object]) -> int:
+    rate = pdu.get("update_rate_hz")
+    if not isinstance(rate, (int, float)) or rate <= 0:
+        return DEFAULT_STATE_INTERVAL_MS
+    return max(DEFAULT_STATE_INTERVAL_MS, int(round(1000.0 / float(rate))))
 DEFAULT_ROBOT = "nova5"
 
 
@@ -37,9 +53,9 @@ def write_json(path: Path, data: object) -> None:
     temporary.replace(path)
 
 
-def robot_paths(robot_id: str) -> tuple[Path, Path, Path]:
+def robot_paths(robot_id: str, manifest_name: str = "asset-manifest.json") -> tuple[Path, Path, Path]:
     recipe_dir = arm_root() / "recipes" / robot_id
-    manifest_path = recipe_dir / "asset-manifest.json"
+    manifest_path = recipe_dir / manifest_name
     if not manifest_path.is_file():
         raise Ros2TcpError(f"robot manifest not found: {manifest_path}")
     manifest = load_json(manifest_path)
@@ -51,8 +67,12 @@ def robot_paths(robot_id: str) -> tuple[Path, Path, Path]:
     return recipe_dir, manifest_path, (recipe_dir / pdu_def_value).resolve()
 
 
-def resolve_pdu_contract(robot_id: str) -> tuple[str, list[dict[str, object]], Path, list[Path]]:
-    recipe_dir, manifest_path, pdu_def_path = robot_paths(robot_id)
+def resolve_pdu_contract(
+    robot_id: str, joint_trajectory: bool = True, manifest_name: str = "asset-manifest.json",
+) -> tuple[str, list[dict[str, object]], Path, list[Path]]:
+    # The selected manifest decides the bridged PDUs: actuators and the trajectory
+    # input go ROS -> PDU, every state output (joint states, sensor outputs) PDU -> ROS.
+    recipe_dir, manifest_path, pdu_def_path = robot_paths(robot_id, manifest_name)
     manifest = load_json(manifest_path)
     pdu_def = load_json(pdu_def_path)
     if not isinstance(manifest, dict) or not isinstance(pdu_def, dict):
@@ -84,6 +104,7 @@ def resolve_pdu_contract(robot_id: str) -> tuple[str, list[dict[str, object]], P
     if not isinstance(components, list):
         raise Ros2TcpError("manifest components must be an array")
     direction_by_name: dict[str, str] = {}
+    rate_by_name: dict[str, float] = {}
     for component in components:
         if not isinstance(component, dict):
             continue
@@ -94,7 +115,11 @@ def resolve_pdu_contract(robot_id: str) -> tuple[str, list[dict[str, object]], P
         component_config = load_json((recipe_dir / config_value).resolve())
         if not isinstance(component_config, dict):
             continue
-        if kind == "controller" and component.get("type") == "joint_trajectory_controller":
+        # Without the joint trajectory input, the ROS side sends joint commands it has
+        # interpolated itself: the Runtime's trajectory input is not bridged, so that
+        # nothing interpolates twice.
+        if (joint_trajectory and kind == "controller"
+                and component.get("type") == "joint_trajectory_controller"):
             trajectory_input = component_config.get("input")
             if isinstance(trajectory_input, dict) and isinstance(trajectory_input.get("pdu_name"), str):
                 direction_by_name[trajectory_input["pdu_name"]] = "ros_to_pdu"
@@ -105,12 +130,18 @@ def resolve_pdu_contract(robot_id: str) -> tuple[str, list[dict[str, object]], P
             direction_by_name[str(pdu_config["pdu_name"])] = "ros_to_pdu"
         elif kind == "state_output":
             direction_by_name[str(pdu_config["pdu_name"])] = "pdu_to_ros"
+            rate = pdu_config.get("update_rate_hz")
+            if isinstance(rate, (int, float)) and rate > 0:
+                rate_by_name[str(pdu_config["pdu_name"])] = float(rate)
 
     selected: list[dict[str, object]] = []
     for pdu in pdu_entries:
         name = pdu.get("name")
         if isinstance(name, str) and name in direction_by_name:
-            selected.append({**pdu, "direction": direction_by_name[name]})
+            entry = {**pdu, "direction": direction_by_name[name]}
+            if name in rate_by_name:
+                entry["update_rate_hz"] = rate_by_name[name]
+            selected.append(entry)
     if not selected:
         raise Ros2TcpError("manifest exposes no actuator or state-output PDU bindings")
     return robot_name, selected, pdu_def_path, type_paths
@@ -133,8 +164,12 @@ def config_root(robot_id: str) -> Path:
     )
 
 
-def configure(robot_id: str, port: int, remote_host: str | None = None) -> Path:
-    robot_name, pdus, pdu_def_path, type_paths = resolve_pdu_contract(robot_id)
+def configure(
+    robot_id: str, port: int, remote_host: str | None = None, joint_trajectory: bool = True,
+    manifest_name: str = "asset-manifest.json",
+) -> Path:
+    robot_name, pdus, pdu_def_path, type_paths = resolve_pdu_contract(
+        robot_id, joint_trajectory, manifest_name)
     selected_remote_host = remote_host or os.environ.get(
         "HAKONIWA_ROS2_TCP_HOST", "host.docker.internal"
     )
@@ -215,23 +250,30 @@ def configure(robot_id: str, port: int, remote_host: str | None = None) -> Path:
             "destinations": [{"endpointId": "host-shm"}],
             "transferPdus": [{"pduKeyGroupId": "commands", "policyId": "immediate"}],
         })
-    if state_pdus:
-        groups["states"] = [
+    # A state output goes to TCP at its own rate (a 5 Hz LiDAR every 200 ms, not
+    # every 20 ms), so that ROS does not receive the same message again and again.
+    policies: dict[str, object] = {"immediate": {"type": "immediate"}}
+    by_interval: dict[int, list[dict[str, object]]] = {}
+    for pdu in state_pdus:
+        interval = state_interval_ms(pdu)
+        by_interval.setdefault(interval, []).append(pdu)
+    for interval in sorted(by_interval):
+        policy_id = f"ticker_{interval}ms"
+        group_id = "states" if interval == DEFAULT_STATE_INTERVAL_MS else f"states_{interval}ms"
+        policies[policy_id] = {"type": "ticker", "intervalMs": interval}
+        groups[group_id] = [
             {"id": f"{robot_name}.{pdu['name']}", "robot_name": robot_name, "pdu_name": pdu["name"]}
-            for pdu in state_pdus
+            for pdu in by_interval[interval]
         ]
         connections.append({
-            "id": "shm_to_tcp", "nodeId": node_id,
+            "id": "shm_to_tcp" if group_id == "states" else f"shm_to_tcp_{interval}ms", "nodeId": node_id,
             "source": {"endpointId": "host-shm"},
             "destinations": [{"endpointId": "host-tcp"}],
-            "transferPdus": [{"pduKeyGroupId": "states", "policyId": "ticker_20ms"}],
+            "transferPdus": [{"pduKeyGroupId": group_id, "policyId": policy_id}],
         })
     write_json(output / "bridge" / "bridge.json", {
         "version": "2.0.0",
-        "transferPolicies": {
-            "immediate": {"type": "immediate"},
-            "ticker_20ms": {"type": "ticker", "intervalMs": 20},
-        },
+        "transferPolicies": policies,
         "nodes": [{"id": node_id}],
         "endpoints_config_path": "../endpoint/endpoint_container.json",
         "wireLinks": [],
@@ -295,7 +337,7 @@ def doctor(robot_id: str) -> int:
     return 1 if failed else 0
 
 
-def start_host(robot_id: str) -> int:
+def start_host(robot_id: str, delta_time_step_usec: int = DEFAULT_BRIDGE_DELTA_USEC) -> int:
     output = config_root(robot_id)
     binary = host_bridge_binary(robot_id)
     if not binary.is_file():
@@ -303,7 +345,7 @@ def start_host(robot_id: str) -> int:
     command = [
         str(binary), "--config-root", str(output),
         "--node-name", "arm_ros2_tcp_node", "--asset-name", "Ros2TcpBridge",
-        "--delta-time-step-usec", "20000",
+        "--delta-time-step-usec", str(delta_time_step_usec),
     ]
     prefix = foundation_prefix()
     env = os.environ.copy()
@@ -327,6 +369,14 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--robot", default=DEFAULT_ROBOT)
     result.add_argument("--port", type=int, default=DEFAULT_PORT)
     result.add_argument(
+        "--delta-time-step-usec", type=int, default=DEFAULT_BRIDGE_DELTA_USEC,
+        help="host bridge step in usec (default 20000); the Robot Runtime physics step (2000) for commands at 50 Hz or faster",
+    )
+    result.add_argument(
+        "--no-joint-trajectory", dest="joint_trajectory", action="store_false",
+        help="do not bridge the Runtime's JointTrajectory input (the ROS side sends interpolated joint commands)",
+    )
+    result.add_argument(
         "--remote-host",
         default=None,
         help="TCP server hostname seen by the ROS side (default: HAKONIWA_ROS2_TCP_HOST or host.docker.internal)",
@@ -340,14 +390,16 @@ def main(argv: list[str] | None = None) -> int:
         if not 1 <= args.port <= 65535:
             raise Ros2TcpError(f"port must be between 1 and 65535: {args.port}")
         if args.command == "configure":
-            configure(args.robot, args.port, args.remote_host)
+            configure(args.robot, args.port, args.remote_host, args.joint_trajectory)
             return 0
         if args.command == "config-root":
             print(config_root(args.robot))
             return 0
         if args.command == "doctor":
             return doctor(args.robot)
-        return start_host(args.robot)
+        if args.delta_time_step_usec <= 0:
+            raise Ros2TcpError("--delta-time-step-usec must be positive")
+        return start_host(args.robot, args.delta_time_step_usec)
     except (HakoniwaComposerError, Ros2TcpError, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
