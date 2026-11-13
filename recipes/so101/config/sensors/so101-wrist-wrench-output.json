@@ -1,0 +1,12 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/sensor-output.schema.json",
+  "schema_version": 1,
+  "sensors": [
+    "wrist_ft"
+  ],
+  "pdu_config": {
+    "pdu_name": "wrist_wrench",
+    "message_type": "geometry_msgs/WrenchStamped",
+    "update_rate_hz": 50.0
+  }
+}

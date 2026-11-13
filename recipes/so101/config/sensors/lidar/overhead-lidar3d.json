@@ -1,0 +1,22 @@
+{
+  "type": "lidar",
+  "update_rate": 2,
+  "scan_mode": "rotating",
+  "scan": {
+    "horizontal": {
+      "samples": 360,
+      "min_angle": -3.141592653589793,
+      "max_angle": -0.008726646259971549
+    },
+    "vertical": {
+      "samples": 32,
+      "min_angle": -1.4835298641951802,
+      "max_angle": -0.6108652381980153
+    }
+  },
+  "range": {
+    "min": 0.05,
+    "max": 2.0
+  },
+  "no_return": "inf"
+}

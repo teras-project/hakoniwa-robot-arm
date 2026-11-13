@@ -6,8 +6,8 @@ import hashlib
 import json
 import os
 import platform
-import shlex
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -242,8 +242,13 @@ def manifest_model_path(manifest: dict) -> Path:
     return model_install_dir(ROBOT_ID) / Path(model).name
 
 
-def materialize_runtime_manifest(template: Path, workspace) -> Path:
-    """Write a workspace-owned manifest with absolute runtime inputs."""
+def materialize_runtime_manifest(
+    template: Path, workspace, sensor_implementation: str = "reference",
+) -> Path:
+    """Write a workspace-owned manifest with absolute runtime inputs.
+
+    With a sensor implementation other than reference, the "sensors" component
+    uses the robot's sensor set for it (so101-sensors.json -> so101-sensors-<name>.json)."""
     data = json.loads(template.read_text(encoding="utf-8"))
     template_dir = template.parent
     data["model"] = str(required(manifest_model_path(data), f"{ROBOT_LABEL} forged model"))
@@ -255,6 +260,9 @@ def materialize_runtime_manifest(template: Path, workspace) -> Path:
         if not isinstance(component, dict):
             continue
         value = component.get("config")
+        if (isinstance(value, str) and component.get("id") == "sensors"
+                and sensor_implementation != "reference"):
+            value = str(Path(value).with_name(f"{Path(value).stem}-{sensor_implementation}.json"))
         if isinstance(value, str):
             component["config"] = str(
                 required(template_dir / value, f"{ROBOT_LABEL} component config")
@@ -402,8 +410,14 @@ def configure(
     arm_environment: bool = False,
     realtime_sync_cycle_msec: int = 0,
     joint_trajectory: bool = True,
+    sensors: bool = False,
     bridge_step_usec: int | None = None,
+    sensor_implementation: str = "reference",
 ) -> int:
+    if sensor_implementation != "reference" and not sensors:
+        raise RecipeError("--sensor-implementation needs --sensors")
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", sensor_implementation):
+        raise RecipeError(f"--sensor-implementation is not an implementation name: {sensor_implementation}")
     if not ros2_tcp and (not joint_trajectory or bridge_step_usec is not None):
         raise RecipeError("--no-joint-trajectory and --bridge-step-usec need --ros2-tcp")
     if bridge_step_usec is not None and bridge_step_usec <= 0:
@@ -424,18 +438,26 @@ def configure(
     )
     if effective_digging_worksite:
         materialize_excavator_worksite()
+    if sensors:
+        # The sensor manifest is the arm environment plus the sensors (the build
+        # needs --sensors as well).
+        if ROBOT_ID == "excavator" or effective_digging_worksite:
+            raise RecipeError("--sensors is available only for the arm environment")
+        arm_environment = True
     if arm_environment and ROBOT_ID != "excavator":
         materialize_arm_environment()
     manifest_name = "asset-manifest.json"
     if effective_digging_worksite:
         manifest_name = "asset-manifest-digging.json"
+    elif sensors:
+        manifest_name = "asset-manifest-sensors.json"
     elif arm_environment:
         manifest_name = "asset-manifest-environment.json"
     manifest_template = required(
         arm_root() / "recipes" / ROBOT_ID / manifest_name,
         f"{ROBOT_LABEL} manifest",
     )
-    manifest = materialize_runtime_manifest(manifest_template, workspace)
+    manifest = materialize_runtime_manifest(manifest_template, workspace, sensor_implementation)
     sender = required(
         arm_root() / "tools/control/send_joint_trajectory.py",
         "trajectory sender",
@@ -616,6 +638,7 @@ def configure(
     print(f"Gamepad         : {'enabled' if gamepad_controller else 'disabled'}")
     print(f"Digging worksite: {'enabled' if effective_digging_worksite else 'disabled'}")
     print(f"Arm environment : {'enabled' if arm_environment else 'disabled'}")
+    print(f"Sensors         : {f'enabled ({sensor_implementation})' if sensors else 'disabled'}")
     print(
         "Realtime pacing : "
         + (
@@ -693,7 +716,33 @@ def run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | No
     return subprocess.run(command, cwd=cwd, env=env, check=False).returncode
 
 
-def build(mujoco_root: Path, headless: bool) -> int:
+def sensor_cmake_args() -> list[str]:
+    """The sensor stage and the linked sensor implementations, from the environment:
+    HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS (default reference: hakoniwa-sensor-adapter's
+    implementation that returns the true values, built from source) and
+    HAKO_ROBOT_ARM_SENSOR_LIBRARIES (the libraries of the other implementations)."""
+    implementations = os.environ.get("HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS", "reference").strip()
+    libraries = os.environ.get("HAKO_ROBOT_ARM_SENSOR_LIBRARIES", "").strip()
+    names = [name.strip() for name in implementations.split(";") if name.strip()]
+    if not names:
+        raise RecipeError("HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS lists no sensor implementation")
+    if any(name != "reference" for name in names) and not libraries:
+        raise RecipeError(
+            "HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS lists an implementation other than reference: "
+            "set HAKO_ROBOT_ARM_SENSOR_LIBRARIES to its libraries "
+            "(the hakoniwa implementation is provided by Hakoniwa Lab)")
+    return [
+        "-DHAKO_ROBOT_ARM_ENABLE_SENSOR=ON",
+        f"-DHAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS={implementations}",
+        f"-DHAKO_ROBOT_ARM_SENSOR_LIBRARIES={libraries}",
+    ]
+
+
+def build(
+    mujoco_root: Path,
+    headless: bool,
+    sensors: bool = False,
+) -> int:
     foundation, workspace = workspace_and_foundation()
     foundation_consumer = load_foundation_consumer_module()
     required(mujoco_root / "src/CMakeLists.txt", "hakoniwa-mujoco-robots sibling")
@@ -706,6 +755,7 @@ def build(mujoco_root: Path, headless: bool) -> int:
         f"-DHAKONIWA_MUJOCO_ROBOTS_ROOT={mujoco_root}",
         "-DHAKO_USE_THIRDPARTY_HAKONIWA=OFF",
         f"-DHAKO_ARM_ENABLE_VIEWER={'OFF' if headless else 'ON'}",
+        *(sensor_cmake_args() if sensors else []),
         "-DHAKO_ARM_ENABLE_DOBOT=OFF",
     ]
     if platform.system() == "Windows":
@@ -1010,6 +1060,14 @@ def parser() -> argparse.ArgumentParser:
         help=argparse.SUPPRESS)
     result.add_argument("--digging-worksite", action="store_true", help="select the explicit HField, accepted bucket-proxy, and simplified-soil manifest")
     result.add_argument("--environment", action="store_true", help="select the robot-specific Recipe environment")
+    result.add_argument(
+        "--sensors", action="store_true",
+        help="SO-101: the arm environment with the overhead 3D LiDAR and the wrist force-torque sensor "
+             "(configure and build)")
+    result.add_argument(
+        "--sensor-implementation", default="reference",
+        help="with --sensors: the sensor set of the robot to use, by implementation (default reference: "
+             "the true values; hakoniwa: the robot's set for Hakoniwa's sensor models)")
     result.add_argument("--realtime-sync-cycle-msec", type=int, default=0, help="reconcile simulation and wall time at this simulation-time interval; 0 disables pacing")
     result.add_argument("--viewer", action="store_true", help="open the bucket proxy calibration Viewer")
     result.add_argument("--mujoco-root", type=Path, default=sibling("hakoniwa-mujoco-robots", "HAKONIWA_MUJOCO_ROBOTS_ROOT"))
@@ -1031,12 +1089,14 @@ def main(argv: list[str] | None = None) -> int:
                 args.environment,
                 args.realtime_sync_cycle_msec,
                 args.joint_trajectory,
+                args.sensors,
                 args.bridge_step_usec,
+                args.sensor_implementation,
             )
         if args.command == "bucket-proxy":
             return bucket_proxy(args.viewer)
         if args.command == "build":
-            return build(absolute(args.mujoco_root), args.headless)
+            return build(absolute(args.mujoco_root), args.headless, args.sensors)
         if args.command == "doctor":
             return doctor(absolute(args.mujoco_root))
         if args.command == "start":

@@ -88,5 +88,15 @@
       "solref": [0.004, 1.0],
       "solimp": [0.99, 0.999, 0.0005]
     }
+  ],
+  "sensor_housings": [
+    {
+      "name": "lidar_overhead_housing",
+      "pos_m": [0.28, 0.25, 0.5],
+      "type": "cylinder",
+      "radius_m": 0.035,
+      "half_height_m": 0.02,
+      "rgba": [0.10, 0.10, 0.10, 1.0]
+    }
   ]
 }
