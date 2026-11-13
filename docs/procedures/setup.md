@@ -1,6 +1,6 @@
 # セットアップ手順
 
-この文書は利用構成を選ぶための入口です。初回のclone方法と前提ソフトウェアは[トップREADME](../../README.md#クイックスタート)を参照してください。環境変数の責務とprofileの仕組みは[環境profile](../design/environment-profiles.md)を正本とします。
+この文書は利用構成を選ぶための入口です。初回のclone方法と前提ソフトウェアは[トップREADME](../../README.ja.md#クイックスタート)を参照してください。環境変数の責務とprofileの仕組みは[環境profile](../design/environment-profiles.md)を正本とします。
 
 [手順一覧](README.md) → **セットアップ** → [ビルド](build.md) → [起動・動作確認](operation.md)。コマンドと出力例、シェル切替の区別は[手順の読み方](conventions.md#コードブロックと端末の読み方)を参照してください。
 
