@@ -15,7 +15,7 @@ from pathlib import Path
 ARM_ROOT = Path(__file__).resolve().parents[2]
 SOURCES = {
     "hakoniwa-pdu-endpoint": "main",
-    "hakoniwa-pdu-ros": "main",
+    "hakoniwa-pdu-ros": json.loads((ARM_ROOT / "tools/dobot/versions.json").read_text())["hakoniwa-pdu-ros"],
     "hakoniwa-pdu-rpc": "main",
     "hakoniwa-pdu-registry": "main",
 }
@@ -49,6 +49,16 @@ def ensure_source(path, name):
                 "CMakeLists.txt" if name.endswith(("endpoint", "rpc")) else "package.xml")
     if not (path / required).is_file():
         raise ValueError(f"missing {required} in {path}")
+    if name == "hakoniwa-pdu-ros":
+        revision = SOURCES[name]
+        result = subprocess.run(
+            ["git", "-C", str(path), "merge-base", "--is-ancestor", revision, "HEAD"],
+            capture_output=True, text=True, check=False)
+        if result.returncode != 0:
+            raise ValueError(
+                f"{path} does not include required {name} revision {revision}; "
+                "fetch the fix or select a compatible --pdu-ros-src checkout"
+            )
 
 
 def shell_environment(root, distro):

@@ -43,7 +43,7 @@ ros2 pkg executables hakoniwa_dobot
 ros2 pkg executables dobot_demo
 ```
 
-公式ソースは[対応リビジョン](../../../tools/dobot/versions.json)の commit に固定しています。既存 checkout を利用する場合は clone / checkout 行を飛ばし、`.srv` の互換性を確認してください。`--with-rpc` は隣接する `hakoniwa-pdu-rpc` と `hakoniwa-pdu-registry` がなければ取得し、既存の checkout は切り替えません。`dobot-types` は実機 driver 用ではなく、ROS サービスと箱庭 Native Asset 間の PDU-RPC 用です。型生成は公式 `.srv` をコピーして生成領域に出力し、公式ソースと registry は編集しません。`hakoniwa_dobot configure`、`hakoniwa_arm_samples control`、`dobot_demo demo` が表示されなければ次へ進まないでください。
+公式ソースは[対応リビジョン](../../../tools/dobot/versions.json)の commit に固定しています。既存 checkout を利用する場合は clone / checkout 行を飛ばし、`.srv` の互換性を確認してください。既存の PDU-ROS checkout が対応リビジョンを含まない場合、`ros2_workspace.py` は停止し、checkout を自動で変更しません。`--with-rpc` は隣接する `hakoniwa-pdu-rpc` と `hakoniwa-pdu-registry` がなければ取得し、既存の checkout は切り替えません。`dobot-types` は実機 driver 用ではなく、ROS サービスと箱庭 Native Asset 間の PDU-RPC 用です。型生成は公式 `.srv` をコピーして生成領域に出力し、公式ソースと registry は編集しません。`hakoniwa_dobot configure`、`hakoniwa_arm_samples control`、`dobot_demo demo` が表示されなければ次へ進まないでください。
 
 ## 2. ROS 端末：サービスと topic の binding
 
