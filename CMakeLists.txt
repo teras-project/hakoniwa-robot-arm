@@ -136,6 +136,18 @@ ${_hako_sensor_registrations}    return true;
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_fluid_pressure_publisher.cpp
         ${HAKO_ROBOT_RUNTIME_SRC_DIR}/runtime/publisher/sensor_nav_sat_fix_publisher.cpp
     )
+    # hakoniwa-sensor-adapter's reference implementation (the true values) is built
+    # from source; the other implementations come as HAKO_ROBOT_ARM_SENSOR_LIBRARIES.
+    if("reference" IN_LIST HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS)
+        set(_hako_sensor_reference_source
+            "${HAKO_ROBOT_ARM_SENSOR_ADAPTER_ROOT}/src/reference/reference_implementation.cpp")
+        if(NOT EXISTS "${_hako_sensor_reference_source}")
+            message(FATAL_ERROR "the reference sensor implementation is not in this hakoniwa-sensor-adapter: "
+                "${_hako_sensor_reference_source}")
+        endif()
+        target_sources(hako-robot-arm-runtime PRIVATE ${_hako_sensor_reference_source})
+        # nlohmann/json for it: added below, once hakoniwa-mujoco-robots is imported.
+    endif()
     target_compile_definitions(hako-robot-arm-runtime PUBLIC
         HAKONIWA_ROBOT_RUNTIME_ENABLE_SENSOR=1
         HAKONIWA_ROBOT_RUNTIME_SENSOR_CATALOG_PATH="${HAKO_ROBOT_RUNTIME_SOURCE_DIR}/catalog/sensor-implementations.json"
@@ -233,6 +245,11 @@ endfunction()
 
 hako_import_mujoco_robots_variable(
     HAKO_MUJOCO_ROBOTS_PROJECT_ROOT PROJECT_ROOT_DIR)
+if(HAKO_ROBOT_ARM_ENABLE_SENSOR AND "reference" IN_LIST HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS)
+    # The reference sensor implementation reads its definitions with nlohmann/json.
+    target_include_directories(hako-robot-arm-runtime PRIVATE
+        ${HAKO_MUJOCO_ROBOTS_PROJECT_ROOT}/thirdparty/nolman/single_include)
+endif()
 hako_import_mujoco_robots_variable(
     HAKO_MUJOCO_SOURCE_DIR MUJOCO_SOURCE_DIR)
 hako_import_mujoco_robots_variable(

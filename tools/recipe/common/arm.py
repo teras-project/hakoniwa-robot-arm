@@ -6,8 +6,8 @@ import hashlib
 import json
 import os
 import platform
-import shlex
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -242,8 +242,13 @@ def manifest_model_path(manifest: dict) -> Path:
     return model_install_dir(ROBOT_ID) / Path(model).name
 
 
-def materialize_runtime_manifest(template: Path, workspace) -> Path:
-    """Write a workspace-owned manifest with absolute runtime inputs."""
+def materialize_runtime_manifest(
+    template: Path, workspace, sensor_implementation: str = "reference",
+) -> Path:
+    """Write a workspace-owned manifest with absolute runtime inputs.
+
+    With a sensor implementation other than reference, the "sensors" component
+    uses the robot's sensor set for it (so101-sensors.json -> so101-sensors-<name>.json)."""
     data = json.loads(template.read_text(encoding="utf-8"))
     template_dir = template.parent
     data["model"] = str(required(manifest_model_path(data), f"{ROBOT_LABEL} forged model"))
@@ -255,6 +260,9 @@ def materialize_runtime_manifest(template: Path, workspace) -> Path:
         if not isinstance(component, dict):
             continue
         value = component.get("config")
+        if (isinstance(value, str) and component.get("id") == "sensors"
+                and sensor_implementation != "reference"):
+            value = str(Path(value).with_name(f"{Path(value).stem}-{sensor_implementation}.json"))
         if isinstance(value, str):
             component["config"] = str(
                 required(template_dir / value, f"{ROBOT_LABEL} component config")
@@ -404,7 +412,12 @@ def configure(
     joint_trajectory: bool = True,
     sensors: bool = False,
     bridge_step_usec: int | None = None,
+    sensor_implementation: str = "reference",
 ) -> int:
+    if sensor_implementation != "reference" and not sensors:
+        raise RecipeError("--sensor-implementation needs --sensors")
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", sensor_implementation):
+        raise RecipeError(f"--sensor-implementation is not an implementation name: {sensor_implementation}")
     if not ros2_tcp and (not joint_trajectory or bridge_step_usec is not None):
         raise RecipeError("--no-joint-trajectory and --bridge-step-usec need --ros2-tcp")
     if bridge_step_usec is not None and bridge_step_usec <= 0:
@@ -444,7 +457,7 @@ def configure(
         arm_root() / "recipes" / ROBOT_ID / manifest_name,
         f"{ROBOT_LABEL} manifest",
     )
-    manifest = materialize_runtime_manifest(manifest_template, workspace)
+    manifest = materialize_runtime_manifest(manifest_template, workspace, sensor_implementation)
     sender = required(
         arm_root() / "tools/control/send_joint_trajectory.py",
         "trajectory sender",
@@ -625,7 +638,7 @@ def configure(
     print(f"Gamepad         : {'enabled' if gamepad_controller else 'disabled'}")
     print(f"Digging worksite: {'enabled' if effective_digging_worksite else 'disabled'}")
     print(f"Arm environment : {'enabled' if arm_environment else 'disabled'}")
-    print(f"Sensors         : {'enabled' if sensors else 'disabled'}")
+    print(f"Sensors         : {f'enabled ({sensor_implementation})' if sensors else 'disabled'}")
     print(
         "Realtime pacing : "
         + (
@@ -705,14 +718,19 @@ def run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | No
 
 def sensor_cmake_args() -> list[str]:
     """The sensor stage and the linked sensor implementations, from the environment:
-    HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS (default hakoniwa) and
-    HAKO_ROBOT_ARM_SENSOR_LIBRARIES (the implementation libraries, required)."""
-    implementations = os.environ.get("HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS", "hakoniwa").strip()
+    HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS (default reference: hakoniwa-sensor-adapter's
+    implementation that returns the true values, built from source) and
+    HAKO_ROBOT_ARM_SENSOR_LIBRARIES (the libraries of the other implementations)."""
+    implementations = os.environ.get("HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS", "reference").strip()
     libraries = os.environ.get("HAKO_ROBOT_ARM_SENSOR_LIBRARIES", "").strip()
-    if not libraries:
+    names = [name.strip() for name in implementations.split(";") if name.strip()]
+    if not names:
+        raise RecipeError("HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS lists no sensor implementation")
+    if any(name != "reference" for name in names) and not libraries:
         raise RecipeError(
-            "--sensors needs HAKO_ROBOT_ARM_SENSOR_LIBRARIES: the libraries of the sensor "
-            "implementations (the hakoniwa implementation is provided by Hakoniwa Lab)")
+            "HAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS lists an implementation other than reference: "
+            "set HAKO_ROBOT_ARM_SENSOR_LIBRARIES to its libraries "
+            "(the hakoniwa implementation is provided by Hakoniwa Lab)")
     return [
         "-DHAKO_ROBOT_ARM_ENABLE_SENSOR=ON",
         f"-DHAKO_ROBOT_ARM_SENSOR_IMPLEMENTATIONS={implementations}",
@@ -1046,6 +1064,10 @@ def parser() -> argparse.ArgumentParser:
         "--sensors", action="store_true",
         help="SO-101: the arm environment with the overhead 3D LiDAR and the wrist force-torque sensor "
              "(configure and build)")
+    result.add_argument(
+        "--sensor-implementation", default="reference",
+        help="with --sensors: the sensor set of the robot to use, by implementation (default reference: "
+             "the true values; hakoniwa: the robot's set for Hakoniwa's sensor models)")
     result.add_argument("--realtime-sync-cycle-msec", type=int, default=0, help="reconcile simulation and wall time at this simulation-time interval; 0 disables pacing")
     result.add_argument("--viewer", action="store_true", help="open the bucket proxy calibration Viewer")
     result.add_argument("--mujoco-root", type=Path, default=sibling("hakoniwa-mujoco-robots", "HAKONIWA_MUJOCO_ROBOTS_ROOT"))
@@ -1069,6 +1091,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.joint_trajectory,
                 args.sensors,
                 args.bridge_step_usec,
+                args.sensor_implementation,
             )
         if args.command == "bucket-proxy":
             return bucket_proxy(args.viewer)

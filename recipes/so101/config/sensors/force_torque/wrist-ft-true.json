@@ -1,0 +1,4 @@
+{
+  "type": "force_torque",
+  "update_rate": 500
+}

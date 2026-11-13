@@ -5,7 +5,7 @@
     {
       "name": "overhead_lidar",
       "type": "lidar",
-      "implementation": "hakoniwa",
+      "implementation": "reference",
       "mount": {
         "mjcf_body": "lidar_overhead_housing",
         "position_m": [
@@ -19,12 +19,12 @@
           "yaw": 0
         }
       },
-      "definition": "lidar/overhead-lidar3d.json"
+      "definition": "lidar/overhead-lidar3d-true.json"
     },
     {
       "name": "wrist_ft",
       "type": "force_torque",
-      "implementation": "hakoniwa",
+      "implementation": "reference",
       "mount": {
         "mjcf_body": "gripper",
         "position_m": [
@@ -38,7 +38,7 @@
           "yaw": 0
         }
       },
-      "definition": "force_torque/wrist-ft.json"
+      "definition": "force_torque/wrist-ft-true.json"
     }
   ]
 }
