@@ -1,0 +1,12 @@
+{
+  "$schema": "https://hakoniwa.dev/schemas/sensor-output.schema.json",
+  "schema_version": 1,
+  "sensors": [
+    "overhead_lidar"
+  ],
+  "pdu_config": {
+    "pdu_name": "lidar_scan",
+    "message_type": "sensor_msgs/PointCloud2",
+    "update_rate_hz": 2.0
+  }
+}
